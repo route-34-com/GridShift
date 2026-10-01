@@ -1,0 +1,53 @@
+machines:
+  - id: compressor
+    name: Air Compressor
+    type: always_on
+    power_kw: 90
+
+  - id: cooling
+    name: Process Cooling
+    type: always_on
+    power_kw: 140
+
+  - id: hvac
+    name: Lighting & HVAC
+    type: always_on
+    power_kw: 120
+
+  - id: press-a
+    name: Hydraulic Press A
+    type: daily_quota
+    power_kw: 250
+    hours_per_day: 8
+    min_run_hours: 2
+
+  - id: press-b
+    name: Hydraulic Press B
+    type: daily_quota
+    power_kw: 250
+    hours_per_day: 6
+    min_run_hours: 2
+
+  - id: cnc-line
+    name: CNC Machining Line
+    type: daily_quota
+    power_kw: 120
+    hours_per_day: 12
+    min_run_hours: 3
+
+  - id: furnace
+    name: Heat-Treatment Furnace
+    type: deadline
+    power_kw: 600
+    total_hours: 20
+    due_in_hours: 120
+    min_run_hours: 4
+
+  - id: mixer
+    name: Batch Mixer
+    type: deadline
+    power_kw: 180
+    total_hours: 10
+    due_in_hours: 72
+    start_in_hours: 6
+    min_run_hours: 2

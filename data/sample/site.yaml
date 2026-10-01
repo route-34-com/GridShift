@@ -1,0 +1,48 @@
+name: Werk Stuttgart-Feuerbach (sample)
+latitude: 48.82
+longitude: 9.17
+
+solar:
+  kwp: 1500
+  tilt: 25
+  azimuth: 0
+  performance_ratio: 0.85
+
+wind:
+  rated_kw: 800
+  hub_height_m: 100
+  power_curve:
+    - [0, 0]
+    - [3, 0]
+    - [4, 25]
+    - [5, 70]
+    - [6, 140]
+    - [7, 230]
+    - [8, 345]
+    - [9, 480]
+    - [10, 610]
+    - [11, 720]
+    - [12, 790]
+    - [13, 800]
+    - [25, 800]
+    - [25.1, 0]
+    - [40, 0]
+
+battery:
+  capacity_kwh: 1000
+  max_charge_kw: 500
+  max_discharge_kw: 500
+  efficiency: 0.95
+  min_soc: 0.1
+  initial_soc: 0.5
+
+grid:
+  max_import_kw: 2500
+  max_export_kw: 1500
+  fee_eur_per_kwh: 0.09
+  export_price_eur_per_kwh: 0.06
+
+co2_kg_per_kwh: 0.38
+
+email_recipients:
+  - plant.manager@example.com
