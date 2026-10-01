@@ -6,7 +6,7 @@
 
 **Architecture:** Python package `backend` with pluggable `sources`, pure `forecast` functions, `planner` (optimizer + baseline + explain + metrics), `pipeline` orchestrating a run with fallbacks, `store` persisting runs as JSON, `api` exposing them. React + Vite + Tailwind + shadcn-style components + Recharts dashboard consumes `/api`.
 
-**Tech Stack:** Python 3.13, FastAPI, pydantic v2, pandas, scikit-learn, PuLP + HiGHS (highspy), httpx, Jinja2, pytest; React 18, TypeScript, Vite, Tailwind v4, Radix, Recharts.
+**Tech Stack:** Python 3.13, FastAPI, pydantic v2, pandas, scikit-learn, HiGHS (highspy), httpx, Jinja2, pytest; React 18, TypeScript, Vite, Tailwind v4, Radix, Recharts.
 
 **Spec:** `docs/superpowers/specs/2026-10-01-gridshift-design.md`
 

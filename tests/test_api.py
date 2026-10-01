@@ -84,3 +84,16 @@ def test_invalid_config_returns_422(settings, tmp_path):
     response = TestClient(create_app(bad, good_sources())).get("/api/config")
     assert response.status_code == 422
     assert "site.yaml" in response.json()["detail"]
+
+
+def test_dashboard_serves_files_and_client_routes(settings, tmp_path):
+    dist = tmp_path / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text("<html>app</html>", encoding="utf-8")
+    (dist / "assets" / "app.js").write_text("console.log(1)", encoding="utf-8")
+    (tmp_path / "secret.txt").write_text("secret", encoding="utf-8")
+    client = TestClient(create_app(settings, good_sources(), dist=dist))
+    assert client.get("/assets/app.js").text == "console.log(1)"
+    assert client.get("/forecast").text == "<html>app</html>"
+    assert "secret" not in client.get("/../secret.txt").text
+    assert client.get("/api/unknown").status_code == 404

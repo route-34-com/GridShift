@@ -1,7 +1,7 @@
 # GridShift — Design Spec
 
 **Date:** 2026-10-01
-**Status:** Draft for review
+**Status:** Approved, implemented
 
 ## 1. Purpose
 
@@ -90,7 +90,7 @@ All hourly over 168 hours from the next midnight (Europe/Berlin).
 
 ## 7. Planner
 
-MILP solved with HiGHS via `pulp`. Horizon T = 168 hourly steps.
+MILP solved with HiGHS through its own Python API (`highspy`); PuLP 4 replaced its modelling API, so HiGHS is used directly. Horizon T = 168 hourly steps.
 
 ### Variables
 - `on[m,t]` binary, for each flexible machine m
@@ -133,7 +133,7 @@ Triggered by the OS scheduler or `python -m backend.jobs`; the API also exposes 
 ## 9. Notifications
 
 - **Daily plan email** (HTML): tomorrow's machine blocks, battery plan, expected cost and savings, renewable share, outlook notes for days 2–7 (e.g. "Thu: low wind + cloud → deadline jobs moved earlier").
-- **Alerts** (separate email):
+- **Alerts** (banner at the top of the daily email; subject prefixed with the alert count):
   - Deadline or quota cannot be met.
   - Day-1 plan differs from yesterday's preview by > 20% of flexible energy.
   - Price or weather source fell back.

@@ -60,5 +60,6 @@ Thumbs.db
 desktop.ini
 
 # Local tooling
+.playwright-mcp/
 .claude/
 .superpowers/
