@@ -1,0 +1,143 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Fira Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Fira Code', ui-monospace, monospace;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-fg: var(--brand-fg);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --color-positive: var(--positive);
+  --color-positive-soft: var(--positive-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+
+  --color-price: var(--series-price);
+  --color-solar: var(--series-solar);
+  --color-wind: var(--series-wind);
+  --color-battery: var(--series-battery);
+  --color-grid: var(--series-grid);
+  --color-demand: var(--series-demand);
+  --color-baseline: var(--series-baseline);
+}
+
+:root {
+  --bg: #f4f6f5;
+  --surface: #ffffff;
+  --surface-2: #f0f3f2;
+  --border: #dfe5e2;
+  --fg: #142019;
+  --muted: #55645d;
+  --brand: #0f3d2e;
+  --brand-fg: #ffffff;
+  --brand-soft: #e3efe9;
+  --accent: #10b981;
+  --positive: #15803d;
+  --positive-soft: #e7f6ec;
+  --warning: #a35c00;
+  --warning-soft: #fff4e2;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  --info: #1d4ed8;
+  --info-soft: #e8efff;
+
+  --series-price: #d97706;
+  --series-solar: #eab308;
+  --series-wind: #0ea5e9;
+  --series-battery: #7c3aed;
+  --series-grid: #64748b;
+  --series-demand: #0f3d2e;
+  --series-baseline: #94a3b8;
+
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0b1210;
+  --surface: #121b18;
+  --surface-2: #18231f;
+  --border: #26342f;
+  --fg: #e7efeb;
+  --muted: #9aaba3;
+  --brand: #34d399;
+  --brand-fg: #062218;
+  --brand-soft: #143328;
+  --accent: #34d399;
+  --positive: #4ade80;
+  --positive-soft: #11291b;
+  --warning: #fbbf24;
+  --warning-soft: #2c2210;
+  --danger: #f87171;
+  --danger-soft: #301617;
+  --info: #93b4ff;
+  --info-soft: #172341;
+
+  --series-price: #fbbf24;
+  --series-solar: #fde047;
+  --series-wind: #38bdf8;
+  --series-battery: #a78bfa;
+  --series-grid: #94a3b8;
+  --series-demand: #6ee7b7;
+  --series-baseline: #64748b;
+
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.recharts-cartesian-grid line {
+  stroke: var(--border);
+}
+
+.recharts-text {
+  fill: var(--muted);
+  font-size: 12px;
+}
+
+.recharts-surface:focus,
+.recharts-wrapper:focus,
+.recharts-sector:focus {
+  outline: none;
+}
