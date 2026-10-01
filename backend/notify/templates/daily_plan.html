@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GridShift daily plan</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f5;font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#1c2421;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6f5;padding:24px 12px;">
+<tr><td align="center">
+<table role="presentation" width="640" cellspacing="0" cellpadding="0" style="max-width:640px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e3e8e5;">
+
+<tr><td style="background:#0f3d2e;padding:24px 28px;color:#ffffff;">
+  <div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.75;">GridShift · {{ run.site_name }}</div>
+  <div style="font-size:22px;font-weight:600;margin-top:6px;">Plan for {{ first.label }}</div>
+  <div style="font-size:13px;opacity:.75;margin-top:4px;">Generated {{ run.created_at | local("%d %b %Y, %H:%M") }} · 7-day horizon</div>
+</td></tr>
+
+{% if run.alerts %}
+<tr><td style="padding:20px 28px 0;">
+  <div style="background:#fff4e5;border:1px solid #f5c98b;border-radius:8px;padding:14px 16px;">
+    <div style="font-weight:600;color:#8a4b00;margin-bottom:6px;">Needs attention</div>
+    {% for alert in run.alerts %}<div style="font-size:14px;color:#5c3900;margin-top:4px;">• {{ alert.message }}</div>{% endfor %}
+  </div>
+</td></tr>
+{% endif %}
+
+<tr><td style="padding:20px 28px 4px;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td width="33%" style="padding:12px;background:#f4f8f6;border-radius:8px;">
+      <div style="font-size:12px;color:#5b6b64;">Tomorrow's cost</div>
+      <div style="font-size:20px;font-weight:600;margin-top:4px;">{{ first.cost_eur | eur }}</div>
+    </td>
+    <td width="8"></td>
+    <td width="33%" style="padding:12px;background:#e8f5ee;border-radius:8px;">
+      <div style="font-size:12px;color:#2c6b4f;">Saved this week</div>
+      <div style="font-size:20px;font-weight:600;margin-top:4px;color:#17663f;">{{ run.summary.savings_eur | eur }} <span style="font-size:13px;font-weight:500;">({{ run.summary.savings_pct | pct }})</span></div>
+    </td>
+    <td width="8"></td>
+    <td width="33%" style="padding:12px;background:#f4f8f6;border-radius:8px;">
+      <div style="font-size:12px;color:#5b6b64;">On-site renewable share</div>
+      <div style="font-size:20px;font-weight:600;margin-top:4px;">{{ first.renewable_share | pct }}</div>
+    </td>
+  </tr></table>
+  <div style="font-size:13px;color:#5b6b64;margin-top:10px;">Week ahead: {{ run.summary.optimized.cost_eur | eur }} planned vs {{ run.summary.baseline.cost_eur | eur }} if machines ran as early as possible.</div>
+</td></tr>
+
+<tr><td style="padding:20px 28px 0;">
+  <div style="font-size:15px;font-weight:600;margin-bottom:8px;">Machine schedule for {{ first.label }}</div>
+  {% if tomorrow %}
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-size:14px;">
+    <tr style="color:#5b6b64;font-size:12px;text-align:left;">
+      <th style="padding:6px 0;border-bottom:1px solid #e3e8e5;">Machine</th>
+      <th style="padding:6px 0;border-bottom:1px solid #e3e8e5;">Time</th>
+      <th style="padding:6px 0;border-bottom:1px solid #e3e8e5;">Why</th>
+    </tr>
+    {% for b in tomorrow %}
+    <tr>
+      <td style="padding:8px 8px 8px 0;border-bottom:1px solid #f0f2f1;font-weight:600;white-space:nowrap;">{{ b.machine_name }}</td>
+      <td style="padding:8px 8px 8px 0;border-bottom:1px solid #f0f2f1;white-space:nowrap;">{{ b.start | local("%H:%M") }}–{{ b.end | local("%H:%M") }}</td>
+      <td style="padding:8px 0;border-bottom:1px solid #f0f2f1;color:#3d4a44;">{{ b.reason.split(": ", 1)[1] }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <div style="font-size:14px;color:#5b6b64;">No flexible machines are scheduled tomorrow.</div>
+  {% endif %}
+</td></tr>
+
+<tr><td style="padding:20px 28px 0;">
+  <div style="font-size:15px;font-weight:600;margin-bottom:8px;">Battery</div>
+  <div style="font-size:14px;color:#3d4a44;">{{ first.battery_note }}</div>
+</td></tr>
+
+<tr><td style="padding:20px 28px 0;">
+  <div style="font-size:15px;font-weight:600;margin-bottom:8px;">Outlook</div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-size:13px;">
+    {% for d in run.daily[1:] %}
+    <tr>
+      <td style="padding:6px 8px 6px 0;border-bottom:1px solid #f0f2f1;white-space:nowrap;font-weight:600;">{{ d.label }}</td>
+      <td style="padding:6px 8px 6px 0;border-bottom:1px solid #f0f2f1;white-space:nowrap;">{{ d.avg_price | round(0) | int }} €/MWh{% if d.price_estimated %}*{% endif %}</td>
+      <td style="padding:6px 0;border-bottom:1px solid #f0f2f1;color:#3d4a44;">{{ d.outlook }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <div style="font-size:12px;color:#7a8a83;margin-top:6px;">* estimated from the weather forecast; day-ahead prices are published around 12:45 for the next day only.</div>
+</td></tr>
+
+{% if run.warnings %}
+<tr><td style="padding:20px 28px 0;">
+  <div style="font-size:13px;color:#5b6b64;">
+    {% for w in run.warnings %}<div style="margin-top:4px;">ℹ {{ w }}</div>{% endfor %}
+  </div>
+</td></tr>
+{% endif %}
+
+<tr><td style="padding:24px 28px;color:#7a8a83;font-size:12px;border-top:1px solid #e3e8e5;margin-top:20px;">
+  GridShift recommends; operators decide. Prices: Energy-Charts (Bundesnetzagentur | SMARD.de, CC BY 4.0). Weather: Open-Meteo.
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>

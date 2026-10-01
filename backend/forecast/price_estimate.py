@@ -52,6 +52,18 @@ class PriceEstimator:
         return pd.Series(values, index=index, dtype="float64")
 
 
+_CACHE: dict[tuple[str, float], PriceEstimator] = {}
+
+
+def estimator_for(path: Path) -> PriceEstimator:
+    """Return a trained estimator for a history file, reusing it until the file changes."""
+    key = (str(path.resolve()), path.stat().st_mtime if path.exists() else 0.0)
+    if key not in _CACHE:
+        _CACHE.clear()
+        _CACHE[key] = PriceEstimator(load_price_history(path))
+    return _CACHE[key]
+
+
 def price_forecast(
     index: pd.DatetimeIndex, actual: pd.Series | None, estimator: PriceEstimator, national: pd.DataFrame | None
 ) -> pd.DataFrame:
