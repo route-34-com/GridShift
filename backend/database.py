@@ -88,7 +88,7 @@ def init_db(path: Path) -> None:
 @contextmanager
 def connect(path: Path):
     """Yield a connection that commits on success and rolls back on error."""
-    db = sqlite3.connect(path, timeout=30, isolation_level=None)
+    db = sqlite3.connect(path, timeout=30, isolation_level=None, check_same_thread=False)
     db.row_factory = sqlite3.Row
     db.execute("PRAGMA foreign_keys = ON")
     db.execute("PRAGMA journal_mode = WAL")
