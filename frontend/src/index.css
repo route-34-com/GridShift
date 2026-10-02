@@ -61,6 +61,8 @@
   --series-grid: #64748b;
   --series-demand: #0f3d2e;
   --series-baseline: #94a3b8;
+  --scrollbar: #c9d6cf;
+  --scrollbar-hover: #9fb5aa;
 
   color-scheme: light;
 }
@@ -92,6 +94,8 @@
   --series-grid: #94a3b8;
   --series-demand: #6ee7b7;
   --series-baseline: #64748b;
+  --scrollbar: #2c3d36;
+  --scrollbar-hover: #3f574d;
 
   color-scheme: dark;
 }
@@ -107,6 +111,35 @@ body {
   color: var(--fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-hover);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .tabular {
