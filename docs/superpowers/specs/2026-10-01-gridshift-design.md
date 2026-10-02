@@ -24,7 +24,7 @@ Win a German factory as a pilot client by showing a working system that cuts ele
 
 ## 15. Addendum (2026-10-02): accounts, audit trail, exports
 
-Patterned on the Jayamurugan Tex ERP access module.
+Patterned on an existing in-house ERP access module.
 
 - **Accounts:** email + password (scrypt), cookie sessions (14 days, HttpOnly, SameSite=Lax), first admin created on the server itself, 5 wrong attempts lock for 15 minutes.
 - **Roles:** admin (everything), planner (view, re-plan, export), viewer (view, export). The last active admin cannot be demoted, switched off or removed.

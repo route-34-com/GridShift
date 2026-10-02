@@ -45,7 +45,7 @@ GridShift plans when a factory's heavy machines should run, when to charge or di
 
 | Role | Can do |
 |---|---|
-| **Admin** | Everything: plans, re-plan, exports, invite and manage users, audit log, test email |
+| **Admin** | Everything: plans, re-plan, exports, invite and manage users, audit log |
 | **Planner** | See plans, re-plan, export |
 | **Viewer** | See plans, export |
 
@@ -63,14 +63,14 @@ Every export is a dated download and is recorded in the audit log.
 
 | Page | Export | Formats |
 |---|---|---|
-| Overview | Full plan report (Summary, Daily, Schedule, Machines, Hourly sheets) | Excel |
-| Overview | Daily summary, price paid per machine | Excel, CSV |
-| Forecast | Hourly plan and hourly baseline (168 rows) | Excel, CSV |
-| Schedule | GridShift schedule and run-as-needed schedule | Excel, CSV |
-| Users | User list | Excel, CSV |
-| Audit log | Matching entries (respects the filters) | Excel, CSV |
+| Overview | Full plan report: PDF with headline figures, daily cost chart, outlook, machines and schedule; Excel with Summary, Daily, Schedule, Machines and Hourly sheets | PDF, Excel |
+| Overview | Daily summary, price paid per machine | PDF, Excel, CSV |
+| Forecast | Hourly plan and hourly baseline (168 rows) | PDF, Excel, CSV |
+| Schedule | GridShift schedule and run-as-needed schedule | PDF, Excel, CSV |
+| Users | User list | PDF, Excel, CSV |
+| Audit log | Matching entries (respects the filters) | PDF, Excel, CSV |
 
-CSV files are UTF-8 with a BOM so Excel shows € and umlauts correctly, and cells starting with `=`, `+`, `-` or `@` are neutralised so a spreadsheet never runs them as formulas.
+PDFs are landscape A4 with a GridShift header and page numbers. CSV files are UTF-8 with a BOM so Excel shows € and umlauts correctly, and cells starting with `=`, `+`, `-` or `@` are neutralised so a spreadsheet never runs them as formulas.
 
 ## Results on Sample Data
 
@@ -235,7 +235,7 @@ SMTP_FROM=GridShift <your-account@gmail.com>
 - `TRUST_PROXY=true` only behind a reverse proxy (nginx), so the real client IP is logged.
 - `GRIDSHIFT_ALLOW_SETUP=true` allows creating the first admin from another computer.
 - If `SMTP_HOST` is empty, nothing is emailed: the dashboard shows invite and reset links to copy, and the daily plan can still be previewed.
-- After changing `.env`, restart the server. *Users → Send test email* confirms it works.
+- After changing `.env`, restart the server. Inviting yourself or using *Forgot password?* confirms email works.
 
 **Trying emails without a real mail account:** run the local mail catcher, which saves every email to `data/mail/`:
 ```bash
@@ -341,7 +341,7 @@ Tests never call the network: price and weather sources are replaced with fakes.
 | POST | `/api/users/{id}/resend-invite`, `/api/users/{id}/reset-link` | Links (admin) |
 | POST | `/api/users/test-email` | Send a test email (admin) |
 | GET | `/api/audit` | Filtered, paged audit trail (admin) |
-| GET | `/api/exports/run/{name}?format=csv\|xlsx` | `report`, `summary`, `daily`, `schedule`, `baseline-schedule`, `hourly`, `baseline-hourly`, `machines` |
+| GET | `/api/exports/run/{name}?format=pdf\|xlsx\|csv` | `report`, `summary`, `daily`, `schedule`, `baseline-schedule`, `hourly`, `baseline-hourly`, `machines` |
 | GET | `/api/exports/users`, `/api/exports/audit` | User list and audit trail (admin) |
 
 Every endpoint except health and the sign-in flow requires a session.
