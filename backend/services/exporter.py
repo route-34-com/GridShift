@@ -10,17 +10,14 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from backend.planner.model import LOCAL_TZ
+from backend.services import pdf
 from backend.services.errors import AppError
+from backend.services.labels import header, local
 
-FORMATS = ("csv", "xlsx")
+FORMATS = ("csv", "xlsx", "pdf")
 RISKY = ("=", "+", "-", "@", "\t", "\r")
-MIME = {"csv": "text/csv; charset=utf-8", "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
+MIME = {"csv": "text/csv; charset=utf-8", "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "pdf": "application/pdf"}
 Table = list[dict]
-
-
-def local(stamp: str) -> str:
-    """Return an ISO timestamp as Berlin local time text."""
-    return datetime.fromisoformat(stamp).astimezone(LOCAL_TZ).strftime("%Y-%m-%d %H:%M")
 
 
 def safe_cell(value: object) -> object:
@@ -155,17 +152,6 @@ def to_csv(table: Table) -> bytes:
     return ("﻿" + buffer.getvalue()).encode("utf-8")
 
 
-UNITS = {"eur_mwh": "(€/MWh)", "eur": "(€)", "kwh": "(kWh)", "kw": "(kW)", "utc": "(UTC)", "local": "(local time)"}
-
-
-def header(column: str) -> str:
-    """Return a readable column title with its unit, e.g. planned_cost_eur -> Planned cost (€)."""
-    for suffix, unit in UNITS.items():
-        if column.endswith(f"_{suffix}"):
-            return f"{column[: -len(suffix) - 1].replace('_', ' ').capitalize()} {unit}"
-    return column.replace("_", " ").capitalize()
-
-
 def _sheet(book: Workbook, title: str, table: Table) -> None:
     sheet = book.create_sheet(title[:31])
     if not table:
@@ -201,13 +187,15 @@ def to_xlsx(sheets: list[tuple[str, Table]]) -> bytes:
 def check_format(fmt: str) -> str:
     """Return a supported format or refuse it."""
     if fmt not in FORMATS:
-        raise AppError(400, "Choose csv or xlsx.")
+        raise AppError(400, "Choose csv, xlsx or pdf.")
     return fmt
 
 
-def render(sheets: list[tuple[str, Table]], fmt: str) -> bytes:
-    """Return file bytes for one table as CSV or any tables as Excel."""
-    if check_format(fmt) == "csv":
+def render(sheets: list[tuple[str, Table]], fmt: str, title: str = "GridShift export", subtitle: str = "") -> bytes:
+    """Return file bytes for one table as CSV, or any tables as Excel or PDF."""
+    if check_format(fmt) == "pdf":
+        return pdf.tables_pdf(title, sheets, subtitle)
+    if fmt == "csv":
         if len(sheets) != 1:
             raise AppError(400, "CSV holds one table. Download the full report as Excel.")
         return to_csv(sheets[0][1])
@@ -227,3 +215,14 @@ def run_sheets(run: dict, name: str) -> list[tuple[str, Table]]:
 def filename(stem: str, fmt: str) -> str:
     """Return a dated download filename."""
     return f"gridshift-{stem}-{datetime.now(LOCAL_TZ).strftime('%Y%m%d-%H%M')}.{fmt}"
+
+
+def run_file(run: dict, name: str, fmt: str) -> tuple[bytes, int]:
+    """Return a run export's bytes and row count; the full report as PDF is the designed report."""
+    sheets = run_sheets(run, name)
+    rows = sum(len(t) for _, t in sheets)
+    if name == "report" and check_format(fmt) == "pdf":
+        return pdf.report_pdf(run, {"daily": daily_table(run), "machines": machines_table(run), "schedule": schedule_table(run)}), rows
+    title = f"{sheets[0][0] if len(sheets) == 1 else 'Plan'} · {run['site_name']}"
+    subtitle = f"Plan #{run['id']} · {local(run['horizon_start'])} to {local(run['horizon_end'])} (Europe/Berlin)"
+    return render(sheets, fmt, title, subtitle), rows

@@ -81,7 +81,7 @@ def test_export_errors(admin):
     assert admin.get("/api/exports/run/report?format=xlsx").status_code == 404
     admin.post("/api/runs")
     assert admin.get("/api/exports/run/report?format=csv").status_code == 400
-    assert admin.get("/api/exports/run/schedule?format=pdf").status_code == 400
+    assert admin.get("/api/exports/run/schedule?format=docx").status_code == 400
     assert admin.get("/api/exports/run/nonsense?format=csv").status_code == 404
     assert admin.get("/api/exports/run/schedule?format=csv&run_id=999").status_code == 404
 

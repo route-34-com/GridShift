@@ -21,13 +21,12 @@ def _download(ctx, data: bytes, stem: str, fmt: str, detail: dict) -> Response:
 
 @router.get("/run/{name}")
 def run_export(name: str, app: AppDep, ctx: AuthCtx, format: str = "xlsx", run_id: int | None = None) -> Response:
-    """Download part of a plan, or the full report, as CSV or Excel."""
+    """Download part of a plan, or the full report, as CSV, Excel or PDF."""
     run = app.store.get_run(run_id) if run_id else latest_or_404(app)
     if not run or run.get("status") == "failed":
         raise AppError(404, f"Plan {run_id} not found.")
-    sheets = exporter.run_sheets(run, name)
-    data = exporter.render(sheets, format)
-    return _download(ctx, data, f"plan{run['id']}-{name}", format, {"export": name, "run_id": run["id"], "rows": sum(len(t) for _, t in sheets)})
+    data, rows = exporter.run_file(run, name, format)
+    return _download(ctx, data, f"plan{run['id']}-{name}", format, {"export": name, "run_id": run["id"], "rows": rows})
 
 
 @router.get("/users")
@@ -36,7 +35,7 @@ def users_export(ctx: AuthCtx, format: str = "xlsx") -> Response:
     if not can(ctx.actor, "users.manage"):
         raise AppError(403, "Your role doesn't allow this. Ask an admin.")
     table = [{k: (v or "") for k, v in u.items()} for u in users.list_users(ctx.db)]
-    return _download(ctx, exporter.render([("Users", table)], format), "users", format, {"export": "users", "rows": len(table)})
+    return _download(ctx, exporter.render([("Users", table)], format, "GridShift users"), "users", format, {"export": "users", "rows": len(table)})
 
 
 @router.get("/audit")
@@ -46,4 +45,5 @@ def audit_export(request: Request, ctx: AuthCtx, format: str = "xlsx") -> Respon
         raise AppError(403, "Your role doesn't allow this. Ask an admin.")
     query = audit_query(request)
     table = export_audit(ctx.db, query)
-    return _download(ctx, exporter.render([("Audit trail", table)], format), "audit", format, {"export": "audit", "filters": query, "rows": len(table)})
+    subtitle = "Filters: " + ", ".join(f"{k}={v}" for k, v in query.items()) if query else "All entries"
+    return _download(ctx, exporter.render([("Audit trail", table)], format, "GridShift audit trail", subtitle), "audit", format, {"export": "audit", "filters": query, "rows": len(table)})
