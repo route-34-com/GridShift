@@ -7,8 +7,22 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 
 export const run = fixture
 
-export function mockApi(overrides: Record<string, Handler> = {}) {
+const PERMISSIONS = {
+  admin: ['audit.view', 'config.view', 'email.test', 'export', 'plan.run', 'plan.view', 'users.manage'],
+  planner: ['config.view', 'export', 'plan.run', 'plan.view'],
+  viewer: ['config.view', 'export', 'plan.view'],
+}
+
+export type TestRole = keyof typeof PERMISSIONS
+
+export function me(role: TestRole = 'admin') {
+  return { id: 1, email: `${role}@example.com`, name: `Test ${role}`, role, status: 'active', created_at: null, last_login_at: null, permissions: PERMISSIONS[role] }
+}
+
+export function mockApi(overrides: Record<string, Handler> = {}, role: TestRole | null = 'admin') {
   const routes: Record<string, Handler> = {
+    '/api/auth/setup': () => json({ needed: false, allowed: true, email: false }),
+    '/api/auth/me': () => (role ? json(me(role)) : json({ detail: 'Please sign in.' }, 401)),
     '/api/status': () => json({ running: false, latest: { id: run.id, status: run.status }, last_failure: null }),
     '/api/runs/latest': () => json(run),
     '/api/runs/latest/hourly': () => json({ plan: run.hourly, baseline: run.baseline_hourly }),

@@ -1,5 +1,6 @@
 import { Leaf, PiggyBank, Receipt, Sun } from 'lucide-react'
 import { AlertList } from '@/components/AlertList'
+import { PlanExportMenu, type ExportOption } from '@/components/ExportMenu'
 import { ChartCard } from '@/components/ChartCard'
 import { DailyCostChart } from '@/components/charts/DailyCostChart'
 import { PageLayout } from '@/components/PageLayout'
@@ -8,6 +9,7 @@ import { SourceBadges } from '@/components/SourceBadges'
 import { StatCard } from '@/components/StatCard'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
+import { exportsApi } from '@/lib/api'
 import { dayLabel, eur, mass, num, pct } from '@/lib/format'
 import type { Day, MachineSummary, RunSummary } from '@/lib/types'
 import { SERIES } from '@/lib/utils'
@@ -157,9 +159,15 @@ function Content({ run }: { run: RunSummary }) {
   )
 }
 
+const EXPORTS: ExportOption[] = [
+  { label: 'Full plan report', formats: ['xlsx'], run: (f) => exportsApi.run('report', f) },
+  { label: 'Daily summary', formats: ['xlsx', 'csv'], run: (f) => exportsApi.run('daily', f) },
+  { label: 'Price paid per machine', formats: ['xlsx', 'csv'], run: (f) => exportsApi.run('machines', f) },
+]
+
 export function Overview() {
   return (
-    <PageLayout title="Overview" subtitle="Cost, savings and renewable use for the next 7 days">
+    <PageLayout title="Overview" subtitle="Cost, savings and renewable use for the next 7 days" actions={<PlanExportMenu options={EXPORTS} />}>
       <RunGate>{({ run }) => <Content run={run} />}</RunGate>
     </PageLayout>
   )

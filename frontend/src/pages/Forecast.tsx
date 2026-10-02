@@ -1,4 +1,5 @@
 import { ChartCard } from '@/components/ChartCard'
+import { PlanExportMenu } from '@/components/ExportMenu'
 import { BatteryChart } from '@/components/charts/BatteryChart'
 import { EnergyChart } from '@/components/charts/EnergyChart'
 import { PriceChart } from '@/components/charts/PriceChart'
@@ -6,7 +7,7 @@ import { PageLayout } from '@/components/PageLayout'
 import { RunGate } from '@/components/RunGate'
 import { SourceBadges } from '@/components/SourceBadges'
 import { useAsync } from '@/hooks/useAsync'
-import { api } from '@/lib/api'
+import { api, exportsApi } from '@/lib/api'
 import { energy, num } from '@/lib/format'
 import type { Hour } from '@/lib/types'
 import { SERIES } from '@/lib/utils'
@@ -72,7 +73,18 @@ function Content({ hours, sources }: { hours: Hour[]; sources: Record<string, st
 
 export function Forecast() {
   return (
-    <PageLayout title="Forecast" subtitle="Hourly prices, solar and wind output, factory load and battery plan">
+    <PageLayout
+      title="Forecast"
+      subtitle="Hourly prices, solar and wind output, factory load and battery plan"
+      actions={
+        <PlanExportMenu
+          options={[
+            { label: 'Hourly plan (168 hours)', formats: ['xlsx', 'csv'], run: (f) => exportsApi.run('hourly', f) },
+            { label: 'Hourly run-as-needed baseline', formats: ['xlsx', 'csv'], run: (f) => exportsApi.run('baseline-hourly', f) },
+          ]}
+        />
+      }
+    >
       <RunGate>{({ hourly, run }) => <Content hours={hourly} sources={run.sources} />}</RunGate>
     </PageLayout>
   )

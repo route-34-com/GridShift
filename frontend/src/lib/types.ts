@@ -141,3 +141,61 @@ export interface Config {
   site: SiteConfig
   machines: MachineConfig[]
 }
+
+export type Role = 'admin' | 'planner' | 'viewer'
+export type UserStatus = 'active' | 'invited' | 'disabled'
+
+export interface Me {
+  id: number
+  email: string
+  name: string | null
+  role: Role
+  status: UserStatus
+  created_at: string | null
+  last_login_at: string | null
+  permissions: string[]
+}
+
+export interface Account {
+  id: number
+  email: string
+  name: string | null
+  role: Role
+  status: UserStatus
+  created_at: string
+  last_login_at: string | null
+  you?: boolean
+}
+
+export interface LinkResult {
+  emailed: boolean
+  link?: string
+  warning?: string
+}
+
+export interface AuditEntry {
+  id: number
+  at: string
+  user_id: number | null
+  user_email: string | null
+  user_name: string | null
+  action: string
+  outcome: 'success' | 'failure'
+  entity: string | null
+  entity_id: string | null
+  summary: string
+  detail: Record<string, unknown> | null
+  ip: string
+  user_agent: string
+}
+
+export interface AuditPage {
+  total: number
+  entries: AuditEntry[]
+}
+
+export interface SetupStatus {
+  needed: boolean
+  allowed: boolean
+  email: boolean
+}

@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { PlanExportMenu } from '@/components/ExportMenu'
 import { PageLayout } from '@/components/PageLayout'
 import { RunGate } from '@/components/RunGate'
 import { ScheduleGantt } from '@/components/ScheduleGantt'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import type { RunData } from '@/hooks/RunContext'
+import { exportsApi } from '@/lib/api'
 import { dayLabel, energy, eur, time } from '@/lib/format'
 import type { Block } from '@/lib/types'
 import { cn, machineColor } from '@/lib/utils'
@@ -106,7 +108,18 @@ function Content({ data }: { data: RunData }) {
 
 export function Schedule() {
   return (
-    <PageLayout title="Schedule" subtitle="When each flexible machine runs over the next 7 days">
+    <PageLayout
+      title="Schedule"
+      subtitle="When each flexible machine runs over the next 7 days"
+      actions={
+        <PlanExportMenu
+          options={[
+            { label: 'GridShift schedule', formats: ['xlsx', 'csv'], run: (f) => exportsApi.run('schedule', f) },
+            { label: 'Run-as-needed schedule', formats: ['xlsx', 'csv'], run: (f) => exportsApi.run('baseline-schedule', f) },
+          ]}
+        />
+      }
+    >
       <RunGate>{(data) => <Content data={data} />}</RunGate>
     </PageLayout>
   )
