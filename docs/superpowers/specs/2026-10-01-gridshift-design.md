@@ -20,7 +20,17 @@ Win a German factory as a pilot client by showing a working system that cuts ele
 - Direct machine control (PLC/SCADA). v1 only recommends.
 - Real-time intraday re-planning (phase 2, hybrid approach).
 - Editing machines or site settings in the UI (they are read-only in v1).
-- Authentication and multi-tenant support.
+- Multi-tenant support (one site per installation).
+
+## 15. Addendum (2026-10-02): accounts, audit trail, exports
+
+Patterned on the Jayamurugan Tex ERP access module.
+
+- **Accounts:** email + password (scrypt), cookie sessions (14 days, HttpOnly, SameSite=Lax), first admin created on the server itself, 5 wrong attempts lock for 15 minutes.
+- **Roles:** admin (everything), planner (view, re-plan, export), viewer (view, export). The last active admin cannot be demoted, switched off or removed.
+- **Invites and resets:** single-use links (invite 7 days, reset 1 hour), token after `#` so it never reaches server logs, forgot-password answer never reveals whether an email has an account, password change emails a notice and signs out other sessions. If SMTP is missing or fails, the admin gets a copyable link.
+- **Audit trail:** every sign-in (and failure with reason), sign-out, invite, reset, role/status change with before/after values, removal, planning run with figures, export, and email failure; each with time, user, IP, browser and outcome. Filterable, paged, exportable.
+- **Exports:** CSV (UTF-8 with BOM, formula-injection safe) and Excel for the full plan report, daily summary, schedule, hourly data, machines, users and the filtered audit trail. Every download is audited.
 
 ## 2. Context
 

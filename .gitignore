@@ -63,3 +63,6 @@ desktop.ini
 .playwright-mcp/
 .claude/
 .superpowers/
+
+# Local mail catcher and test databases
+data/mail/

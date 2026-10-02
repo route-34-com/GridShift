@@ -37,6 +37,40 @@ GridShift plans when a factory's heavy machines should run, when to charge or di
 - One-line explanation for every scheduled block ("avg €58/MWh vs day avg €141/MWh")
 - Dashboard: overview, forecast charts, machine schedule (Gantt), email preview, site config; light and dark mode
 - Swappable data sources: sample data now, the client's data later
+- User accounts with roles, email invitations, forgot/reset password and account lockout
+- Detailed audit trail: who did what, when, from which IP and browser, with before/after values
+- CSV and Excel exports for plans, schedules, hourly data, users and the audit trail
+
+## Users, Roles and Audit Trail
+
+| Role | Can do |
+|---|---|
+| **Admin** | Everything: plans, re-plan, exports, invite and manage users, audit log, test email |
+| **Planner** | See plans, re-plan, export |
+| **Viewer** | See plans, export |
+
+- **First start:** open the app on the computer running GridShift and create the admin account.
+- **Invite:** *Users → Invite user*. The person gets an email with a single-use link (valid 7 days) to set their password.
+- **Forgot password:** *Sign in → Forgot password?* sends a reset link (valid 1 hour). The answer never reveals whether an email has an account.
+- **Admin reset:** *Users → ⋯ → Send password reset link*. Role changes, switching an account off and password changes sign that person out everywhere.
+- **Safety:** 5 wrong passwords lock that email for 15 minutes; the last active admin can't be demoted, switched off or removed.
+- **No email set up?** Invites and reset links are shown to the admin to copy and send.
+- **Audit log** (*Admin → Audit log*): sign-ins and failures (with reason), sign-outs, invitations, resets, role and status changes (before → after), removals, planning runs (with savings), exports and email failures. Each entry has time, user, IP address, browser and outcome. Filter by activity, user, outcome, dates or free text, and export the filtered list.
+
+## Exports
+
+Every export is a dated download and is recorded in the audit log.
+
+| Page | Export | Formats |
+|---|---|---|
+| Overview | Full plan report (Summary, Daily, Schedule, Machines, Hourly sheets) | Excel |
+| Overview | Daily summary, price paid per machine | Excel, CSV |
+| Forecast | Hourly plan and hourly baseline (168 rows) | Excel, CSV |
+| Schedule | GridShift schedule and run-as-needed schedule | Excel, CSV |
+| Users | User list | Excel, CSV |
+| Audit log | Matching entries (respects the filters) | Excel, CSV |
+
+CSV files are UTF-8 with a BOM so Excel shows € and umlauts correctly, and cells starting with `=`, `+`, `-` or `@` are neutralised so a spreadsheet never runs them as formulas.
 
 ## Results on Sample Data
 
@@ -178,22 +212,36 @@ GridShift uses free public APIs that need no key:
 
 ### 2. Environment Configuration
 
-Copy `.env.example` to `.env` in the project root. Every setting is optional:
+Copy `.env.example` to `.env` in the project root:
 
 ```env
 GRIDSHIFT_DATA_DIR=data/sample
 GRIDSHIFT_DB_PATH=data/gridshift.db
 GRIDSHIFT_SOLVER_TIME_LIMIT=60
+APP_URL=http://127.0.0.1:8000
+TRUST_PROXY=false
+GRIDSHIFT_ALLOW_SETUP=false
 
-SMTP_HOST=smtp.example.com
+SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=your_email_here
-SMTP_PASSWORD=your_password_here
-SMTP_FROM=gridshift@example.com
-SMTP_STARTTLS=true
+SMTP_TLS=starttls
+SMTP_USER=your-account@gmail.com
+SMTP_PASSWORD=your-16-letter-app-password
+SMTP_FROM=GridShift <your-account@gmail.com>
 ```
 
-If `SMTP_HOST` is empty, emails are not sent. You can still preview them in the dashboard.
+- `APP_URL` is the address put into invitation and reset links. Set it to the public address when hosted.
+- `SMTP_TLS` is `starttls` (port 587), `ssl` (port 465) or `none`. For Gmail, use an [app password](https://myaccount.google.com/apppasswords).
+- `TRUST_PROXY=true` only behind a reverse proxy (nginx), so the real client IP is logged.
+- `GRIDSHIFT_ALLOW_SETUP=true` allows creating the first admin from another computer.
+- If `SMTP_HOST` is empty, nothing is emailed: the dashboard shows invite and reset links to copy, and the daily plan can still be previewed.
+- After changing `.env`, restart the server. *Users → Send test email* confirms it works.
+
+**Trying emails without a real mail account:** run the local mail catcher, which saves every email to `data/mail/`:
+```bash
+python -m scripts.mail_catcher --port 1025
+```
+and set `SMTP_HOST=127.0.0.1`, `SMTP_PORT=1025`, `SMTP_TLS=none`.
 
 **Important:** Never commit your `.env` file. It is already listed in `.gitignore`.
 
@@ -229,7 +277,7 @@ python -m scripts.make_price_history
    uvicorn backend.api.main:app --port 8000
    ```
 
-3. Open `http://127.0.0.1:8000` and click **Create first plan** (about 10 seconds).
+3. Open `http://127.0.0.1:8000`, create the admin account, then click **Create first plan** (about 10 seconds).
 
 ### Running the Daily Plan
 
@@ -282,6 +330,21 @@ Tests never call the network: price and weather sources are replaced with fakes.
 | GET | `/api/runs/latest/blocks` | Machine run blocks with explanations |
 | GET | `/api/runs/latest/email` | Daily email as HTML |
 | GET | `/api/config` | Site and machine configuration |
+| GET/POST | `/api/auth/setup` | First admin status / create first admin |
+| POST | `/api/auth/login`, `/api/auth/logout` | Sign in and out |
+| GET | `/api/auth/me` | Signed-in user and permissions |
+| POST | `/api/auth/forgot-password`, `/api/auth/reset-password` | Password reset by email |
+| POST | `/api/auth/invite`, `/api/auth/accept-invite` | Invitation details / activate account |
+| PUT/POST | `/api/auth/profile`, `/api/auth/password` | Own name / own password |
+| GET/POST | `/api/users`, `/api/users/invite` | List users / invite (admin) |
+| PUT/DELETE | `/api/users/{id}` | Change role or status / remove (admin) |
+| POST | `/api/users/{id}/resend-invite`, `/api/users/{id}/reset-link` | Links (admin) |
+| POST | `/api/users/test-email` | Send a test email (admin) |
+| GET | `/api/audit` | Filtered, paged audit trail (admin) |
+| GET | `/api/exports/run/{name}?format=csv\|xlsx` | `report`, `summary`, `daily`, `schedule`, `baseline-schedule`, `hourly`, `baseline-hourly`, `machines` |
+| GET | `/api/exports/users`, `/api/exports/audit` | User list and audit trail (admin) |
+
+Every endpoint except health and the sign-in flow requires a session.
 
 Interactive docs: `http://127.0.0.1:8000/docs`.
 
@@ -313,6 +376,9 @@ GridShift/
 │   ├── planner/            # Models, requirements, MILP optimizer, baseline, metrics, explanations
 │   ├── notify/             # Daily plan email (Jinja2 template + SMTP)
 │   ├── api/                # FastAPI app and routes
+│   ├── auth/               # Passwords, sessions, lockout, roles
+│   ├── services/           # Users, invite/reset tokens, mailer, audit trail, exports
+│   ├── database.py         # SQLite connection and schema
 │   ├── pipeline.py         # One planning run with fallbacks and alerts
 │   ├── jobs.py             # Daily job entry point
 │   ├── store.py            # SQLite persistence
@@ -320,7 +386,7 @@ GridShift/
 ├── frontend/
 │   └── src/
 │       ├── components/     # Layout, cards, charts, schedule Gantt, state views
-│       ├── pages/          # Overview, Forecast, Schedule, Email, Site
+│       ├── pages/          # Overview, Forecast, Schedule, Email, Site, Users, Audit, Account, auth/
 │       ├── hooks/          # Run context, async loader, theme
 │       └── lib/            # API client, types, formatters
 ├── data/sample/            # Sample site, machines, demand and price history
