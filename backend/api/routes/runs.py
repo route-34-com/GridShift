@@ -1,13 +1,14 @@
 """Planning run endpoints."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from backend.api.deps import AppState, latest_or_404, state
+from backend.api.deps import AppDep, AuthCtx, latest_or_404, require
 from backend.jobs import execute
 from backend.notify.email import render_plan_email
+from backend.services.errors import AppError
 
-router = APIRouter(prefix="/api/runs", tags=["runs"])
+router = APIRouter(prefix="/api/runs", tags=["runs"], dependencies=[require("plan.view")])
 
 DETAIL_KEYS = ("hourly", "baseline_hourly", "blocks", "baseline_blocks")
 
@@ -17,55 +18,55 @@ def _summary(run: dict) -> dict:
 
 
 @router.get("")
-def list_runs(limit: int = 20, app: AppState = Depends(state)) -> list[dict]:
+def list_runs(app: AppDep, limit: int = 20) -> list[dict]:
     """Return recent runs, newest first."""
     return app.store.list_runs(max(1, min(limit, 100)))
 
 
-@router.post("", status_code=201)
-def create_run(email: bool = False, app: AppState = Depends(state)) -> dict:
+@router.post("", status_code=201, dependencies=[require("plan.run")])
+def create_run(app: AppDep, ctx: AuthCtx, email: bool = False) -> dict:
     """Run the planner now."""
     if not app.lock.acquire(blocking=False):
-        raise HTTPException(409, "A planning run is already in progress.")
+        raise AppError(409, "A planning run is already in progress.")
     try:
-        result = execute(app.settings, app.store, sources=app.sources, email=email)
+        result = execute(app.settings, app.store, sources=app.sources, email=email, actor=ctx.actor, origin=ctx.origin)
     finally:
         app.lock.release()
     if result["status"] == "failed":
-        raise HTTPException(502, f"Planning run failed: {result['error']}")
+        raise AppError(502, f"Planning run failed: {result['error']}")
     return _summary(result)
 
 
 @router.get("/latest")
-def latest(app: AppState = Depends(state)) -> dict:
+def latest(app: AppDep) -> dict:
     """Return the newest successful run summary."""
     return _summary(latest_or_404(app))
 
 
 @router.get("/latest/hourly")
-def latest_hourly(app: AppState = Depends(state)) -> dict:
+def latest_hourly(app: AppDep) -> dict:
     """Return hourly flows for the plan and the baseline."""
     run = latest_or_404(app)
     return {"plan": run["hourly"], "baseline": run["baseline_hourly"]}
 
 
 @router.get("/latest/blocks")
-def latest_blocks(app: AppState = Depends(state)) -> dict:
+def latest_blocks(app: AppDep) -> dict:
     """Return machine run blocks for the plan and the baseline."""
     run = latest_or_404(app)
     return {"plan": run["blocks"], "baseline": run["baseline_blocks"]}
 
 
 @router.get("/latest/email", response_class=HTMLResponse)
-def latest_email(app: AppState = Depends(state)) -> str:
+def latest_email(app: AppDep) -> str:
     """Return the daily plan email as HTML."""
     return render_plan_email(latest_or_404(app))[1]
 
 
 @router.get("/{run_id}")
-def get_run(run_id: int, app: AppState = Depends(state)) -> dict:
+def get_run(run_id: int, app: AppDep) -> dict:
     """Return one run summary by id."""
     run = app.store.get_run(run_id)
     if run is None:
-        raise HTTPException(404, f"Run {run_id} not found.")
+        raise AppError(404, f"Run {run_id} not found.")
     return _summary(run)

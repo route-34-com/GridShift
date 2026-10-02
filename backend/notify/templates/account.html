@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f5;font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#1c2421;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6f5;padding:32px 12px;">
+<tr><td align="center">
+<table role="presentation" width="560" cellspacing="0" cellpadding="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e3e8e5;">
+<tr><td style="background:#0f3d2e;padding:22px 32px;">
+  <table role="presentation" cellspacing="0" cellpadding="0"><tr>
+    <td style="width:34px;height:34px;background:#14523d;border-radius:8px;text-align:center;font-size:18px;color:#34d399;font-weight:700;">&#9889;</td>
+    <td style="padding-left:12px;color:#ffffff;font-size:17px;font-weight:600;">GridShift</td>
+  </tr></table>
+</td></tr>
+<tr><td style="padding:32px 32px 8px;">
+  <div style="display:inline-block;background:#e3efe9;color:#0f3d2e;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:6px 12px;border-radius:999px;">{{ label }}</div>
+  <h1 style="margin:16px 0 0;font-size:24px;line-height:1.3;color:#142019;">{{ title }}</h1>
+</td></tr>
+<tr><td style="padding:12px 32px 8px;font-size:15px;line-height:1.65;color:#3d4a44;">
+  {% for paragraph in paragraphs %}<p style="margin:0 0 14px;">{{ paragraph }}</p>{% endfor %}
+</td></tr>
+{% if action %}
+<tr><td style="padding:8px 32px 24px;">
+  <a href="{{ action.url }}" style="display:inline-block;background:#0f3d2e;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;padding:13px 28px;border-radius:8px;">{{ action.label }}</a>
+  <p style="margin:18px 0 0;font-size:12px;line-height:1.6;color:#7a8a83;">Button not working? Paste this link into your browser:<br>
+  <a href="{{ action.url }}" style="color:#0f3d2e;word-break:break-all;">{{ action.url }}</a></p>
+</td></tr>
+{% endif %}
+<tr><td style="padding:20px 32px 28px;border-top:1px solid #e3e8e5;font-size:12px;line-height:1.7;color:#7a8a83;">
+  {% for note in notes %}<div>{{ note }}</div>{% endfor %}
+  <div style="margin-top:6px;">Sent {{ sent }}</div>
+</td></tr>
+</table>
+<div style="padding:16px;font-size:12px;color:#9aaba3;">GridShift · Smart energy scheduling for industry</div>
+</td></tr>
+</table>
+</body>
+</html>

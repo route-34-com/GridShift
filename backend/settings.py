@@ -7,6 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
+TLS_MODES = ("starttls", "ssl", "none")
 
 
 @dataclass(frozen=True)
@@ -18,22 +19,25 @@ class Smtp:
     user: str
     password: str
     sender: str
-    starttls: bool
+    tls: str = "starttls"
 
     @property
     def enabled(self) -> bool:
-        """Return True when a mail host is configured."""
-        return bool(self.host)
+        """Return True when a mail host and sender are configured."""
+        return bool(self.host and self.sender)
 
 
 @dataclass(frozen=True)
 class Settings:
-    """Paths, solver limits and mail settings."""
+    """Paths, solver limits, mail and access settings."""
 
     data_dir: Path
     db_path: Path
     solver_time_limit: float
     smtp: Smtp
+    app_url: str = ""
+    trust_proxy: bool = False
+    allow_remote_setup: bool = False
 
     @property
     def site_path(self) -> Path:
@@ -61,6 +65,15 @@ def _path(name: str, default: str) -> Path:
     return path if path.is_absolute() else ROOT / path
 
 
+def _flag(name: str) -> bool:
+    return (os.getenv(name) or "").strip().lower() in ("1", "true", "yes")
+
+
+def _tls() -> str:
+    mode = (os.getenv("SMTP_TLS") or "starttls").strip().lower()
+    return mode if mode in TLS_MODES else "starttls"
+
+
 def load_settings() -> Settings:
     """Read settings from the environment and an optional .env file."""
     load_dotenv(ROOT / ".env")
@@ -73,7 +86,10 @@ def load_settings() -> Settings:
             port=int(os.getenv("SMTP_PORT") or 587),
             user=os.getenv("SMTP_USER", ""),
             password=os.getenv("SMTP_PASSWORD", ""),
-            sender=os.getenv("SMTP_FROM") or "gridshift@example.com",
-            starttls=(os.getenv("SMTP_STARTTLS", "true").lower() != "false"),
+            sender=os.getenv("SMTP_FROM", ""),
+            tls=_tls(),
         ),
+        app_url=(os.getenv("APP_URL") or "").rstrip("/"),
+        trust_proxy=_flag("TRUST_PROXY"),
+        allow_remote_setup=_flag("GRIDSHIFT_ALLOW_SETUP"),
     )
