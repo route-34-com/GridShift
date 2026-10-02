@@ -134,7 +134,7 @@ export const admin = {
 }
 
 export const exportsApi = {
-  run: (name: string, format: 'csv' | 'xlsx') => download(`/api/exports/run/${name}${query({ format })}`),
-  users: (format: 'csv' | 'xlsx') => download(`/api/exports/users${query({ format })}`),
-  audit: (format: 'csv' | 'xlsx', filters: Record<string, string | number | undefined>) => download(`/api/exports/audit${query({ format, ...filters })}`),
+  run: (name: string, format: 'pdf' | 'csv' | 'xlsx') => download(`/api/exports/run/${name}${query({ format })}`),
+  users: (format: 'pdf' | 'csv' | 'xlsx') => download(`/api/exports/users${query({ format })}`),
+  audit: (format: 'pdf' | 'csv' | 'xlsx', filters: Record<string, string | number | undefined>) => download(`/api/exports/audit${query({ format, ...filters })}`),
 }

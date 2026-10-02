@@ -1,14 +1,16 @@
-import { Download, FileSpreadsheet, FileText, Loader2 } from 'lucide-react'
+import { Download, FileSpreadsheet, FileText, FileType2, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { MenuContent, MenuItem, MenuLabel, MenuRoot, MenuSeparator, MenuTrigger } from '@/components/ui/menu'
 import { useRun } from '@/hooks/RunContext'
 import { useToast } from '@/hooks/Toasts'
 
+export type ExportFormat = 'pdf' | 'xlsx' | 'csv'
+
 export interface ExportOption {
   label: string
-  formats: ('csv' | 'xlsx')[]
-  run: (format: 'csv' | 'xlsx') => Promise<string>
+  formats: ExportFormat[]
+  run: (format: ExportFormat) => Promise<string>
 }
 
 interface ExportMenuProps {
@@ -16,14 +18,14 @@ interface ExportMenuProps {
   label?: string
 }
 
-const ICONS = { csv: FileText, xlsx: FileSpreadsheet }
-const NAMES = { csv: 'CSV', xlsx: 'Excel' }
+const ICONS = { pdf: FileType2, csv: FileText, xlsx: FileSpreadsheet }
+const NAMES = { pdf: 'PDF', csv: 'CSV', xlsx: 'Excel' }
 
 export function ExportMenu({ options, label = 'Export' }: ExportMenuProps) {
   const { notify } = useToast()
   const [busy, setBusy] = useState(false)
 
-  const start = async (option: ExportOption, format: 'csv' | 'xlsx') => {
+  const start = async (option: ExportOption, format: ExportFormat) => {
     setBusy(true)
     try {
       const file = await option.run(format)

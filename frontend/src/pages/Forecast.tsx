@@ -79,8 +79,8 @@ export function Forecast() {
       actions={
         <PlanExportMenu
           options={[
-            { label: 'Hourly plan (168 hours)', formats: ['xlsx', 'csv'], run: (f) => exportsApi.run('hourly', f) },
-            { label: 'Hourly run-as-needed baseline', formats: ['xlsx', 'csv'], run: (f) => exportsApi.run('baseline-hourly', f) },
+            { label: 'Hourly plan (168 hours)', formats: ['pdf', 'xlsx', 'csv'], run: (f) => exportsApi.run('hourly', f) },
+            { label: 'Hourly run-as-needed baseline', formats: ['pdf', 'xlsx', 'csv'], run: (f) => exportsApi.run('baseline-hourly', f) },
           ]}
         />
       }

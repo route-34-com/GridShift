@@ -257,37 +257,12 @@ function UserRow({ user, onChanged, onConfirm, onLink }: { user: Account; onChan
   )
 }
 
-function MailBanner() {
-  const { notify } = useToast()
+function MailWarning() {
   const status = useAsync(admin.mailStatus)
-  const test = useSubmit(admin.testEmail)
-  if (!status.data) return null
-  if (!status.data.configured) {
-    return (
-      <div className="rounded-lg border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-fg">
-        <span className="font-medium text-warning">Email isn't set up.</span> Invitations and reset links are shown here for you to copy. Add the SMTP settings to <span className="font-mono">.env</span> and restart GridShift to send them by email.
-      </div>
-    )
-  }
+  if (!status.data || status.data.configured) return null
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface px-4 py-3 text-sm">
-      <p className="text-muted">
-        Emails are sent from <span className="font-medium text-fg">{status.data.sender}</span> via {status.data.host}.
-      </p>
-      <Button
-        size="sm"
-        disabled={test.busy}
-        onClick={() =>
-          void test.submit().then((r) => {
-            if (r) notify(`Test email sent to ${r.to}.`)
-            else if (test.error) notify(test.error, 'error')
-          })
-        }
-      >
-        {test.busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Send className="h-4 w-4" aria-hidden />}
-        Send test email
-      </Button>
-      {test.error && <p className="w-full text-danger">{test.error}</p>}
+    <div className="rounded-lg border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-fg">
+      <span className="font-medium text-warning">Email isn't set up.</span> Invitations and reset links are shown here for you to copy. Add the SMTP settings to <span className="font-mono">.env</span> and restart GridShift to send them by email.
     </div>
   )
 }
@@ -306,7 +281,7 @@ export function UsersPage() {
       planActions={false}
       actions={
         <>
-          <ExportMenu options={[{ label: 'User list', formats: ['xlsx', 'csv'], run: (f) => exportsApi.users(f) }]} />
+          <ExportMenu options={[{ label: 'User list', formats: ['pdf', 'xlsx', 'csv'], run: (f) => exportsApi.users(f) }]} />
           <Button variant="primary" onClick={() => setInviting(true)}>
             <UserPlus className="h-4 w-4" aria-hidden /> Invite user
           </Button>
@@ -314,7 +289,7 @@ export function UsersPage() {
       }
     >
       <div className="space-y-6">
-        <MailBanner />
+        <MailWarning />
         {users.loading && !users.data ? (
           <LoadingView />
         ) : users.error ? (
@@ -322,7 +297,7 @@ export function UsersPage() {
         ) : (
           <Card>
             <CardHeader
-              title={`${users.data?.length ?? 0} accounts`}
+              title={`${users.data?.length ?? 0} ${users.data?.length === 1 ? 'account' : 'accounts'}`}
               description={`${counts.active ?? 0} active · ${counts.invited ?? 0} invited · ${counts.disabled ?? 0} switched off`}
             />
             <CardBody className="overflow-x-auto">

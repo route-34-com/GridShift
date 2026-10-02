@@ -160,9 +160,9 @@ function Content({ run }: { run: RunSummary }) {
 }
 
 const EXPORTS: ExportOption[] = [
-  { label: 'Full plan report', formats: ['xlsx'], run: (f) => exportsApi.run('report', f) },
-  { label: 'Daily summary', formats: ['xlsx', 'csv'], run: (f) => exportsApi.run('daily', f) },
-  { label: 'Price paid per machine', formats: ['xlsx', 'csv'], run: (f) => exportsApi.run('machines', f) },
+  { label: 'Full plan report', formats: ['pdf', 'xlsx'], run: (f) => exportsApi.run('report', f) },
+  { label: 'Daily summary', formats: ['pdf', 'xlsx', 'csv'], run: (f) => exportsApi.run('daily', f) },
+  { label: 'Price paid per machine', formats: ['pdf', 'xlsx', 'csv'], run: (f) => exportsApi.run('machines', f) },
 ]
 
 export function Overview() {

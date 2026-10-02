@@ -149,7 +149,7 @@ export function AuditPage() {
       title="Audit log"
       subtitle="Every sign-in, account change, planning run, export and email, with who, when and from where"
       planActions={false}
-      actions={<ExportMenu label={active ? 'Export filtered' : 'Export'} options={[{ label: active ? 'Matching entries' : 'All entries', formats: ['xlsx', 'csv'], run: (f) => exportsApi.audit(f, exportFilters) }]} />}
+      actions={<ExportMenu label={active ? 'Export filtered' : 'Export'} options={[{ label: active ? 'Matching entries' : 'All entries', formats: ['pdf', 'xlsx', 'csv'], run: (f) => exportsApi.audit(f, exportFilters) }]} />}
     >
       <div className="space-y-4">
         <Card>

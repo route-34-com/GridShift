@@ -114,8 +114,8 @@ export function Schedule() {
       actions={
         <PlanExportMenu
           options={[
-            { label: 'GridShift schedule', formats: ['xlsx', 'csv'], run: (f) => exportsApi.run('schedule', f) },
-            { label: 'Run-as-needed schedule', formats: ['xlsx', 'csv'], run: (f) => exportsApi.run('baseline-schedule', f) },
+            { label: 'GridShift schedule', formats: ['pdf', 'xlsx', 'csv'], run: (f) => exportsApi.run('schedule', f) },
+            { label: 'Run-as-needed schedule', formats: ['pdf', 'xlsx', 'csv'], run: (f) => exportsApi.run('baseline-schedule', f) },
           ]}
         />
       }
