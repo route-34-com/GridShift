@@ -4,12 +4,21 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.api.main import create_app
-from tests.conftest import broken, good_sources
+from tests.conftest import PASSWORD, broken, good_sources
+
+
+def signed_in(settings, sources=None, dist=None):
+    client = TestClient(create_app(settings, sources or good_sources(), **({"dist": dist} if dist else {"dist": settings.db_path.parent / "no-dist"})))
+    if client.get("/api/auth/setup").json()["needed"]:
+        client.post("/api/auth/setup", json={"email": "admin@example.com", "password": PASSWORD})
+    else:
+        client.post("/api/auth/login", json={"email": "admin@example.com", "password": PASSWORD})
+    return client
 
 
 @pytest.fixture
 def client(settings):
-    return TestClient(create_app(settings, good_sources()))
+    return signed_in(settings)
 
 
 def test_health(client):
@@ -39,7 +48,7 @@ def test_run_then_read_everything(client):
 
 
 def test_failed_first_run_returns_502_and_reports_failure(settings):
-    client = TestClient(create_app(settings, replace(good_sources(), site_weather=broken)))
+    client = signed_in(settings, replace(good_sources(), site_weather=broken))
     response = client.post("/api/runs")
     assert response.status_code == 502
     assert "no cached forecast" in response.json()["detail"]
@@ -48,8 +57,8 @@ def test_failed_first_run_returns_502_and_reports_failure(settings):
 
 
 def test_failed_run_keeps_last_good_plan(settings, tmp_path):
-    app = create_app(settings, good_sources())
-    client = TestClient(app)
+    client = signed_in(settings)
+    app = client.app
     good = client.post("/api/runs").json()
     app.state.gridshift.settings = replace(settings, data_dir=tmp_path / "missing")
     assert client.post("/api/runs").status_code == 502
@@ -81,7 +90,7 @@ def test_config_endpoint(client):
 def test_invalid_config_returns_422(settings, tmp_path):
     bad = replace(settings, data_dir=tmp_path)
     (tmp_path / "site.yaml").write_text("name: x\n", encoding="utf-8")
-    response = TestClient(create_app(bad, good_sources())).get("/api/config")
+    response = signed_in(bad).get("/api/config")
     assert response.status_code == 422
     assert "site.yaml" in response.json()["detail"]
 
@@ -92,7 +101,7 @@ def test_dashboard_serves_files_and_client_routes(settings, tmp_path):
     (dist / "index.html").write_text("<html>app</html>", encoding="utf-8")
     (dist / "assets" / "app.js").write_text("console.log(1)", encoding="utf-8")
     (tmp_path / "secret.txt").write_text("secret", encoding="utf-8")
-    client = TestClient(create_app(settings, good_sources(), dist=dist))
+    client = signed_in(settings, dist=dist)
     assert client.get("/assets/app.js").text == "console.log(1)"
     assert client.get("/forecast").text == "<html>app</html>"
     assert "secret" not in client.get("/../secret.txt").text
