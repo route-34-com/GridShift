@@ -112,7 +112,7 @@ def create_first_admin(ctx: Ctx, body: dict) -> dict:
         raise AppError(403, "An admin account already exists. Sign in instead.")
     email = clean_email(body.get("email"))
     password = _require_password(body.get("password"))
-    user_id = insert(ctx.db, "users", {"email": email, "name": clean_name(body.get("name")), "role": "admin", "status": "active", "password_hash": hash_password(password), "created_at": now_iso()})
+    user_id = insert(ctx.db, "users", {"email": email, "name": clean_name(body.get("name")), "role": "admin", "status": "active", "password_hash": hash_password(password), "created_at": now_iso(), "last_login_at": now_iso()})
     user = get_user(ctx.db, user_id)
     record(ctx.db, user, "auth.setup", ctx.origin, entity="user", entity_id=user_id, detail={"email": email})
     return user

@@ -155,13 +155,24 @@ def to_csv(table: Table) -> bytes:
     return ("﻿" + buffer.getvalue()).encode("utf-8")
 
 
+UNITS = {"eur_mwh": "(€/MWh)", "eur": "(€)", "kwh": "(kWh)", "kw": "(kW)", "utc": "(UTC)", "local": "(local time)"}
+
+
+def header(column: str) -> str:
+    """Return a readable column title with its unit, e.g. planned_cost_eur -> Planned cost (€)."""
+    for suffix, unit in UNITS.items():
+        if column.endswith(f"_{suffix}"):
+            return f"{column[: -len(suffix) - 1].replace('_', ' ').capitalize()} {unit}"
+    return column.replace("_", " ").capitalize()
+
+
 def _sheet(book: Workbook, title: str, table: Table) -> None:
     sheet = book.create_sheet(title[:31])
     if not table:
         sheet.append(["No rows"])
         return
     columns = list(table[0])
-    sheet.append([c.replace("_", " ").capitalize() for c in columns])
+    sheet.append([header(c) for c in columns])
     for row in table:
         sheet.append([safe_cell(row.get(c)) for c in columns])
     header_fill = PatternFill("solid", fgColor="0F3D2E")

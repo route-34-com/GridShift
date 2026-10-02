@@ -102,6 +102,13 @@ def _where(query: dict) -> tuple[str, list]:
     return (f"WHERE {' AND '.join(clauses)}" if clauses else ""), params
 
 
+def actor_label(entry: dict) -> str:
+    """Return who made an entry: the user's email, the scheduler, or an unknown visitor."""
+    if entry.get("user_email"):
+        return entry["user_email"]
+    return "system" if entry.get("user_agent") == SYSTEM.user_agent else "unknown visitor"
+
+
 def _decode(entry: dict) -> dict:
     return {**entry, "detail": json.loads(entry["detail"]) if entry.get("detail") else None}
 
@@ -124,7 +131,7 @@ def export_audit(db: sqlite3.Connection, query: dict, limit: int = 50000) -> lis
     return [
         {
             "time_utc": e["at"],
-            "user": e["user_email"] or "system",
+            "user": actor_label(e),
             "name": e["user_name"] or "",
             "action": e["action"],
             "summary": e["summary"],

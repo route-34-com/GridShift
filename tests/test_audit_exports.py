@@ -117,3 +117,13 @@ def test_planner_can_export_but_not_audit(admin, settings):
     assert planner.get("/api/exports/run/report").status_code == 200
     assert planner.get("/api/exports/users").status_code == 403
     assert make_client(settings).post("/api/auth/login", json={"email": "planner@example.com", "password": PASSWORD}).status_code == 200
+
+
+def test_anonymous_failures_are_labelled_unknown_visitor(admin, settings):
+    make_client(settings).post("/api/auth/reset-password", json={"token": "nope", "password": "whatever-1"})
+    rows = list(csv.DictReader(io.StringIO(admin.get("/api/exports/audit?format=csv&action=auth.reset_failed").content.decode("utf-8-sig"))))
+    assert rows[0]["user"] == "unknown visitor"
+
+
+def test_first_admin_has_a_sign_in_time(admin):
+    assert admin.get("/api/auth/me").json()["last_login_at"]
