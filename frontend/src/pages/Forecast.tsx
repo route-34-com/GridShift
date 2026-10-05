@@ -8,6 +8,7 @@ import { EnergyChart } from '@/components/charts/EnergyChart'
 import { PriceChart } from '@/components/charts/PriceChart'
 import { SunlightChart, WindChart } from '@/components/charts/WeatherCharts'
 import { PageLayout } from '@/components/PageLayout'
+import { PriceCoverage } from '@/components/PriceCoverage'
 import { RunGate } from '@/components/RunGate'
 import { SourceBadges } from '@/components/SourceBadges'
 import { Card, CardBody } from '@/components/ui/card'
@@ -127,7 +128,7 @@ function panels(hours: Hour[], config: Config | undefined, span: string): Record
   }
 }
 
-function Content({ all, sources }: { all: Hour[]; sources: Record<string, string> }) {
+function Content({ all, sources, madeAt }: { all: Hour[]; sources: Record<string, string>; madeAt: string }) {
   const config = useAsync(api.config)
   const { view, range, setView } = useForecastParams()
   const hours = inRange(all, range)
@@ -140,6 +141,7 @@ function Content({ all, sources }: { all: Hour[]; sources: Record<string, string
   return (
     <div className="space-y-6">
       <SourceBadges sources={sources} />
+      <PriceCoverage hours={all} madeAt={madeAt} />
       <Card>
         <CardBody className="space-y-5">
           <MetricTabs label="Forecast" idPrefix="forecast" items={tabs} active={view} onChange={setView} />
@@ -215,7 +217,7 @@ export function Forecast() {
         </>
       }
     >
-      <RunGate>{({ hourly, run }) => <Content all={hourly} sources={run.sources} />}</RunGate>
+      <RunGate>{({ hourly, run }) => <Content all={hourly} sources={run.sources} madeAt={run.created_at} />}</RunGate>
     </PageLayout>
   )
 }

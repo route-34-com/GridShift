@@ -5,6 +5,7 @@ import { ChartCard } from '@/components/ChartCard'
 import { DailyCostChart } from '@/components/charts/DailyCostChart'
 import { PageLayout } from '@/components/PageLayout'
 import { PeakPanel } from '@/components/PeakPanel'
+import { PriceCoverage } from '@/components/PriceCoverage'
 import { RunGate } from '@/components/RunGate'
 import { SourceBadges } from '@/components/SourceBadges'
 import { StatCard } from '@/components/StatCard'
@@ -117,12 +118,18 @@ function PeakSection({ run }: { run: RunSummary }) {
   )
 }
 
+function OverviewCoverage({ madeAt }: { madeAt: string }) {
+  const hours = useRun().data?.hourly
+  return hours?.length ? <PriceCoverage hours={hours} madeAt={madeAt} /> : null
+}
+
 function Content({ run }: { run: RunSummary }) {
   const { optimized, baseline, savings_eur, savings_pct, peak } = run.summary
   const tomorrow = run.daily[0]
   return (
     <div className="space-y-6">
       <AlertList alerts={run.alerts} />
+      <OverviewCoverage madeAt={run.created_at} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={PiggyBank} tone="positive" label="Saved this week" value={eur(savings_eur)} hint={`${pct(savings_pct, 1)} below run-as-needed (${eur(baseline.cost_eur)})`} />

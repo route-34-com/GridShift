@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { GermanyClock } from '@/components/GermanyClock'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { MenuContent, MenuItem, MenuRoot, MenuSeparator, MenuTrigger } from '@/components/ui/menu'
@@ -212,6 +213,7 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
           <NavItems />
         </nav>
         <div className="mt-auto space-y-3">
+          <GermanyClock />
           {run && (
             <div className="rounded-xl border border-nav-line bg-nav-hover p-3 text-xs text-nav-muted">
               <p className="font-medium text-nav-fg">{run.site_name}</p>
@@ -233,6 +235,7 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
         <div className="flex items-center justify-between px-4 py-3">
           <Brand />
           <div className="flex items-center gap-1">
+            <GermanyClock compact className="mr-1" />
             <ThemeToggle />
             <UserMenu compact />
           </div>
