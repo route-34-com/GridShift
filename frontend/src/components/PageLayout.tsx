@@ -58,12 +58,12 @@ const SECTIONS: { title: string; items: NavEntry[] }[] = [
 function Brand() {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0f3d2e]">
-        <Zap className="h-5 w-5 text-[#34d399]" fill="currentColor" aria-hidden />
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-volt shadow-[0_0_0_4px_rgb(217_247_90/0.12)]">
+        <Zap className="h-5 w-5 text-volt-ink" fill="currentColor" aria-hidden />
       </div>
       <div>
-        <p className="text-[15px] leading-tight font-semibold text-fg">GridShift</p>
-        <p className="text-xs leading-tight text-muted">Energy scheduling</p>
+        <p className="text-base leading-tight font-semibold tracking-tight text-nav-fg">GridShift</p>
+        <p className="text-xs leading-tight text-nav-muted">Energy scheduling</p>
       </div>
     </div>
   )
@@ -81,7 +81,7 @@ function NavItems({ compact = false }: { compact?: boolean }) {
         cn(
           'flex cursor-pointer items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-200',
           compact ? 'shrink-0 px-3 py-2' : 'px-3 py-2.5',
-          isActive ? 'bg-brand-soft text-brand' : 'text-muted hover:bg-surface-2 hover:text-fg',
+          isActive ? 'bg-volt text-volt-ink' : 'text-nav-muted hover:bg-nav-hover hover:text-nav-fg',
         )
       }
     >
@@ -94,7 +94,7 @@ function NavItems({ compact = false }: { compact?: boolean }) {
     <>
       {sections.map((section) => (
         <div key={section.title} className="space-y-1">
-          <p className="px-3 pb-1 text-[11px] font-semibold tracking-wider text-muted/80 uppercase">{section.title}</p>
+          <p className="px-3 pb-1 font-mono text-[11px] tracking-wider text-nav-muted/70 uppercase">{section.title}</p>
           {section.items.map(link)}
         </div>
       ))}
@@ -105,7 +105,7 @@ function NavItems({ compact = false }: { compact?: boolean }) {
 function ThemeToggle() {
   const [theme, toggle] = useTheme()
   return (
-    <Button variant="ghost" size="icon" onClick={toggle} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+    <Button variant="ghost" size="icon" className="text-nav-muted hover:bg-nav-hover hover:text-nav-fg" onClick={toggle} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
       {theme === 'dark' ? <Sun className="h-4 w-4" aria-hidden /> : <Moon className="h-4 w-4" aria-hidden />}
     </Button>
   )
@@ -122,7 +122,7 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
   const navigate = useNavigate()
   if (!me) return null
   const avatar = (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-semibold text-brand">{initials(me.name, me.email)}</span>
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-volt text-xs font-semibold text-volt-ink">{initials(me.name, me.email)}</span>
   )
   return (
     <MenuRoot>
@@ -132,13 +132,13 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
             {avatar}
           </button>
         ) : (
-          <button type="button" className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-surface-2">
+          <button type="button" className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-nav-hover">
             {avatar}
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-medium text-fg">{me.name || me.email}</span>
-              <span className="block truncate text-xs text-muted capitalize">{me.role}</span>
+              <span className="block truncate text-sm font-medium text-nav-fg">{me.name || me.email}</span>
+              <span className="block truncate text-xs text-nav-muted capitalize">{me.role}</span>
             </span>
-            <ChevronsUpDown className="h-4 w-4 text-muted" aria-hidden />
+            <ChevronsUpDown className="h-4 w-4 text-nav-muted" aria-hidden />
           </button>
         )}
       </MenuTrigger>
@@ -205,21 +205,21 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
   const run = data?.run
   return (
     <div className="min-h-screen lg:pl-64">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r border-border bg-surface px-4 py-5 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col bg-nav px-4 py-5 lg:flex">
         <Brand />
         <nav className="mt-8 flex flex-col gap-6" aria-label="Main">
           <NavItems />
         </nav>
         <div className="mt-auto space-y-3">
           {run && (
-            <div className="rounded-lg bg-surface-2 p-3 text-xs text-muted">
-              <p className="font-medium text-fg">{run.site_name}</p>
-              <p className="mt-1">
+            <div className="rounded-xl border border-nav-line bg-nav-hover/60 p-3 text-xs text-nav-muted">
+              <p className="font-medium text-nav-fg">{run.site_name}</p>
+              <p className="mt-1 font-mono text-[11px]">
                 Plan #{run.id} · {relative(run.created_at)}
               </p>
             </div>
           )}
-          <div className="flex items-center gap-1 border-t border-border pt-3">
+          <div className="flex items-center gap-1 border-t border-nav-line pt-3">
             <div className="min-w-0 flex-1">
               <UserMenu />
             </div>
@@ -228,7 +228,7 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
         </div>
       </aside>
 
-      <header className="sticky top-0 z-10 border-b border-border bg-surface/90 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-10 bg-nav lg:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <Brand />
           <div className="flex items-center gap-1">
@@ -241,17 +241,17 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
         </nav>
       </header>
 
-      <main className="w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8 2xl:px-10">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div className="min-w-0">
+      <main className="rise w-full px-4 py-6 sm:px-6 lg:px-10 lg:py-9 2xl:px-12">
+        <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+          <div className="min-w-0 flex-1 basis-[26rem]">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold tracking-tight text-fg">{title}</h1>
+              <h1 className="text-[28px] leading-tight font-semibold tracking-[-0.025em] text-fg">{title}</h1>
               {run && planActions && run.status === 'attention' && <Badge tone="warning">Needs attention</Badge>}
             </div>
             {subtitle && <div className="mt-1 text-sm text-muted">{subtitle}</div>}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {run && planActions && <span className="hidden text-xs text-muted xl:inline">Updated {dateTime(run.created_at)}</span>}
+            {run && planActions && <span className="hidden font-mono text-xs text-muted xl:inline">Updated {dateTime(run.created_at)}</span>}
             {actions}
             {planActions && <RunButton />}
           </div>

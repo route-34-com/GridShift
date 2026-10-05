@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { dateTime, localHour, weekday } from '@/lib/format'
+import { dateTime, localHour, time, weekday } from '@/lib/format'
 import type { Hour } from '@/lib/types'
 
 export interface Row {
@@ -11,11 +11,16 @@ export function toRows(hours: Hour[], map: (h: Hour, i: number) => Record<string
   return hours.map((h, i) => ({ t: new Date(h.ts).getTime(), ...map(h, i) }))
 }
 
+/** A single day gets a tick every 3 hours; longer spans get one per day. */
+const isOneDay = (hours: Hour[]) => hours.length <= 30
+
 export function dayTicks(hours: Hour[]): number[] {
-  return hours.filter((h) => localHour(h.ts) === 0).map((h) => new Date(h.ts).getTime())
+  const every = isOneDay(hours) ? (h: Hour) => localHour(h.ts) % 3 === 0 : (h: Hour) => localHour(h.ts) === 0
+  return hours.filter(every).map((h) => new Date(h.ts).getTime())
 }
 
 export const tickWeekday = (t: number) => weekday(new Date(t).toISOString())
+export const tickTime = (t: number) => time(new Date(t).toISOString())
 
 export const axisProps = {
   tickLine: false,
@@ -30,7 +35,7 @@ export const xAxisProps = (hours: Hour[]) => ({
   scale: 'time' as const,
   domain: ['dataMin', 'dataMax'] as [string, string],
   ticks: dayTicks(hours),
-  tickFormatter: tickWeekday,
+  tickFormatter: isOneDay(hours) ? tickTime : tickWeekday,
   minTickGap: 8,
 })
 

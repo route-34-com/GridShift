@@ -141,14 +141,28 @@ describe('App', () => {
     })
     window.history.pushState({}, '', '/forecast')
     render(<App />)
+    await userEvent.click(await screen.findByRole('tab', { name: /Sunlight/ }))
     expect(await screen.findByText(/Brightest hour 650 W\/m², 30% cloud cover on average/)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('tab', { name: /Wind/ }))
+    expect(screen.getByRole('tab', { name: /Wind/ })).toHaveAttribute('aria-selected', 'true')
     expect(screen.getByText(/No wind turbine is configured/)).toBeInTheDocument()
+  })
+
+  it('narrows the forecast to tomorrow', async () => {
+    mockApi({ '/api/config': () => json(SITE_CONFIG) })
+    window.history.pushState({}, '', '/forecast')
+    render(<App />)
+    expect(await screen.findByText(/expected over the week/)).toBeInTheDocument()
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Time range' }), '1 day')
+    expect(await screen.findByText(/expected for tomorrow/)).toBeInTheDocument()
+    expect(window.location.search).toContain('range=day')
   })
 
   it('asks for a re-plan when a stored run has no weather', async () => {
     mockApi({ '/api/config': () => json(SITE_CONFIG) })
     window.history.pushState({}, '', '/forecast')
     render(<App />)
+    await userEvent.click(await screen.findByRole('tab', { name: /Sunlight/ }))
     expect(await screen.findByText(/appear here after the next re-plan/)).toBeInTheDocument()
   })
 

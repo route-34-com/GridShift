@@ -19,6 +19,12 @@ export function SunlightChart({ hours }: { hours: Hour[] }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+        <defs>
+          <linearGradient id="sunlight-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={SERIES.solar} stopOpacity={0.55} />
+            <stop offset="100%" stopColor={SERIES.solar} stopOpacity={0.04} />
+          </linearGradient>
+        </defs>
         <CartesianGrid vertical={false} />
         <XAxis {...xAxisProps(hours)} />
         <YAxis yAxisId="sun" {...axisProps} width={44} tickFormatter={(v: number) => num(v)} />
@@ -40,7 +46,7 @@ export function SunlightChart({ hours }: { hours: Hour[] }) {
             )
           }}
         />
-        <Area yAxisId="sun" dataKey="sun" stroke={SERIES.solar} fill={SERIES.solar} fillOpacity={0.35} strokeWidth={1.5} isAnimationActive={false} />
+        <Area yAxisId="sun" dataKey="sun" stroke={SERIES.solar} fill="url(#sunlight-fill)" strokeWidth={2} isAnimationActive={false} />
         {hasClouds && <Line yAxisId="cloud" dataKey="cloud" stroke={CLOUD_COLOR} strokeWidth={1.5} strokeDasharray="4 3" dot={false} isAnimationActive={false} />}
       </ComposedChart>
     </ResponsiveContainer>

@@ -23,7 +23,7 @@ export function SourceBadges({ sources }: { sources: Record<string, string> }) {
         const state = STATES[value] ?? { tone: 'neutral' as Tone, text: value, help: value }
         return (
           <Tooltip key={key} content={state.help}>
-            <span tabIndex={0} className="cursor-help rounded-full">
+            <span tabIndex={0} className="cursor-default rounded-full">
               <Badge tone={state.tone}>
                 <span className="text-muted">{LABELS[key] ?? key}</span> {state.text}
               </Badge>

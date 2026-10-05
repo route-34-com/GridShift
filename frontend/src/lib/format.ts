@@ -46,6 +46,7 @@ function parts(iso: string, options: Intl.DateTimeFormatOptions): string {
 
 export const time = (iso: string) => parts(iso, { hour: '2-digit', minute: '2-digit', hour12: false })
 export const weekday = (iso: string) => parts(iso, { weekday: 'short' })
+export const localDate = (iso: string) => parts(iso, { year: 'numeric', month: '2-digit', day: '2-digit' })
 export const dayLabel = (iso: string) => parts(iso, { weekday: 'short', day: '2-digit', month: 'short' })
 export const dateTime = (iso: string) =>
   parts(iso, { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false })
