@@ -9,9 +9,11 @@ interface PriceChartProps {
   /** Current time in ms; hours already gone turn grey and a "Now" line marks it. */
   now?: number
   nowLabel?: string
+  /** When the next day's prices are published, marked with a dashed line. */
+  release?: { t: number; label: string } | null
 }
 
-export function PriceChart({ hours, now, nowLabel = 'Now' }: PriceChartProps) {
+export function PriceChart({ hours, now, nowLabel = 'Now', release }: PriceChartProps) {
   const at = now ?? -Infinity
   const firstFuture = hours.findIndex((h) => !isPast(new Date(h.ts).getTime(), at))
   const rows = toRows(hours, (h, i) => {
@@ -29,6 +31,7 @@ export function PriceChart({ hours, now, nowLabel = 'Now' }: PriceChartProps) {
   })
   const hasNegative = hours.some((h) => (h.price ?? 0) < 0)
   const marker = now != null ? nowLine(rows, now, nowLabel) : null
+  const releaseOnChart = release && rows.length > 0 && release.t >= rows[0].t && release.t <= rows[rows.length - 1].t ? release : null
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -38,6 +41,15 @@ export function PriceChart({ hours, now, nowLabel = 'Now' }: PriceChartProps) {
         <YAxis {...axisProps} width={44} tickFormatter={(v: number) => num(v)} unit="" />
         {hasNegative && <ReferenceLine y={0} stroke="var(--muted)" strokeDasharray="2 2" />}
         {marker && <ReferenceLine {...marker} />}
+        {releaseOnChart && (
+          <ReferenceLine
+            x={releaseOnChart.t}
+            stroke="var(--info)"
+            strokeWidth={1.5}
+            strokeDasharray="4 3"
+            label={{ value: releaseOnChart.label, position: 'insideBottomLeft', fontSize: 11, fontWeight: 600, fill: 'var(--info)', offset: 6 }}
+          />
+        )}
         <Tooltip
           content={(args: TooltipArgs) => {
             const row = activeRow(args)

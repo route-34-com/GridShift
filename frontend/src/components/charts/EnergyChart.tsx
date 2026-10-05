@@ -18,7 +18,7 @@ export function EnergyChart({ hours }: { hours: Hour[] }) {
       <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
         <CartesianGrid vertical={false} />
         <XAxis {...xAxisProps(hours)} />
-        <YAxis {...axisProps} width={52} tickFormatter={(v: number) => power(v)} />
+        <YAxis {...axisProps} width={64} tickFormatter={(v: number) => power(v)} />
         <Tooltip
           content={(args: TooltipArgs) => {
             const row = activeRow(args)

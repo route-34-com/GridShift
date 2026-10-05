@@ -19,10 +19,11 @@ import { useClockCycle } from '@/hooks/useClockCycle'
 import { useNow } from '@/hooks/useNow'
 import { useAsync } from '@/hooks/useAsync'
 import { api, exportsApi } from '@/lib/api'
-import { dayLabel, energy, localDate, num } from '@/lib/format'
+import { dayLabel, energy, localDate, num, weekday } from '@/lib/format'
 import type { ChartHour, Config, Hour, TodayHour } from '@/lib/types'
 import { clockTime } from '@/lib/clock'
 import { SERIES } from '@/lib/utils'
+import { dayIso, priceCoverage } from '@/lib/prices'
 import { CLOUD_COLOR, turbineMarks } from '@/lib/weather'
 
 type View = 'price' | 'sunlight' | 'wind'
@@ -78,7 +79,14 @@ interface Panel {
   chart: ReactNode
 }
 
-function panels(hours: ChartHour[], config: Config | undefined, span: string, now: number, nowLabel: string): Record<View, Panel> {
+function panels(
+  hours: ChartHour[],
+  config: Config | undefined,
+  span: string,
+  now: number,
+  nowLabel: string,
+  release: { t: number; label: string } | null,
+): Record<View, Panel> {
   const prices = hours.map((h) => h.price).filter((p): p is number => p != null)
   const negative = prices.filter((p) => p < 0).length
   const avgPrice = mean(prices) ?? 0
@@ -104,8 +112,9 @@ function panels(hours: ChartHour[], config: Config | undefined, span: string, no
         ...past,
         { label: 'Published', color: SERIES.price },
         { label: 'Estimated from weather', color: SERIES.price, dashed: true },
+        ...(release && hours.length && release.t <= new Date(hours[hours.length - 1].ts).getTime() ? [{ label: 'Next prices published', color: 'var(--info)', dashed: true }] : []),
       ],
-      chart: <PriceChart hours={hours} now={now} nowLabel={nowLabel} />,
+      chart: <PriceChart hours={hours} now={now} nowLabel={nowLabel} release={release} />,
     },
     sunlight: {
       icon: Sun,
@@ -146,7 +155,9 @@ function Content({ all, today, sources, madeAt }: { all: Hour[]; today: TodayHou
   const chartSpan = today.length ? (range === 'day' ? 'for today and tomorrow' : 'for today and the next 7 days') : span
   const capacity = config.data?.site.battery.capacity_kwh ?? Math.max(...hours.map((h) => h.soc), 1)
   const t = totals(hours)
-  const views = panels(chartHours, config.data ?? undefined, chartSpan, now.getTime(), `Now ${clockTime(now, cycle)}`)
+  const { next } = priceCoverage(chartHours, now)
+  const release = { t: next.at.getTime(), label: `${weekday(dayIso(next.day))} prices out ${clockTime(next.at, cycle)}` }
+  const views = panels(chartHours, config.data ?? undefined, chartSpan, now.getTime(), `Now ${clockTime(now, cycle)}`, release)
   const current = views[view]
   const tabs: TabItem<View>[] = VIEWS.map((id) => ({ id, label: views[id].label, icon: views[id].icon, value: views[id].value, color: views[id].color }))
   return (

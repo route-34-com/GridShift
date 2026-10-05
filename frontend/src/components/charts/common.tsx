@@ -108,7 +108,7 @@ export function nowLine(rows: Row[], now: number, label: string) {
     stroke: 'var(--fg)',
     strokeWidth: 1.5,
     ifOverflow: 'extendDomain' as const,
-    label: { value: label, position: 'insideTopLeft' as const, fontSize: 11, fontWeight: 600, fill: 'var(--fg)', offset: 6 },
+    label: { value: label, position: 'insideTopRight' as const, fontSize: 11, fontWeight: 600, fill: 'var(--fg)', offset: 6 },
   }
 }
 
