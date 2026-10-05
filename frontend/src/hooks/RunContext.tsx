@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api, ApiError } from '@/lib/api'
-import type { Block, Hour, RunSummary, Status, TodayHour } from '@/lib/types'
+import type { Block, DatasetInfo, Hour, RunSummary, Status, TodayHour } from '@/lib/types'
 
 export interface RunData {
   run: RunSummary
@@ -15,6 +15,8 @@ export interface RunData {
 interface RunContextValue {
   data: RunData | null
   status: Status | null
+  /** Sample or real data, and whether each has site data; null until loaded. */
+  dataset: DatasetInfo | null
   loading: boolean
   error: string | null
   empty: boolean
@@ -36,6 +38,7 @@ async function loadRun(): Promise<RunData> {
 export function RunProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<RunData | null>(null)
   const [status, setStatus] = useState<Status | null>(null)
+  const [dataset, setDataset] = useState<DatasetInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [empty, setEmpty] = useState(false)
@@ -46,14 +49,16 @@ export function RunProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     setLoading(true)
     try {
-      const [nextStatus, nextData] = await Promise.all([
+      const [nextStatus, nextDataset, nextData] = await Promise.all([
         api.status().catch(() => null),
+        api.dataset().catch(() => null),
         loadRun().catch((err: unknown) => {
           if (err instanceof ApiError && err.status === 404) return null
           throw err
         }),
       ])
       setStatus(nextStatus)
+      setDataset(nextDataset)
       setData(nextData)
       setEmpty(nextData === null)
       setError(null)
@@ -92,6 +97,7 @@ export function RunProvider({ children }: { children: ReactNode }) {
     () => ({
       data,
       status,
+      dataset,
       loading,
       error,
       empty,
@@ -102,7 +108,7 @@ export function RunProvider({ children }: { children: ReactNode }) {
       runNow,
       dismissRunError: () => setRunError(null),
     }),
-    [data, status, loading, error, empty, running, runError, lastRunAt, refresh, runNow],
+    [data, status, dataset, loading, error, empty, running, runError, lastRunAt, refresh, runNow],
   )
 
   return <RunContext.Provider value={value}>{children}</RunContext.Provider>

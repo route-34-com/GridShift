@@ -1,5 +1,5 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { eur } from '@/lib/format'
+import { eur, eurShort } from '@/lib/format'
 import type { Day } from '@/lib/types'
 import { SERIES } from '@/lib/utils'
 import { axisProps, TooltipBox } from './common'
@@ -29,7 +29,7 @@ export function DailyCostChart({ days }: { days: Day[] }) {
       <BarChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} barGap={4} barCategoryGap="22%">
         <CartesianGrid vertical={false} />
         <XAxis dataKey="label" {...axisProps} />
-        <YAxis {...axisProps} width={56} tickFormatter={(v: number) => eur(v)} />
+        <YAxis {...axisProps} width={56} tickFormatter={(v: number) => eurShort(v)} />
         <Tooltip
           cursor={{ fill: 'var(--surface-2)' }}
           content={(args: DayTooltipArgs) => {

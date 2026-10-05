@@ -27,6 +27,7 @@ ACTIONS = {
     "plan.run_failed": "Planner run failed",
     "meter.upload": "Uploaded meter data",
     "meter.upload_failed": "Meter data upload rejected",
+    "data.switch": "Switched between sample and real data",
     "export.download": "Downloaded an export",
     "email.test": "Sent a test email",
     "email.plan_sent": "Daily plan email delivered",

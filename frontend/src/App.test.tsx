@@ -179,6 +179,34 @@ describe('App', () => {
     expect(localStorage.getItem('gridshift-clock')).toBe('24h')
   })
 
+  it('shows the sample data switch and label', async () => {
+    const sample = { active: 'sample', switchable: true, sample: { available: true }, live: { available: false } }
+    const fetchMock = mockApi({ '/api/dataset': (init) => json(init?.method === 'PUT' ? { ...sample, active: 'live' } : sample) })
+    render(<App />)
+    const toggle = await screen.findByRole('switch', { name: 'Sample data' })
+    expect(toggle).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getAllByText('Sample data').length).toBeGreaterThan(1)
+    await userEvent.click(toggle)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/dataset', expect.objectContaining({ method: 'PUT', body: JSON.stringify({ active: 'live' }) })))
+  })
+
+  it('lets viewers see but not flip the switch', async () => {
+    mockApi({ '/api/dataset': () => json({ active: 'sample', switchable: true, sample: { available: true }, live: { available: false } }) }, 'viewer')
+    render(<App />)
+    expect(await screen.findByRole('switch', { name: 'Sample data' })).toBeDisabled()
+  })
+
+  it('explains when real data is not set up', async () => {
+    mockApi({
+      '/api/dataset': () => json({ active: 'live', switchable: true, sample: { available: true }, live: { available: false } }),
+      '/api/runs/latest': () => json({ detail: 'No plan yet.' }, 404),
+      '/api/status': () => json({ running: false, latest: null, last_failure: null }),
+    })
+    render(<App />)
+    expect(await screen.findByText("Your real data isn't set up yet")).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Turn sample data on/ })).toBeInTheDocument()
+  })
+
   it('switches the schedule between plan and baseline', async () => {
     mockApi()
     window.history.pushState({}, '', '/schedule')

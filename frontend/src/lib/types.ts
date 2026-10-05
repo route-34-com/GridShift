@@ -110,6 +110,15 @@ export interface ChartHour {
 /** Today's hours before the plan starts: published prices and weather, no plan. */
 export type TodayHour = Omit<ChartHour, 'solar' | 'wind'>
 
+export type DatasetName = 'sample' | 'live'
+
+export interface DatasetInfo {
+  active: DatasetName
+  switchable: boolean
+  sample: { available: boolean }
+  live: { available: boolean }
+}
+
 export interface Block {
   machine_id: string
   machine_name: string

@@ -10,6 +10,7 @@ TABLE: dict[str, frozenset] = {
     "plan.view": EVERYONE,
     "plan.run": PLANNERS,
     "meter.upload": PLANNERS,
+    "data.switch": ADMINS,
     "export": EVERYONE,
     "config.view": EVERYONE,
     "users.manage": ADMINS,

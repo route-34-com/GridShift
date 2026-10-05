@@ -1,0 +1,52 @@
+# Sample data for demonstrations: an illustrative cement plant modelled on the size of a
+# Holcim works in northern Germany. These are not Holcim's real figures.
+name: Holcim Lägerdorf cement plant (sample)
+latitude: 53.88
+longitude: 9.58
+
+solar:
+  kwp: 6000
+  tilt: 20
+  azimuth: 0
+  performance_ratio: 0.85
+
+wind:
+  rated_kw: 4200
+  hub_height_m: 120
+  power_curve:
+    - [0, 0]
+    - [3, 0]
+    - [4, 130]
+    - [5, 370]
+    - [6, 730]
+    - [7, 1210]
+    - [8, 1810]
+    - [9, 2500]
+    - [10, 3200]
+    - [11, 3780]
+    - [12, 4120]
+    - [13, 4200]
+    - [25, 4200]
+    - [25.1, 0]
+    - [40, 0]
+
+battery:
+  capacity_kwh: 10000
+  max_charge_kw: 5000
+  max_discharge_kw: 5000
+  efficiency: 0.92
+  min_soc: 0.1
+  initial_soc: 0.5
+
+grid:
+  max_import_kw: 40000
+  max_export_kw: 10000
+  fee_eur_per_kwh: 0.045
+  export_price_eur_per_kwh: 0.05
+  peak_charge_eur_per_kw_year: 85
+  peak_so_far_kw: 0
+
+co2_kg_per_kwh: 0.38
+
+email_recipients:
+  - energy.manager@example.com

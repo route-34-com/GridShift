@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { energy, eur, localHour, pct, power, relative, time } from './format'
+import { energy, eur, eurShort, localHour, pct, power, relative, time } from './format'
 
 describe('format', () => {
   it('formats euros with sensible precision', () => {
@@ -32,5 +32,12 @@ describe('format', () => {
     expect(relative('2026-10-01T11:59:40Z', now)).toBe('just now')
     expect(relative('2026-10-01T11:15:00Z', now)).toBe('45 min ago')
     expect(relative('2026-10-01T06:00:00Z', now)).toBe('6 h ago')
+  })
+})
+
+describe('eurShort', () => {
+  it('shortens large chart amounts', () => {
+    expect(eurShort(140000)).toBe('€140k')
+    expect(eurShort(4500)).toBe('€4,500')
   })
 })

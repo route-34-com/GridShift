@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { DataSwitch } from '@/components/DataSwitch'
 import { GermanyClock } from '@/components/GermanyClock'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -167,9 +168,11 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
 }
 
 function RunButton() {
-  const { running, runNow } = useRun()
+  const { running, runNow, dataset } = useRun()
   const { can } = useAuth()
   if (!can('plan.run')) return null
+  // Nothing to plan until the company's own site data exists.
+  if (dataset?.active === 'live' && !dataset.live.available && dataset.switchable) return null
   return (
     <Button variant="primary" onClick={() => void runNow()} disabled={running} aria-live="polite">
       {running ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RefreshCw className="h-4 w-4" aria-hidden />}
@@ -203,7 +206,7 @@ interface PageLayoutProps {
 }
 
 export function PageLayout({ title, subtitle, actions, planActions = true, children }: PageLayoutProps) {
-  const { data } = useRun()
+  const { data, dataset } = useRun()
   const run = data?.run
   return (
     <div className="min-h-screen lg:pl-64">
@@ -213,6 +216,7 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
           <NavItems />
         </nav>
         <div className="mt-auto space-y-3">
+          <DataSwitch />
           <GermanyClock />
           {run && (
             <div className="rounded-xl border border-nav-line bg-nav-hover p-3 text-xs text-nav-muted">
@@ -250,6 +254,7 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
           <div className="min-w-0 flex-1 basis-[26rem]">
             <div className="flex items-center gap-3">
               <h1 className="text-[28px] leading-tight font-semibold tracking-[-0.025em] text-fg">{title}</h1>
+              {dataset?.active === 'sample' && <Badge tone="brand">Sample data</Badge>}
               {run && planActions && run.status === 'attention' && <Badge tone="warning">Needs attention</Badge>}
             </div>
             {subtitle && <div className="mt-1 text-sm text-muted">{subtitle}</div>}

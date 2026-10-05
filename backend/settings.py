@@ -1,7 +1,7 @@
 """Runtime settings read from the environment."""
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -38,6 +38,12 @@ class Settings:
     app_url: str = ""
     trust_proxy: bool = False
     allow_remote_setup: bool = False
+    #: Built-in sample data set the dashboard can switch to; None disables the switch.
+    sample_dir: Path | None = None
+
+    def for_data(self, data_dir: Path) -> "Settings":
+        """Return these settings reading site data from another folder."""
+        return replace(self, data_dir=data_dir)
 
     @property
     def site_path(self) -> Path:
@@ -83,7 +89,7 @@ def load_settings() -> Settings:
     """Read settings from the environment and an optional .env file."""
     load_dotenv(ROOT / ".env")
     return Settings(
-        data_dir=_path("GRIDSHIFT_DATA_DIR", "data/sample"),
+        data_dir=_path("GRIDSHIFT_DATA_DIR", "data/live"),
         db_path=_path("GRIDSHIFT_DB_PATH", "data/gridshift.db"),
         solver_time_limit=float(os.getenv("GRIDSHIFT_SOLVER_TIME_LIMIT") or 60),
         smtp=Smtp(
@@ -97,4 +103,5 @@ def load_settings() -> Settings:
         app_url=(os.getenv("APP_URL") or "").rstrip("/"),
         trust_proxy=_flag("TRUST_PROXY"),
         allow_remote_setup=_flag("GRIDSHIFT_ALLOW_SETUP"),
+        sample_dir=None if _flag("GRIDSHIFT_NO_SAMPLE") else _path("GRIDSHIFT_SAMPLE_DIR", "data/holcim"),
     )

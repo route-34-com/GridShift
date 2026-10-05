@@ -8,7 +8,7 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 export const run = fixture
 
 const PERMISSIONS = {
-  admin: ['audit.view', 'config.view', 'email.test', 'export', 'meter.upload', 'plan.run', 'plan.view', 'users.manage'],
+  admin: ['audit.view', 'config.view', 'email.test', 'data.switch', 'export', 'meter.upload', 'plan.run', 'plan.view', 'users.manage'],
   planner: ['config.view', 'export', 'meter.upload', 'plan.run', 'plan.view'],
   viewer: ['config.view', 'export', 'plan.view'],
 }

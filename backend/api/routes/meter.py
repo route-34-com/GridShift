@@ -18,8 +18,9 @@ MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 
 def _peak(app: AppState) -> dict:
     try:
-        site = load_site(app.settings.site_path)
-        readings = load_meter(app.settings.meter_path)
+        data = app.data.settings
+        site = load_site(data.site_path)
+        readings = load_meter(data.meter_path)
     except ConfigError as exc:
         raise AppError(422, str(exc)) from exc
     return current_peak(site, readings, datetime.now(timezone.utc)).to_dict()
@@ -49,7 +50,7 @@ async def upload_meter(request: Request, app: AppDep, ctx: AuthCtx) -> dict:
     except AppError as exc:
         record(ctx.db, ctx.actor, "meter.upload_failed", ctx.origin, outcome=FAILURE, entity="meter", detail={"bytes": len(body), "error": exc.message})
         raise
-    path = app.settings.meter_path
+    path = app.data.settings.meter_path
     temp = path.with_suffix(".upload")
     temp.write_text(text, encoding="utf-8")
     os.replace(temp, path)

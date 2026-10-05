@@ -22,7 +22,7 @@ def _download(ctx, data: bytes, stem: str, fmt: str, detail: dict) -> Response:
 @router.get("/run/{name}")
 def run_export(name: str, app: AppDep, ctx: AuthCtx, format: str = "xlsx", run_id: int | None = None) -> Response:
     """Download part of a plan, or the full report, as CSV, Excel or PDF."""
-    run = app.store.get_run(run_id) if run_id else latest_or_404(app)
+    run = app.data.store.get_run(run_id) if run_id else latest_or_404(app)
     if not run or run.get("status") == "failed":
         raise AppError(404, f"Plan {run_id} not found.")
     data, rows = exporter.run_file(run, name, format)

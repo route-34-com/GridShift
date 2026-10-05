@@ -4,6 +4,7 @@ import sys
 from datetime import datetime, timezone
 
 from backend.database import connect
+from backend.datasets import resolve
 from backend.notify.email import render_plan_email, send_email
 from backend.pipeline import RunError, Sources, run_plan
 from backend.services.audit import FAILURE, SYSTEM, Origin, record
@@ -78,7 +79,8 @@ def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     settings = load_settings()
-    result = execute(settings, Store(settings.db_path))
+    data = resolve(settings, Store(settings.db_path))
+    result = execute(data.settings, data.store)
     if result["status"] == "failed":
         print(f"Run failed: {result['error']}", file=sys.stderr)
         return 1

@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
 from backend.api.deps import AppState
-from backend.api.routes import audit, auth, exports, meter, runs, system, users
+from backend.api.routes import audit, auth, dataset, exports, meter, runs, system, users
 from backend.pipeline import Sources
 from backend.services.errors import AppError
 from backend.settings import ROOT, Settings, load_settings
@@ -63,7 +63,7 @@ def create_app(settings: Settings | None = None, sources: Sources | None = None,
     app.state.gridshift = AppState(settings, Store(settings.db_path), sources)
     app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
     _handlers(app)
-    for module in (system, auth, users, audit, exports, runs, meter):
+    for module in (system, auth, users, audit, exports, runs, meter, dataset):
         app.include_router(module.router)
     if (dist / "index.html").exists():
         _mount_dashboard(app, dist)

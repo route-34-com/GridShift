@@ -1,0 +1,58 @@
+# Sample data: typical electrical loads of a cement plant producing about 1.5 million tonnes a year.
+# The kiln line runs around the clock; the mills grind into silos, so they can move to cheaper hours.
+machines:
+  - id: kiln-line
+    name: Kiln line (kiln drive, ID fans, cooler, preheater)
+    type: always_on
+    power_kw: 8400
+
+  - id: coal-mill
+    name: Coal mill
+    type: always_on
+    power_kw: 1200
+
+  - id: clinker-transport
+    name: Clinker transport and dosing
+    type: always_on
+    power_kw: 650
+
+  - id: utilities
+    name: Compressed air, lighting and offices
+    type: always_on
+    power_kw: 900
+
+  - id: raw-mill
+    name: Raw mill (vertical roller mill)
+    type: daily_quota
+    power_kw: 4200
+    hours_per_day: 18
+    min_run_hours: 4
+
+  - id: cement-mill-1
+    name: Cement mill 1 (ball mill)
+    type: daily_quota
+    power_kw: 4500
+    hours_per_day: 16
+    min_run_hours: 3
+
+  - id: cement-mill-2
+    name: Cement mill 2 (vertical roller mill)
+    type: daily_quota
+    power_kw: 3800
+    hours_per_day: 14
+    min_run_hours: 3
+
+  - id: crusher
+    name: Limestone crusher (quarry)
+    type: daily_quota
+    power_kw: 1100
+    hours_per_day: 10
+    min_run_hours: 2
+
+  - id: cem-iii-order
+    name: Special order CEM III/A grinding
+    type: deadline
+    power_kw: 2500
+    total_hours: 30
+    due_in_hours: 96
+    min_run_hours: 4

@@ -222,7 +222,8 @@ GridShift uses free public APIs that need no key:
 Copy `.env.example` to `.env` in the project root:
 
 ```env
-GRIDSHIFT_DATA_DIR=data/sample
+GRIDSHIFT_DATA_DIR=data/live
+GRIDSHIFT_SAMPLE_DIR=data/holcim
 GRIDSHIFT_DB_PATH=data/gridshift.db
 GRIDSHIFT_SOLVER_TIME_LIMIT=60
 APP_URL=http://127.0.0.1:8000
@@ -237,6 +238,7 @@ SMTP_PASSWORD=your-16-letter-app-password
 SMTP_FROM=GridShift <your-account@gmail.com>
 ```
 
+- `GRIDSHIFT_DATA_DIR` holds the company's own site data; `GRIDSHIFT_SAMPLE_DIR` the built-in sample (set `GRIDSHIFT_NO_SAMPLE=true` to remove the sample switch).
 - `APP_URL` is the address put into invitation and reset links. Set it to the public address when hosted.
 - `SMTP_TLS` is `starttls` (port 587), `ssl` (port 465) or `none`. For Gmail, use an [app password](https://myaccount.google.com/apppasswords).
 - `TRUST_PROXY=true` only behind a reverse proxy (nginx), so the real client IP is logged.
@@ -254,7 +256,9 @@ and set `SMTP_HOST=127.0.0.1`, `SMTP_PORT=1025`, `SMTP_TLS=none`.
 
 ### 3. Site and Machines
 
-Describe the factory in the data folder (`data/sample/` by default):
+**Sample data vs real data.** The sidebar has a *Sample data* switch (admins only, audit-logged). On, every page, the daily run and meter uploads use the **Holcim sample** in `data/holcim/`: an illustrative cement plant sized like a Holcim works in northern Germany (kiln line about 11 MW always on; raw mill, two cement mills and the quarry crusher about 14 MW that can shift; 6 MWp solar, a 4.2 MW turbine, a 10 MWh battery; peak record 26,180 kW). The figures are made up for demonstrations, not Holcim's real data. Off, GridShift uses the company's own folder (`data/live/` by default) and says so if it isn't set up yet. Each data set keeps its own plans and weather cache; plans made before the switch existed are hidden from both.
+
+Describe the factory in the data folder (`data/live/` for real data):
 
 - `site.yaml`: location, solar, wind turbine power curve, battery, grid limits and fees, email recipients
   - `grid.peak_charge_eur_per_kw_year`: the grid operator's annual demand charge (Leistungspreis) in €/kW; `0` turns peak protection off
@@ -272,7 +276,10 @@ To use a client's data, point `GRIDSHIFT_DATA_DIR` at a folder with the same fou
 python -m scripts.make_demand_history
 python -m scripts.make_price_history
 python -m scripts.make_meter_data
+python -m scripts.make_holcim_data   # Holcim sample: demand history and meter data
 ```
+
+`data/sample/` is the small test factory the automated tests use.
 
 ## Usage
 
@@ -376,7 +383,7 @@ deactivate
 - Verify your internet connection for the price and weather APIs
 - **Blank page at port 8000**: run `npm run build` in `frontend/` so `frontend/dist` exists
 - **"No plan yet"**: click **Create first plan**, or run `python -m backend.jobs`
-- **Run failed: config not found**: check `GRIDSHIFT_DATA_DIR` points at a folder with `site.yaml` and `machines.yaml`
+- **Run failed: config not found**: with sample data off, check `GRIDSHIFT_DATA_DIR` points at a folder with `site.yaml` and `machines.yaml`
 - **Emails not sent**: check the SMTP settings in `.env`; the status badge on the *Daily email* page shows the reason
 
 ## Project Structure
@@ -402,7 +409,8 @@ GridShift/
 │       ├── pages/          # Overview, Forecast, Schedule, Email, Site, Users, Audit, Account, auth/
 │       ├── hooks/          # Run context, async loader, theme
 │       └── lib/            # API client, types, formatters
-├── data/sample/            # Sample site, machines, demand and price history
+├── data/holcim/            # Holcim sample (illustrative cement plant) for the Sample data switch
+├── data/sample/            # Small test factory used by the automated tests
 ├── scripts/                # Sample data generators
 ├── docs/superpowers/       # Design spec and implementation plan
 ├── tests/                  # Backend unit, scenario, pipeline and API tests

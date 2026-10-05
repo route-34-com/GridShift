@@ -20,7 +20,7 @@ def _summary(run: dict) -> dict:
 @router.get("")
 def list_runs(app: AppDep, limit: int = 20) -> list[dict]:
     """Return recent runs, newest first."""
-    return app.store.list_runs(max(1, min(limit, 100)))
+    return app.data.store.list_runs(max(1, min(limit, 100)))
 
 
 @router.post("", status_code=201, dependencies=[require("plan.run")])
@@ -29,7 +29,8 @@ def create_run(app: AppDep, ctx: AuthCtx, email: bool = False) -> dict:
     if not app.lock.acquire(blocking=False):
         raise AppError(409, "A planning run is already in progress.")
     try:
-        result = execute(app.settings, app.store, sources=app.sources, email=email, actor=ctx.actor, origin=ctx.origin)
+        data = app.data
+        result = execute(data.settings, data.store, sources=app.sources, email=email, actor=ctx.actor, origin=ctx.origin)
     finally:
         app.lock.release()
     if result["status"] == "failed":
@@ -66,7 +67,7 @@ def latest_email(app: AppDep) -> str:
 @router.get("/{run_id}")
 def get_run(run_id: int, app: AppDep) -> dict:
     """Return one run summary by id."""
-    run = app.store.get_run(run_id)
+    run = app.data.store.get_run(run_id)
     if run is None:
         raise AppError(404, f"Run {run_id} not found.")
     return _summary(run)

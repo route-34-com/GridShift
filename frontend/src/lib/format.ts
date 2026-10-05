@@ -10,6 +10,13 @@ export function eur(value: number): string {
   return Math.abs(value) >= 100 || Number.isInteger(value) ? euro0.format(value) : euro2.format(value)
 }
 
+const euroCompact = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'EUR', notation: 'compact', maximumFractionDigits: 1 })
+
+/** Short euro amounts for chart axes, e.g. €140k. */
+export function eurShort(value: number): string {
+  return Math.abs(value) >= 10_000 ? euroCompact.format(value) : euro0.format(value)
+}
+
 export function pct(value: number, digits = 0): string {
   if (!Number.isFinite(value)) return '–'
   return `${(value * 100).toFixed(digits)}%`

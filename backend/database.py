@@ -61,7 +61,19 @@ CREATE TABLE IF NOT EXISTS audit_log (
 CREATE INDEX IF NOT EXISTS audit_at ON audit_log(at);
 CREATE INDEX IF NOT EXISTS audit_user ON audit_log(user_id);
 CREATE INDEX IF NOT EXISTS audit_action ON audit_log(action);
+CREATE TABLE IF NOT EXISTS app_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 """
+
+
+def _migrate(db: sqlite3.Connection) -> None:
+    """Add columns introduced after a database was created."""
+    columns = {r[1] for r in db.execute("PRAGMA table_info(runs)")}
+    if "dataset" not in columns:
+        # Runs from before data sets existed belong to neither the sample nor the live data.
+        db.execute("ALTER TABLE runs ADD COLUMN dataset TEXT NOT NULL DEFAULT 'legacy'")
 
 
 def now_iso() -> str:
@@ -81,6 +93,7 @@ def init_db(path: Path) -> None:
     try:
         db.execute("PRAGMA journal_mode = WAL")
         db.executescript(SCHEMA)
+        _migrate(db)
     finally:
         db.close()
 

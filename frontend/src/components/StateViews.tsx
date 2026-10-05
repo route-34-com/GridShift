@@ -1,4 +1,4 @@
-import { AlertTriangle, CalendarClock, Loader2, RefreshCw } from 'lucide-react'
+import { AlertTriangle, CalendarClock, Database, FlaskConical, Loader2, RefreshCw } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -66,6 +66,30 @@ export function EmptyView({ running, onRun }: { running: boolean; onRun: () => v
           {running ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RefreshCw className="h-4 w-4" aria-hidden />}
           {running ? 'Planning…' : 'Create first plan'}
         </Button>
+      }
+    />
+  )
+}
+
+export function NoRealDataView({ canSwitch, onUseSample }: { canSwitch: boolean; onUseSample: () => void }) {
+  return (
+    <Message
+      icon={<Database className="h-6 w-6 text-brand" aria-hidden />}
+      title="Your real data isn't set up yet"
+      message={
+        <>
+          Sample data is switched off, and there's no site set up for your company yet. GridShift needs the site details, the machine list and
+          the load history in the data folder (<code>data/live</code>). Until then, switch sample data back on to explore with the Holcim sample.
+        </>
+      }
+      action={
+        canSwitch ? (
+          <Button variant="primary" onClick={onUseSample}>
+            <FlaskConical className="h-4 w-4" aria-hidden /> Turn sample data on
+          </Button>
+        ) : (
+          <p className="text-xs text-muted">Ask an admin to turn sample data on.</p>
+        )
       }
     />
   )

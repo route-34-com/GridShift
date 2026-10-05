@@ -11,6 +11,7 @@ from fastapi import Depends, Request
 from backend.auth.permissions import can
 from backend.auth.sessions import client_ip, session_user, user_agent
 from backend.database import connect
+from backend.datasets import DataSet, resolve
 from backend.pipeline import Sources
 from backend.services.audit import Origin
 from backend.services.context import Ctx
@@ -27,6 +28,11 @@ class AppState:
     store: Store
     sources: Sources | None = None
     lock: threading.Lock = field(default_factory=threading.Lock)
+
+    @property
+    def data(self) -> DataSet:
+        """Settings and store for the data set in use (sample or the company's own)."""
+        return resolve(self.settings, self.store)
 
 
 def state(request: Request) -> AppState:
@@ -77,7 +83,7 @@ def require(permission: str):
 
 def latest_or_404(app: AppState) -> dict:
     """Return the newest successful run or raise 404."""
-    run = app.store.latest_run(successful=True)
+    run = app.data.store.latest_run(successful=True)
     if run is None:
         raise AppError(404, "No plan yet. Run the planner to create the first one.")
     return run
