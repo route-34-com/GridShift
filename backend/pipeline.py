@@ -38,6 +38,7 @@ class Sources:
     """External data fetchers, replaceable in tests or for client systems."""
 
     day_ahead: Callable = price.fetch_day_ahead
+    backup_day_ahead: Callable | None = price.fetch_day_ahead_awattar
     site_weather: Callable = weather.fetch_site_weather
     national_weather: Callable = weather.fetch_national_weather
 
@@ -66,13 +67,25 @@ def _cached_weather(store: Store, kind: str, index: pd.DatetimeIndex) -> pd.Data
 
 
 def _fetch_prices(sources: Sources, index: pd.DatetimeIndex, notes: Notes) -> pd.Series | None:
-    end = index[-1] + pd.Timedelta(hours=1)
+    start, end = index[0].to_pydatetime(), (index[-1] + pd.Timedelta(hours=1)).to_pydatetime()
     try:
-        actual = sources.day_ahead(index[0].to_pydatetime(), end.to_pydatetime())
+        actual = sources.day_ahead(start, end)
     except SourceError as exc:
-        notes.sources["price"] = "estimated"
-        notes.alert("price_fallback", "warning", f"Day-ahead prices unavailable ({exc}); every hour uses estimated prices.")
-        return None
+        primary_error = exc
+        try:
+            if sources.backup_day_ahead is None:
+                raise SourceError("no backup price source configured")
+            actual = sources.backup_day_ahead(start, end)
+        except SourceError as backup_error:
+            notes.sources["price"] = "estimated"
+            notes.alert(
+                "price_fallback",
+                "warning",
+                f"Real market prices couldn't be downloaded, so every hour uses GridShift's weather-based estimate. "
+                f"Energy-Charts: {primary_error}. aWATTar: {backup_error}.",
+            )
+            return None
+        notes.alert("price_backup", "info", f"Energy-Charts didn't respond, so the real market prices came from aWATTar instead ({primary_error}).")
     first_day = (local_dates(index) == local_dates(index)[0]).sum()
     known = actual.reindex(index).notna()
     if known[:first_day].all():

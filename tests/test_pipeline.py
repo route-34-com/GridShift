@@ -61,6 +61,15 @@ def test_price_outage_falls_back_to_estimates(settings, store):
     assert all(h["price_source"] == "estimate" for h in run["hourly"])
 
 
+def test_backup_source_supplies_real_prices(settings, store):
+    sources = replace(good_sources(), day_ahead=broken, backup_day_ahead=fake_prices)
+    run = execute(settings, store, NOW, sources)
+    assert run["sources"]["price"] == "published"
+    assert any(a["kind"] == "price_backup" and "aWATTar" in a["message"] for a in run["alerts"])
+    assert not any(a["kind"] == "price_fallback" for a in run["alerts"])
+    assert run["hourly"][0]["price_source"] == "actual"
+
+
 def test_partial_prices_are_flagged(settings, store):
     sources = replace(good_sources(), day_ahead=lambda s, e: fake_prices(s, e)[:10])
     run = execute(settings, store, NOW, sources)

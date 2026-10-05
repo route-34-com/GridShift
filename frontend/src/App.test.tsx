@@ -166,6 +166,18 @@ describe('App', () => {
     expect(await screen.findByText(/appear here after the next re-plan/)).toBeInTheDocument()
   })
 
+  it('switches the Germany clock between 24 and 12 hours', async () => {
+    mockApi()
+    render(<App />)
+    const twelve = await screen.findByRole('radio', { name: '12h' })
+    expect(screen.getByRole('radio', { name: '24h' })).toHaveAttribute('aria-checked', 'true')
+    await userEvent.click(twelve)
+    expect(twelve).toHaveAttribute('aria-checked', 'true')
+    expect(localStorage.getItem('gridshift-clock')).toBe('12h')
+    expect(screen.getByLabelText('Date and time in Germany')).toHaveTextContent(/[AP]M/)
+    localStorage.removeItem('gridshift-clock')
+  })
+
   it('switches the schedule between plan and baseline', async () => {
     mockApi()
     window.history.pushState({}, '', '/schedule')

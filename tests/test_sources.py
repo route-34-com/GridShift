@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from backend.sources.http import SourceError
-from backend.sources.price import fetch_day_ahead
+from backend.sources.price import fetch_day_ahead, fetch_day_ahead_awattar
 from backend.sources.weather import NATIONAL_POINTS, fetch_national_weather, fetch_site_weather
 from tests.factories import make_site
 
@@ -48,6 +48,19 @@ def test_price_empty_response_returns_empty_series():
 def test_price_malformed_response_raises():
     with pytest.raises(SourceError, match="missing"):
         fetch_day_ahead(START, END, json_client({"oops": 1}))
+
+
+def test_awattar_prices_are_hourly_in_window():
+    start_ms = int(START.timestamp() * 1000)
+    rows = [{"start_timestamp": start_ms + 3_600_000 * i, "end_timestamp": start_ms + 3_600_000 * (i + 1), "marketprice": 50.0 + i, "unit": "Eur/MWh"} for i in range(-2, 26)]
+    series = fetch_day_ahead_awattar(START, END, json_client({"object": "list", "data": rows}))
+    assert len(series) == 24 and series.index[0] == pd.Timestamp(START)
+    assert series.iloc[0] == 50.0 and series.iloc[-1] == 73.0
+
+
+def test_awattar_malformed_response_raises():
+    with pytest.raises(SourceError):
+        fetch_day_ahead_awattar(START, END, json_client({"data": [{"price": 1}]}))
 
 
 def test_price_http_errors_retry_then_raise():
