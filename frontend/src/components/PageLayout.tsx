@@ -58,7 +58,7 @@ const SECTIONS: { title: string; items: NavEntry[] }[] = [
 function Brand() {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-volt shadow-[0_0_0_4px_rgb(217_247_90/0.12)]">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-volt">
         <Zap className="h-5 w-5 text-volt-ink" fill="currentColor" aria-hidden />
       </div>
       <div>
@@ -79,13 +79,14 @@ function NavItems({ compact = false }: { compact?: boolean }) {
       end={to === '/'}
       className={({ isActive }) =>
         cn(
-          'flex cursor-pointer items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-200',
+          'group relative flex cursor-pointer items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-200',
           compact ? 'shrink-0 px-3 py-2' : 'px-3 py-2.5',
-          isActive ? 'bg-volt text-volt-ink' : 'text-nav-muted hover:bg-nav-hover hover:text-nav-fg',
+          isActive ? 'active bg-nav-active text-nav-fg' : 'text-nav-muted hover:bg-nav-hover hover:text-nav-fg',
         )
       }
     >
-      <Icon className="h-4 w-4 shrink-0" aria-hidden />
+      <span aria-hidden className="absolute top-2 bottom-2 left-0 hidden w-[3px] rounded-r-full bg-volt group-[.active]:block" />
+      <Icon className="h-4 w-4 shrink-0 group-[.active]:text-volt" aria-hidden />
       {label}
     </NavLink>
   )
@@ -94,7 +95,7 @@ function NavItems({ compact = false }: { compact?: boolean }) {
     <>
       {sections.map((section) => (
         <div key={section.title} className="space-y-1">
-          <p className="px-3 pb-1 font-mono text-[11px] tracking-wider text-nav-muted/70 uppercase">{section.title}</p>
+          <p className="px-3 pb-1 font-mono text-[11px] tracking-wider text-nav-muted/60 uppercase">{section.title}</p>
           {section.items.map(link)}
         </div>
       ))}
@@ -122,7 +123,7 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
   const navigate = useNavigate()
   if (!me) return null
   const avatar = (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-volt text-xs font-semibold text-volt-ink">{initials(me.name, me.email)}</span>
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-nav-fg ring-1 ring-white/15">{initials(me.name, me.email)}</span>
   )
   return (
     <MenuRoot>
@@ -205,14 +206,14 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
   const run = data?.run
   return (
     <div className="min-h-screen lg:pl-64">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col bg-nav px-4 py-5 lg:flex">
+      <aside className="nav-surface fixed inset-y-0 left-0 z-20 hidden w-64 flex-col px-4 py-5 lg:flex">
         <Brand />
         <nav className="mt-8 flex flex-col gap-6" aria-label="Main">
           <NavItems />
         </nav>
         <div className="mt-auto space-y-3">
           {run && (
-            <div className="rounded-xl border border-nav-line bg-nav-hover/60 p-3 text-xs text-nav-muted">
+            <div className="rounded-xl border border-nav-line bg-nav-hover p-3 text-xs text-nav-muted">
               <p className="font-medium text-nav-fg">{run.site_name}</p>
               <p className="mt-1 font-mono text-[11px]">
                 Plan #{run.id} · {relative(run.created_at)}
@@ -228,7 +229,7 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
         </div>
       </aside>
 
-      <header className="sticky top-0 z-10 bg-nav lg:hidden">
+      <header className="nav-surface sticky top-0 z-10 lg:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <Brand />
           <div className="flex items-center gap-1">

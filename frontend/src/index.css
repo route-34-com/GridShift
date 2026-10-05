@@ -24,6 +24,7 @@
   --color-nav-fg: var(--nav-fg);
   --color-nav-muted: var(--nav-muted);
   --color-nav-hover: var(--nav-hover);
+  --color-nav-active: var(--nav-active);
   --color-nav-line: var(--nav-line);
   --color-positive: var(--positive);
   --color-positive-soft: var(--positive-soft);
@@ -64,11 +65,13 @@
   --info: #2459d6;
   --info-soft: #e7eeff;
 
-  --nav-bg: #0b1020;
-  --nav-fg: #eef1f8;
-  --nav-muted: #8a93a8;
-  --nav-hover: #161d33;
-  --nav-line: #1c2440;
+  --nav-bg: #111a2e;
+  --nav-bg-end: #0b1222;
+  --nav-fg: #f3f5fa;
+  --nav-muted: #a4adc3;
+  --nav-hover: rgb(255 255 255 / 0.05);
+  --nav-active: rgb(255 255 255 / 0.09);
+  --nav-line: rgb(255 255 255 / 0.08);
   --volt: #d9f75a;
   --volt-ink: #0e1424;
 
@@ -107,11 +110,13 @@
   --info: #8fb2ff;
   --info-soft: #172341;
 
-  --nav-bg: #060913;
-  --nav-fg: #eef1f8;
-  --nav-muted: #7f89a0;
-  --nav-hover: #121a30;
-  --nav-line: #182039;
+  --nav-bg: #0d1426;
+  --nav-bg-end: #080d1a;
+  --nav-fg: #f3f5fa;
+  --nav-muted: #96a0b8;
+  --nav-hover: rgb(255 255 255 / 0.04);
+  --nav-active: rgb(255 255 255 / 0.08);
+  --nav-line: rgb(255 255 255 / 0.07);
 
   --series-price: #ff7a52;
   --series-solar: #ffc533;
@@ -142,6 +147,11 @@ body {
   -webkit-font-smoothing: antialiased;
   background-image: radial-gradient(1200px 420px at 85% -120px, color-mix(in oklab, var(--volt) 22%, transparent), transparent 70%);
   background-repeat: no-repeat;
+}
+
+/* Sidebar: deep navy with a slight top-to-bottom fade. */
+.nav-surface {
+  background: linear-gradient(180deg, var(--nav-bg), var(--nav-bg-end));
 }
 
 /* Content eases in when a page or tab opens. */
