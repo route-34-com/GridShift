@@ -10,7 +10,7 @@ from backend.services.errors import AppError
 
 router = APIRouter(prefix="/api/runs", tags=["runs"], dependencies=[require("plan.view")])
 
-DETAIL_KEYS = ("hourly", "baseline_hourly", "blocks", "baseline_blocks")
+DETAIL_KEYS = ("hourly", "baseline_hourly", "blocks", "baseline_blocks", "today")
 
 
 def _summary(run: dict) -> dict:
@@ -47,7 +47,7 @@ def latest(app: AppDep) -> dict:
 def latest_hourly(app: AppDep) -> dict:
     """Return hourly flows for the plan and the baseline."""
     run = latest_or_404(app)
-    return {"plan": run["hourly"], "baseline": run["baseline_hourly"]}
+    return {"plan": run["hourly"], "baseline": run["baseline_hourly"], "today": run.get("today", [])}
 
 
 @router.get("/latest/blocks")

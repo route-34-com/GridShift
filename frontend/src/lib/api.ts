@@ -12,6 +12,7 @@ import type {
   RunSummary,
   SetupStatus,
   Status,
+  TodayHour,
   UserStatus,
 } from './types'
 
@@ -99,7 +100,7 @@ export function query(params: Record<string, string | number | undefined | null>
 export const api = {
   status: () => request<Status>('/api/status'),
   latest: () => request<RunSummary>('/api/runs/latest'),
-  hourly: () => request<{ plan: Hour[]; baseline: Hour[] }>('/api/runs/latest/hourly'),
+  hourly: () => request<{ plan: Hour[]; baseline: Hour[]; today?: TodayHour[] }>('/api/runs/latest/hourly'),
   blocks: () => request<{ plan: Block[]; baseline: Block[] }>('/api/runs/latest/blocks'),
   email: () => request<string>('/api/runs/latest/email'),
   runs: () => request<RunHeader[]>('/api/runs'),

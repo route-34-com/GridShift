@@ -94,6 +94,22 @@ export interface Hour {
   temperature_c?: number | null
 }
 
+/** One hour on a forecast chart: a planned hour, or an hour of today shown before the plan. */
+export interface ChartHour {
+  ts: string
+  price: number | null
+  price_source: 'actual' | 'estimate' | null
+  solar?: number | null
+  wind?: number | null
+  sunlight_w_m2?: number | null
+  cloud_cover_pct?: number | null
+  wind_ms?: number | null
+  temperature_c?: number | null
+}
+
+/** Today's hours before the plan starts: published prices and weather, no plan. */
+export type TodayHour = Omit<ChartHour, 'solar' | 'wind'>
+
 export interface Block {
   machine_id: string
   machine_name: string

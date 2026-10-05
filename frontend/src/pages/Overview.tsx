@@ -119,8 +119,8 @@ function PeakSection({ run }: { run: RunSummary }) {
 }
 
 function OverviewCoverage({ madeAt }: { madeAt: string }) {
-  const hours = useRun().data?.hourly
-  return hours?.length ? <PriceCoverage hours={hours} madeAt={madeAt} /> : null
+  const data = useRun().data
+  return data?.hourly.length ? <PriceCoverage hours={data.hourly} today={data.today} madeAt={madeAt} /> : null
 }
 
 function Content({ run }: { run: RunSummary }) {

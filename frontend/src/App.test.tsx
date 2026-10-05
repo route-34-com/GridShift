@@ -153,7 +153,7 @@ describe('App', () => {
     window.history.pushState({}, '', '/forecast')
     render(<App />)
     expect(await screen.findByText(/expected over the week/)).toBeInTheDocument()
-    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Time range' }), '1 day')
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Time range' }), 'Today + tomorrow')
     expect(await screen.findByText(/expected for tomorrow/)).toBeInTheDocument()
     expect(window.location.search).toContain('range=day')
   })
@@ -175,7 +175,8 @@ describe('App', () => {
     expect(twelve).toHaveAttribute('aria-checked', 'true')
     expect(localStorage.getItem('gridshift-clock')).toBe('12h')
     expect(screen.getByLabelText('Date and time in Germany')).toHaveTextContent(/[AP]M/)
-    localStorage.removeItem('gridshift-clock')
+    await userEvent.click(screen.getByRole('radio', { name: '24h' }))
+    expect(localStorage.getItem('gridshift-clock')).toBe('24h')
   })
 
   it('switches the schedule between plan and baseline', async () => {

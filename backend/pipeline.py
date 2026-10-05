@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from backend.forecast.demand import base_demand
-from backend.forecast.horizon import horizon_index, local_dates
+from backend.forecast.horizon import horizon_index, local_dates, today_index
 from backend.forecast.price_estimate import estimator_for, price_forecast
 from backend.forecast.renewables import hub_wind_speed, solar_kw, wind_kw
 from backend.planner.baseline import baseline
@@ -253,6 +253,33 @@ def _weather_table(weather: pd.DataFrame, site: Site) -> pd.DataFrame:
     ).round(1)
 
 
+def _today(sources: Sources, site: Site, now: datetime) -> list[dict]:
+    """Return today's published prices and site weather, shown before the plan so charts can mark the current hour.
+
+    Best effort: the plan never depends on it, so a failed fetch just leaves gaps.
+    """
+    index = today_index(now)
+    start, end = index[0].to_pydatetime(), (index[-1] + pd.Timedelta(hours=1)).to_pydatetime()
+    prices = pd.Series(dtype="float64")
+    for fetch in (sources.day_ahead, sources.backup_day_ahead):
+        if fetch is None:
+            continue
+        try:
+            prices = fetch(start, end)
+            break
+        except SourceError:
+            continue
+    try:
+        weather = _weather_table(sources.site_weather(site, start, end), site)
+    except SourceError:
+        weather = pd.DataFrame(index=index)
+    frame = pd.DataFrame({"price": prices.reindex(index)}, index=index).join(weather.reindex(index))
+    frame["price_source"] = ["actual" if pd.notna(p) else None for p in frame["price"]]
+    frame = frame.reset_index(names="ts")
+    frame["ts"] = frame["ts"].map(lambda t: t.isoformat())
+    return frame.astype(object).where(frame.notna(), None).to_dict(orient="records")
+
+
 def _hourly_records(plan: PlanResult, weather: pd.DataFrame) -> list[dict]:
     frame = plan.hourly.join(weather).reset_index(names="ts")
     frame["ts"] = frame["ts"].map(lambda t: t.isoformat())
@@ -331,6 +358,7 @@ def run_plan(settings: Settings, store: Store, now: datetime | None = None, sour
         "machines": _machines(plan, reference, machines, requirements),
         "blocks": [b.to_dict() for b in explain_blocks(plan.hourly, plan.schedule, flexible)],
         "baseline_blocks": [b.to_dict() for b in explain_blocks(reference.hourly, reference.schedule, flexible)],
+        "today": _today(sources, site, now),
         "hourly": _hourly_records(plan, weather_table),
         "baseline_hourly": _hourly_records(reference, weather_table),
         "alerts": notes.alerts,

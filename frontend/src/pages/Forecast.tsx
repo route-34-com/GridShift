@@ -15,10 +15,13 @@ import { Card, CardBody } from '@/components/ui/card'
 import { Select } from '@/components/ui/select'
 import { MetricTabs, type TabItem } from '@/components/ui/tabs'
 import { useRun } from '@/hooks/RunContext'
+import { useClockCycle } from '@/hooks/useClockCycle'
+import { useNow } from '@/hooks/useNow'
 import { useAsync } from '@/hooks/useAsync'
 import { api, exportsApi } from '@/lib/api'
 import { dayLabel, energy, localDate, num } from '@/lib/format'
-import type { Config, Hour } from '@/lib/types'
+import type { ChartHour, Config, Hour, TodayHour } from '@/lib/types'
+import { clockTime } from '@/lib/clock'
 import { SERIES } from '@/lib/utils'
 import { CLOUD_COLOR, turbineMarks } from '@/lib/weather'
 
@@ -27,7 +30,7 @@ type Range = 'day' | 'week'
 
 const VIEWS: View[] = ['price', 'sunlight', 'wind']
 const RANGES = [
-  { value: 'day', label: '1 day' },
+  { value: 'day', label: 'Today + tomorrow' },
   { value: 'week', label: '1 week' },
 ]
 
@@ -75,8 +78,8 @@ interface Panel {
   chart: ReactNode
 }
 
-function panels(hours: Hour[], config: Config | undefined, span: string): Record<View, Panel> {
-  const prices = hours.map((h) => h.price)
+function panels(hours: ChartHour[], config: Config | undefined, span: string, now: number, nowLabel: string): Record<View, Panel> {
+  const prices = hours.map((h) => h.price).filter((p): p is number => p != null)
   const negative = prices.filter((p) => p < 0).length
   const avgPrice = mean(prices) ?? 0
   const hasWeather = hours.some((h) => h.sunlight_w_m2 != null)
@@ -88,6 +91,8 @@ function panels(hours: Hour[], config: Config | undefined, span: string): Record
   const avgWind = mean(hours.map((h) => h.wind_ms))
   const turning = marks ? speeds.filter((s) => s > marks.startsAt && (marks.stopsAt == null || s <= marks.stopsAt)).length : 0
   const noWeather = 'Sunlight and wind forecasts appear here after the next re-plan.'
+  const shown = hours.length > 0 && now >= new Date(hours[0].ts).getTime() && now <= new Date(hours[hours.length - 1].ts).getTime() + 3_600_000
+  const past: LegendItem[] = shown ? [{ label: 'Already past', color: SERIES.baseline }] : []
   return {
     price: {
       icon: Banknote,
@@ -96,10 +101,11 @@ function panels(hours: Hour[], config: Config | undefined, span: string): Record
       color: SERIES.price,
       description: `Day-ahead price in €/MWh ${span}. Range €${num(Math.min(...prices))} to €${num(Math.max(...prices))}${negative > 0 ? `, ${negative} h below zero` : ''}.`,
       legend: [
+        ...past,
         { label: 'Published', color: SERIES.price },
         { label: 'Estimated from weather', color: SERIES.price, dashed: true },
       ],
-      chart: <PriceChart hours={hours} />,
+      chart: <PriceChart hours={hours} now={now} nowLabel={nowLabel} />,
     },
     sunlight: {
       icon: Sun,
@@ -109,8 +115,8 @@ function panels(hours: Hour[], config: Config | undefined, span: string): Record
       description: hasWeather
         ? `Sunlight reaching the panels in W/m² (about 1,000 is full summer sun). Brightest hour ${num(sunniest)} W/m²${clouds != null ? `, ${num(clouds)}% cloud cover on average` : ''}.`
         : noWeather,
-      legend: [{ label: 'Sunlight on panels', color: SERIES.solar }, ...(clouds != null ? [{ label: 'Cloud cover', color: CLOUD_COLOR, dashed: true }] : [])],
-      chart: hasWeather ? <SunlightChart hours={hours} /> : null,
+      legend: [...past, { label: 'Sunlight on panels', color: SERIES.solar }, ...(clouds != null ? [{ label: 'Cloud cover', color: CLOUD_COLOR, dashed: true }] : [])],
+      chart: hasWeather ? <SunlightChart hours={hours} now={now} nowLabel={nowLabel} /> : null,
     },
     wind: {
       icon: Wind,
@@ -122,26 +128,31 @@ function panels(hours: Hour[], config: Config | undefined, span: string): Record
         : marks
           ? `Wind speed at the ${num(wind!.hub_height_m)} m hub. The turbine turns from ${num(marks.startsAt)} m/s${marks.fullAt != null ? ` and gives full power from ${num(marks.fullAt)} m/s` : ''}; ${turning} of ${hours.length} h are windy enough.`
           : `Wind speed at ${num(wind?.hub_height_m ?? 100)} m, up to ${num(Math.max(...speeds), 1)} m/s. No wind turbine is configured, so it doesn't change the plan.`,
-      legend: [{ label: 'Wind speed (m/s)', color: SERIES.wind }],
-      chart: hasWeather ? <WindChart hours={hours} marks={marks} /> : null,
+      legend: [...past, { label: 'Wind speed (m/s)', color: SERIES.wind }],
+      chart: hasWeather ? <WindChart hours={hours} marks={marks} now={now} nowLabel={nowLabel} /> : null,
     },
   }
 }
 
-function Content({ all, sources, madeAt }: { all: Hour[]; sources: Record<string, string>; madeAt: string }) {
+function Content({ all, today, sources, madeAt }: { all: Hour[]; today: TodayHour[]; sources: Record<string, string>; madeAt: string }) {
   const config = useAsync(api.config)
   const { view, range, setView } = useForecastParams()
+  const now = useNow(60_000)
+  const [cycle] = useClockCycle()
   const hours = inRange(all, range)
   const span = range === 'day' ? 'for tomorrow' : 'over the week'
+  // Tabs start at today's midnight so the current hour shows; the plan itself starts tomorrow.
+  const chartHours: ChartHour[] = [...today, ...hours]
+  const chartSpan = today.length ? (range === 'day' ? 'for today and tomorrow' : 'for today and the next 7 days') : span
   const capacity = config.data?.site.battery.capacity_kwh ?? Math.max(...hours.map((h) => h.soc), 1)
   const t = totals(hours)
-  const views = panels(hours, config.data ?? undefined, span)
+  const views = panels(chartHours, config.data ?? undefined, chartSpan, now.getTime(), `Now ${clockTime(now, cycle)}`)
   const current = views[view]
   const tabs: TabItem<View>[] = VIEWS.map((id) => ({ id, label: views[id].label, icon: views[id].icon, value: views[id].value, color: views[id].color }))
   return (
     <div className="space-y-6">
       <SourceBadges sources={sources} />
-      <PriceCoverage hours={all} madeAt={madeAt} />
+      <PriceCoverage hours={all} today={today} madeAt={madeAt} />
       <Card>
         <CardBody className="space-y-5">
           <MetricTabs label="Forecast" idPrefix="forecast" items={tabs} active={view} onChange={setView} />
@@ -194,10 +205,12 @@ function RangeSelect() {
 
 function Subtitle() {
   const { range } = useForecastParams()
-  const hours = useRun().data?.hourly ?? []
+  const data = useRun().data
+  const hours = data?.hourly ?? []
   if (!hours.length) return <>Prices, weather, on-site output and the battery plan, hour by hour.</>
-  const shown = inRange(hours, range)
-  return <>{range === 'day' ? `Tomorrow, ${dayLabel(shown[0].ts)}` : `${dayLabel(hours[0].ts)} to ${dayLabel(hours[hours.length - 1].ts)}`}. Prices, weather, on-site output and the battery plan, hour by hour.</>
+  const first = data?.today[0]?.ts ?? hours[0].ts
+  const last = range === 'day' ? inRange(hours, range)[0].ts : hours[hours.length - 1].ts
+  return <>{`${dayLabel(first)} to ${dayLabel(last)}`}. Prices, weather, on-site output and the battery plan, hour by hour.</>
 }
 
 export function Forecast() {
@@ -217,7 +230,7 @@ export function Forecast() {
         </>
       }
     >
-      <RunGate>{({ hourly, run }) => <Content all={hourly} sources={run.sources} madeAt={run.created_at} />}</RunGate>
+      <RunGate>{({ hourly, today, run }) => <Content all={hourly} today={today} sources={run.sources} madeAt={run.created_at} />}</RunGate>
     </PageLayout>
   )
 }

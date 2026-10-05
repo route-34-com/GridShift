@@ -1,22 +1,25 @@
 import type { ReactNode } from 'react'
 import { dateTime, localHour, time, weekday } from '@/lib/format'
-import type { Hour } from '@/lib/types'
 
 export interface Row {
   t: number
   [key: string]: number | null
 }
 
-export function toRows(hours: Hour[], map: (h: Hour, i: number) => Record<string, number | null>): Row[] {
+type Timed = { ts: string }
+
+export function toRows<T extends Timed>(hours: T[], map: (h: T, i: number) => Record<string, number | null>): Row[] {
   return hours.map((h, i) => ({ t: new Date(h.ts).getTime(), ...map(h, i) }))
 }
 
-/** A single day gets a tick every 3 hours; longer spans get one per day. */
-const isOneDay = (hours: Hour[]) => hours.length <= 30
+/** Up to a day gets a tick every 3 hours, two days every 6 hours; longer spans one per day. */
+function tickStep(hours: Timed[]): number {
+  return hours.length <= 30 ? 3 : hours.length <= 50 ? 6 : 24
+}
 
-export function dayTicks(hours: Hour[]): number[] {
-  const every = isOneDay(hours) ? (h: Hour) => localHour(h.ts) % 3 === 0 : (h: Hour) => localHour(h.ts) === 0
-  return hours.filter(every).map((h) => new Date(h.ts).getTime())
+export function dayTicks(hours: Timed[]): number[] {
+  const step = tickStep(hours)
+  return hours.filter((h) => localHour(h.ts) % step === 0).map((h) => new Date(h.ts).getTime())
 }
 
 export const tickWeekday = (t: number) => weekday(new Date(t).toISOString())
@@ -28,14 +31,14 @@ export const axisProps = {
   tick: { fontSize: 12 },
 } as const
 
-export const xAxisProps = (hours: Hour[]) => ({
+export const xAxisProps = (hours: Timed[]) => ({
   ...axisProps,
   dataKey: 't',
   type: 'number' as const,
   scale: 'time' as const,
   domain: ['dataMin', 'dataMax'] as [string, string],
   ticks: dayTicks(hours),
-  tickFormatter: isOneDay(hours) ? tickTime : tickWeekday,
+  tickFormatter: tickStep(hours) < 24 ? (t: number) => (localHour(new Date(t).toISOString()) === 0 ? tickWeekday(t) : tickTime(t)) : tickWeekday,
   minTickGap: 8,
 })
 
@@ -79,3 +82,34 @@ export function activeRow(args: TooltipArgs): Row | null {
   if (!args.active || !args.payload?.length) return null
   return args.payload[0].payload ?? null
 }
+
+/** An hour is past once it has fully ended. */
+export const HOUR = 3_600_000
+export const isPast = (t: number, now: number) => t + HOUR <= now
+
+/**
+ * Split one series into past (grey) and coming (coloured) parts that meet at the current hour,
+ * so the line stays continuous across the "now" marker.
+ */
+export function splitAtNow(rows: Row[], key: string, now: number): Row[] {
+  const firstFuture = rows.findIndex((r) => !isPast(r.t, now))
+  return rows.map((r, i) => {
+    const past = isPast(r.t, now) || i === firstFuture
+    const coming = !isPast(r.t, now)
+    return { ...r, [`${key}Past`]: past ? r[key] : null, [`${key}Next`]: coming ? r[key] : null }
+  })
+}
+
+/** Props for the vertical "Now" line; null when now is outside the chart. */
+export function nowLine(rows: Row[], now: number, label: string) {
+  if (!rows.length || now < rows[0].t || now > rows[rows.length - 1].t + HOUR) return null
+  return {
+    x: Math.min(now, rows[rows.length - 1].t),
+    stroke: 'var(--fg)',
+    strokeWidth: 1.5,
+    ifOverflow: 'extendDomain' as const,
+    label: { value: label, position: 'insideTopLeft' as const, fontSize: 11, fontWeight: 600, fill: 'var(--fg)', offset: 6 },
+  }
+}
+
+export const PAST_COLOR = 'var(--series-baseline)'

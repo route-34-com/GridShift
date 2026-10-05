@@ -1,59 +1,31 @@
 import { Clock } from 'lucide-react'
-import { useState } from 'react'
+import { useClockCycle } from '@/hooks/useClockCycle'
 import { useNow } from '@/hooks/useNow'
+import { clockTime } from '@/lib/clock'
 import { cn } from '@/lib/utils'
 
 const TZ = 'Europe/Berlin'
-const STORAGE_KEY = 'gridshift-clock'
 const date = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })
 const zone = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, timeZoneName: 'short' })
 const FORMATS = {
   '24h': new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }),
   '12h': new Intl.DateTimeFormat('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true }),
 }
-const SHORT = {
-  '24h': new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
-  '12h': new Intl.DateTimeFormat('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit', hour12: true }),
-}
-
-type Cycle = keyof typeof FORMATS
-
-function stored(): Cycle {
-  try {
-    return localStorage.getItem(STORAGE_KEY) === '12h' ? '12h' : '24h'
-  } catch {
-    return '24h'
-  }
-}
-
-function useCycle(): [Cycle, (c: Cycle) => void] {
-  const [cycle, setCycle] = useState<Cycle>(stored)
-  const choose = (next: Cycle) => {
-    setCycle(next)
-    try {
-      localStorage.setItem(STORAGE_KEY, next)
-    } catch {
-      // Private mode: keep the choice for this visit only.
-    }
-  }
-  return [cycle, choose]
-}
-
 const zoneName = (now: Date) => zone.formatToParts(now).find((p) => p.type === 'timeZoneName')?.value ?? ''
 
 /** Live German date and time, so prices and plans can be read against the clock the market uses. */
 export function GermanyClock({ compact = false, className }: { compact?: boolean; className?: string }) {
   const now = useNow()
-  const [cycle, setCycle] = useCycle()
+  const [cycle, setCycle] = useClockCycle()
   if (compact) {
     return (
       <button
         type="button"
         onClick={() => setCycle(cycle === '24h' ? '12h' : '24h')}
         className={cn('tabular cursor-pointer rounded-md px-1.5 py-1 font-mono text-xs text-nav-muted hover:text-nav-fg', className)}
-        aria-label={`Time in Germany, ${SHORT[cycle].format(now)}. Switch to ${cycle === '24h' ? '12' : '24'}-hour clock`}
+        aria-label={`Time in Germany, ${clockTime(now, cycle)}. Switch to ${cycle === '24h' ? '12' : '24'}-hour clock`}
       >
-        DE {SHORT[cycle].format(now)}
+        DE {clockTime(now, cycle)}
       </button>
     )
   }

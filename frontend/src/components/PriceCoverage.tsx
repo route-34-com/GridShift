@@ -6,7 +6,7 @@ import { useNow } from '@/hooks/useNow'
 import { useRun } from '@/hooks/RunContext'
 import { dateTime, dayLabel, localHour, time, weekday } from '@/lib/format'
 import { countdown, dayIso, priceCoverage } from '@/lib/prices'
-import type { Hour } from '@/lib/types'
+import type { Hour, TodayHour } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
 /** "Tue 06 Oct, 24:00" rather than "Wed 07 Oct, 00:00" for the end of a day. */
@@ -15,11 +15,11 @@ function endLabel(iso: string): string {
   return `${dayLabel(new Date(new Date(iso).getTime() - 3_600_000).toISOString())}, 24:00`
 }
 
-export function PriceCoverage({ hours, madeAt }: { hours: Hour[]; madeAt: string }) {
+export function PriceCoverage({ hours, today = [], madeAt }: { hours: Hour[]; today?: TodayHour[]; madeAt: string }) {
   const now = useNow(30_000)
   const { runNow, running } = useRun()
   const { can } = useAuth()
-  const c = priceCoverage(hours, now)
+  const c = priceCoverage([...today, ...hours], now)
   const nextAt = c.next.at.toISOString()
   const nextWhen = `${dayLabel(nextAt)} around ${time(nextAt)}`
   return (
@@ -33,7 +33,7 @@ export function PriceCoverage({ hours, madeAt }: { hours: Hour[]; madeAt: string
         }
       />
       <CardBody className="space-y-4 pt-4">
-        <ol className="grid grid-cols-7 gap-1.5 sm:gap-2" aria-label="Prices per day">
+        <ol className="grid gap-1.5 sm:gap-2" style={{ gridTemplateColumns: `repeat(${c.days.length}, minmax(0, 1fr))` }} aria-label="Prices per day">
           {c.days.map((d) => {
             const real = d.real === d.hours
             const partial = d.real > 0 && !real
@@ -44,7 +44,7 @@ export function PriceCoverage({ hours, madeAt }: { hours: Hour[]; madeAt: string
                   className={cn('h-2 rounded-full', real ? 'bg-price' : partial ? 'bg-price/50' : 'bg-[repeating-linear-gradient(135deg,var(--border)_0_4px,transparent_4px_8px)] ring-1 ring-border ring-inset')}
                   aria-hidden
                 />
-                <p className="mt-2 text-xs font-medium text-fg">{weekday(iso)}</p>
+                <p className="mt-2 text-xs font-medium text-fg">{d.day === c.today ? 'Today' : weekday(iso)}</p>
                 <p className="tabular font-mono text-[11px] text-muted">{dayLabel(iso).split(' ').slice(1).join(' ')}</p>
                 <p className={cn('mt-0.5 text-[11px]', real ? 'text-price' : 'text-muted')}>{real ? 'Real' : partial ? 'Part real' : 'Estimate'}</p>
               </li>

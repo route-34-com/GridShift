@@ -53,6 +53,21 @@ def test_weather_cached_without_cloud_cover_still_plans(settings, store):
     assert run["hourly"][0]["sunlight_w_m2"] is not None
 
 
+def test_today_is_included_for_the_now_marker(settings, store):
+    run = execute(settings, store, NOW, good_sources())
+    today = run["today"]
+    assert len(today) == 24 and today[-1]["ts"] < run["horizon_start"] <= run["hourly"][0]["ts"]
+    assert pd.Timestamp(today[0]["ts"]).tz_convert("Europe/Berlin").hour == 0
+    assert all(h["price_source"] == "actual" and h["price"] is not None for h in today)
+    assert today[12]["sunlight_w_m2"] > 0 and today[0]["wind_ms"] is not None
+
+
+def test_today_survives_outages(settings, store):
+    run = execute(settings, store, NOW, replace(good_sources(), day_ahead=broken))
+    assert run["status"] != "failed"
+    assert all(h["price"] is None and h["price_source"] is None for h in run["today"])
+
+
 def test_price_outage_falls_back_to_estimates(settings, store):
     sources = replace(good_sources(), day_ahead=broken)
     run = execute(settings, store, NOW, sources)

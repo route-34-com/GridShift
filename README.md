@@ -100,7 +100,7 @@ Demand history ─────────→ Factory base load forecast
 ```
 
 1. **Prices**: published DE-LU day-ahead prices from Energy-Charts for tomorrow. Later days are estimated by a gradient-boosting model trained on 180 days of real prices and Germany-wide wind, solar and temperature.
-2. **Weather**: Open-Meteo tilted irradiance and 100 m wind speed at the site, converted to kW with a PV temperature model and the turbine power curve. The Forecast page shows the weather itself: sunlight on the panels (W/m²) with cloud cover, and wind speed at hub height with the turbine's start, full-power and storm shut-off speeds. Every hourly row and the hourly export carry sunlight, cloud cover, wind speed and temperature.
+2. **Weather**: Open-Meteo tilted irradiance and 100 m wind speed at the site, converted to kW with a PV temperature model and the turbine power curve. The Forecast page shows the weather itself: sunlight on the panels (W/m²) with cloud cover, and wind speed at hub height with the turbine's start, full-power and storm shut-off speeds. Every hourly row and the hourly export carry sunlight, cloud cover, wind speed and temperature. Each run also stores today's published prices and weather (best effort, not used for planning) so the Forecast charts start at today's midnight, grey out hours already past and mark the current German time with a "Now" line.
 3. **Demand**: base load as the weekday × hour average of the last 8 weeks of meter data.
 4. **Optimizer**: a mixed-integer program solved with HiGHS. It minimises grid cost while meeting every quota, deadline, minimum run block, battery limit and grid connection limit.
 5. **Output**: run stored in SQLite, daily email sent, dashboard updated.

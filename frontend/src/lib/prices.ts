@@ -1,4 +1,6 @@
-import type { Hour } from './types'
+import type { ChartHour } from './types'
+
+type Priced = Pick<ChartHour, 'ts' | 'price_source'>
 
 const TZ = 'Europe/Berlin'
 /** EPEX publishes the next day's German prices shortly before 13:00 Berlin time. */
@@ -52,11 +54,12 @@ export interface PriceCoverage {
   next: { at: Date; day: string }
   /** Prices are out for a day this plan still estimates: re-planning would fetch them. */
   stale: boolean
+  today: string
 }
 
-export function priceCoverage(hours: Hour[], now: Date): PriceCoverage {
+export function priceCoverage(hours: Priced[], now: Date): PriceCoverage {
   const byDay = new Map<string, DayCoverage>()
-  let lastReal: Hour | null = null
+  let lastReal: Priced | null = null
   for (const h of hours) {
     const day = berlinDay(new Date(h.ts))
     const entry = byDay.get(day) ?? { day, real: 0, hours: 0 }
@@ -79,6 +82,7 @@ export function priceCoverage(hours: Hour[], now: Date): PriceCoverage {
     publishedThrough,
     next: { at, day: nextDay },
     stale: planned != null && planned.real < planned.hours,
+    today,
   }
 }
 

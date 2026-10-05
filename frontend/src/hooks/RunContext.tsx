@@ -1,10 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api, ApiError } from '@/lib/api'
-import type { Block, Hour, RunSummary, Status } from '@/lib/types'
+import type { Block, Hour, RunSummary, Status, TodayHour } from '@/lib/types'
 
 export interface RunData {
   run: RunSummary
   hourly: Hour[]
+  /** Today before the plan starts, for the "now" marker; empty on older runs. */
+  today: TodayHour[]
   baselineHourly: Hour[]
   blocks: Block[]
   baselineBlocks: Block[]
@@ -28,7 +30,7 @@ const RunContext = createContext<RunContextValue | null>(null)
 
 async function loadRun(): Promise<RunData> {
   const [run, hourly, blocks] = await Promise.all([api.latest(), api.hourly(), api.blocks()])
-  return { run, hourly: hourly.plan, baselineHourly: hourly.baseline, blocks: blocks.plan, baselineBlocks: blocks.baseline }
+  return { run, hourly: hourly.plan, today: hourly.today ?? [], baselineHourly: hourly.baseline, blocks: blocks.plan, baselineBlocks: blocks.baseline }
 }
 
 export function RunProvider({ children }: { children: ReactNode }) {
