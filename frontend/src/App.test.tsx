@@ -133,6 +133,25 @@ describe('App', () => {
     expect(screen.queryByRole('button', { name: /Upload meter data/ })).not.toBeInTheDocument()
   })
 
+  it('shows sunlight and wind on the forecast', async () => {
+    const hourly = run.hourly.map((h, i) => ({ ...h, sunlight_w_m2: i % 24 === 12 ? 650 : 0, cloud_cover_pct: 30, wind_ms: 6, temperature_c: 12 }))
+    mockApi({
+      '/api/config': () => json(SITE_CONFIG),
+      '/api/runs/latest/hourly': () => json({ plan: hourly, baseline: hourly }),
+    })
+    window.history.pushState({}, '', '/forecast')
+    render(<App />)
+    expect(await screen.findByText(/Brightest hour 650 W\/m², 30% cloud cover on average/)).toBeInTheDocument()
+    expect(screen.getByText(/No wind turbine is configured/)).toBeInTheDocument()
+  })
+
+  it('asks for a re-plan when a stored run has no weather', async () => {
+    mockApi({ '/api/config': () => json(SITE_CONFIG) })
+    window.history.pushState({}, '', '/forecast')
+    render(<App />)
+    expect(await screen.findByText(/appear here after the next re-plan/)).toBeInTheDocument()
+  })
+
   it('switches the schedule between plan and baseline', async () => {
     mockApi()
     window.history.pushState({}, '', '/schedule')

@@ -10,7 +10,7 @@ import pandas as pd
 from backend.forecast.demand import base_demand
 from backend.forecast.horizon import horizon_index, local_dates
 from backend.forecast.price_estimate import estimator_for, price_forecast
-from backend.forecast.renewables import solar_kw, wind_kw
+from backend.forecast.renewables import hub_wind_speed, solar_kw, wind_kw
 from backend.planner.baseline import baseline
 from backend.planner.explain import explain_blocks
 from backend.planner.inputs import PlanInputs, PlanResult
@@ -226,9 +226,24 @@ def _peak_notes(site: Site, plan: Metrics, notes: Notes) -> None:
         )
 
 
-def _hourly_records(plan: PlanResult) -> list[dict]:
-    frame = plan.hourly.reset_index(names="ts")
+def _weather_table(weather: pd.DataFrame, site: Site) -> pd.DataFrame:
+    """Return the site weather shown next to the plan: sunlight on the panels, clouds, hub-height wind and temperature."""
+    return pd.DataFrame(
+        {
+            "sunlight_w_m2": weather["irradiance"].clip(lower=0),
+            # Forecasts cached before cloud cover was fetched don't have it.
+            "cloud_cover_pct": weather["cloud_cover"] if "cloud_cover" in weather else float("nan"),
+            "wind_ms": hub_wind_speed(weather, site.wind),
+            "temperature_c": weather["temperature"],
+        },
+        index=weather.index,
+    ).round(1)
+
+
+def _hourly_records(plan: PlanResult, weather: pd.DataFrame) -> list[dict]:
+    frame = plan.hourly.join(weather).reset_index(names="ts")
     frame["ts"] = frame["ts"].map(lambda t: t.isoformat())
+    frame = frame.astype(object).where(frame.notna(), None)
     return frame.to_dict(orient="records")
 
 
@@ -259,6 +274,8 @@ def run_plan(settings: Settings, store: Store, now: datetime | None = None, sour
         wind=wind_kw(site_weather, site.wind),
         demand=base_demand(history, index),
     )
+
+    weather_table = _weather_table(site_weather, site)
 
     flexible = [m for m in machines if not isinstance(m, AlwaysOn)]
     requirements = build_requirements(flexible, index)
@@ -301,8 +318,8 @@ def run_plan(settings: Settings, store: Store, now: datetime | None = None, sour
         "machines": _machines(plan, reference, machines, requirements),
         "blocks": [b.to_dict() for b in explain_blocks(plan.hourly, plan.schedule, flexible)],
         "baseline_blocks": [b.to_dict() for b in explain_blocks(reference.hourly, reference.schedule, flexible)],
-        "hourly": _hourly_records(plan),
-        "baseline_hourly": _hourly_records(reference),
+        "hourly": _hourly_records(plan, weather_table),
+        "baseline_hourly": _hourly_records(reference, weather_table),
         "alerts": notes.alerts,
         "warnings": notes.warnings,
         "sources": notes.sources,

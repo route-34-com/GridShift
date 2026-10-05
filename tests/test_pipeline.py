@@ -36,6 +36,23 @@ def test_summary_includes_peak_charge(settings, store):
     assert summary["peak_savings_eur"] == pytest.approx(peak, abs=0.01)
 
 
+def test_hourly_rows_carry_site_weather(settings, store):
+    run = execute(settings, store, NOW, good_sources())
+    noon = next(h for h in run["hourly"] if pd.Timestamp(h["ts"]).tz_convert("Europe/Berlin").hour == 12)
+    assert noon["sunlight_w_m2"] > 600 and noon["cloud_cover_pct"] == 40.0 and noon["temperature_c"] == 14.0
+    assert noon["wind_ms"] == pytest.approx(6.0, abs=0.05)  # sample hub is at 100 m
+    assert run["baseline_hourly"][0]["wind_ms"] == run["hourly"][0]["wind_ms"]
+
+
+def test_weather_cached_without_cloud_cover_still_plans(settings, store):
+    old_style = lambda site, s, e: good_sources().site_weather(site, s, e).drop(columns="cloud_cover")
+    execute(settings, store, NOW, replace(good_sources(), site_weather=old_style))
+    run = execute(settings, store, NOW, replace(good_sources(), site_weather=broken))
+    assert run["sources"]["site_weather"] == "cached"
+    assert all(h["cloud_cover_pct"] is None for h in run["hourly"])
+    assert run["hourly"][0]["sunlight_w_m2"] is not None
+
+
 def test_price_outage_falls_back_to_estimates(settings, store):
     sources = replace(good_sources(), day_ahead=broken)
     run = execute(settings, store, NOW, sources)

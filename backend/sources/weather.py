@@ -46,8 +46,8 @@ def _dates(start: datetime, end: datetime) -> dict:
 
 
 def fetch_site_weather(site: Site, start: datetime, end: datetime, client: httpx.Client | None = None) -> pd.DataFrame:
-    """Return hourly tilted irradiance, hub wind speed and temperature at the site."""
-    fields = {"global_tilted_irradiance": "irradiance", "wind_speed_100m": "wind_100m", "temperature_2m": "temperature"}
+    """Return hourly tilted irradiance, 100 m wind speed, temperature and cloud cover at the site."""
+    fields = {"global_tilted_irradiance": "irradiance", "wind_speed_100m": "wind_100m", "temperature_2m": "temperature", "cloud_cover": "cloud_cover"}
     params = {
         "latitude": site.latitude,
         "longitude": site.longitude,

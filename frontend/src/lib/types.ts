@@ -87,6 +87,11 @@ export interface Hour {
   grid_export: number
   curtail: number
   unmet: number
+  /** Site weather; missing on runs made before weather was stored, cloud cover null on cached older forecasts. */
+  sunlight_w_m2?: number | null
+  cloud_cover_pct?: number | null
+  wind_ms?: number | null
+  temperature_c?: number | null
 }
 
 export interface Block {

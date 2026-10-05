@@ -4,7 +4,18 @@ from datetime import datetime
 
 from backend.planner.model import LOCAL_TZ
 
-UNITS = {"eur_mwh": "(€/MWh)", "eur": "(€)", "kwh": "(kWh)", "kw": "(kW)", "utc": "(UTC)", "local": "(local time)"}
+UNITS = {
+    "eur_mwh": "(€/MWh)",
+    "eur": "(€)",
+    "kwh": "(kWh)",
+    "kw": "(kW)",
+    "w_m2": "(W/m²)",
+    "pct": "(%)",
+    "ms": "(m/s)",
+    "c": "(°C)",
+    "utc": "(UTC)",
+    "local": "(local time)",
+}
 
 
 def header(column: str) -> str:

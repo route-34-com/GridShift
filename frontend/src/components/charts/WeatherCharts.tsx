@@ -1,0 +1,92 @@
+import { Area, CartesianGrid, ComposedChart, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { num, power } from '@/lib/format'
+import type { Hour } from '@/lib/types'
+import { SERIES } from '@/lib/utils'
+import { CLOUD_COLOR, type TurbineMarks } from '@/lib/weather'
+import { activeRow, axisProps, hourTitle, toRows, TooltipBox, xAxisProps, type TooltipArgs } from './common'
+
+const value = (v: number | null | undefined, unit: string, digits = 0) => (v == null ? '–' : `${num(v, digits)} ${unit}`)
+
+export function SunlightChart({ hours }: { hours: Hour[] }) {
+  const rows = toRows(hours, (h) => ({
+    sun: h.sunlight_w_m2 ?? null,
+    cloud: h.cloud_cover_pct ?? null,
+    temp: h.temperature_c ?? null,
+    solar: h.solar,
+  }))
+  const hasClouds = rows.some((r) => r.cloud != null)
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+        <CartesianGrid vertical={false} />
+        <XAxis {...xAxisProps(hours)} />
+        <YAxis yAxisId="sun" {...axisProps} width={44} tickFormatter={(v: number) => num(v)} />
+        <YAxis yAxisId="cloud" orientation="right" {...axisProps} width={40} domain={[0, 100]} ticks={[0, 50, 100]} tickFormatter={(v: number) => `${v}%`} hide={!hasClouds} />
+        <Tooltip
+          content={(args: TooltipArgs) => {
+            const row = activeRow(args)
+            if (!row) return null
+            return (
+              <TooltipBox
+                title={hourTitle(row.t)}
+                lines={[
+                  { label: 'Sunlight on panels', color: SERIES.solar, value: value(row.sun, 'W/m²') },
+                  { label: 'Cloud cover', color: CLOUD_COLOR, value: value(row.cloud, '%') },
+                  { label: 'Temperature', color: 'var(--muted)', value: value(row.temp, '°C', 1) },
+                ]}
+                footer={`Solar output ${power(row.solar as number)}`}
+              />
+            )
+          }}
+        />
+        <Area yAxisId="sun" dataKey="sun" stroke={SERIES.solar} fill={SERIES.solar} fillOpacity={0.35} strokeWidth={1.5} isAnimationActive={false} />
+        {hasClouds && <Line yAxisId="cloud" dataKey="cloud" stroke={CLOUD_COLOR} strokeWidth={1.5} strokeDasharray="4 3" dot={false} isAnimationActive={false} />}
+      </ComposedChart>
+    </ResponsiveContainer>
+  )
+}
+
+export function WindChart({ hours, marks }: { hours: Hour[]; marks: TurbineMarks | null }) {
+  const rows = toRows(hours, (h) => ({ speed: h.wind_ms ?? null, output: h.wind }))
+  const fastest = Math.max(0, ...rows.map((r) => r.speed ?? 0))
+  const top = Math.ceil(Math.max(fastest, marks?.fullAt ?? 0) + 1)
+  const line = (speed: number | null | undefined, label: string) =>
+    speed != null && (
+      <ReferenceLine
+        y={speed}
+        stroke="var(--muted)"
+        strokeDasharray="2 3"
+        ifOverflow="discard"
+        label={{ value: label, position: 'insideTopLeft', fontSize: 11, fill: 'var(--muted)' }}
+      />
+    )
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+        <CartesianGrid vertical={false} />
+        <XAxis {...xAxisProps(hours)} />
+        <YAxis {...axisProps} width={44} domain={[0, top]} tickFormatter={(v: number) => `${v}`} />
+        {line(marks?.startsAt, 'Turbine starts')}
+        {line(marks?.fullAt, 'Full power')}
+        {line(marks?.stopsAt, 'Shuts off (storm)')}
+        <Tooltip
+          content={(args: TooltipArgs) => {
+            const row = activeRow(args)
+            if (!row) return null
+            const speed = row.speed as number | null
+            return (
+              <TooltipBox
+                title={hourTitle(row.t)}
+                lines={[{ label: 'Wind at hub', color: SERIES.wind, value: speed == null ? '–' : `${num(speed, 1)} m/s · ${num(speed * 3.6)} km/h` }]}
+                footer={marks ? `Turbine output ${power(row.output as number)}` : undefined}
+              />
+            )
+          }}
+        />
+        <Line dataKey="speed" stroke={SERIES.wind} strokeWidth={2} dot={false} isAnimationActive={false} />
+      </LineChart>
+    </ResponsiveContainer>
+  )
+}

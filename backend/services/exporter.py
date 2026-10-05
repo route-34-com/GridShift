@@ -45,6 +45,10 @@ def hourly_table(run: dict, key: str = "hourly") -> Table:
             "grid_export_kw": h["grid_export"],
             "curtailed_kw": h["curtail"],
             "unmet_kw": h["unmet"],
+            "sunlight_w_m2": h.get("sunlight_w_m2"),
+            "cloud_cover_pct": h.get("cloud_cover_pct"),
+            "wind_speed_ms": h.get("wind_ms"),
+            "temperature_c": h.get("temperature_c"),
         }
         for h in run[key]
     ]

@@ -68,14 +68,14 @@ def hourly_block(fields, hours=48, value=5.0):
 
 
 def test_site_weather_returns_horizon_window():
-    payload = hourly_block(["global_tilted_irradiance", "wind_speed_100m", "temperature_2m"])
+    payload = hourly_block(["global_tilted_irradiance", "wind_speed_100m", "temperature_2m", "cloud_cover"])
     frame = fetch_site_weather(make_site(), START, END, json_client(payload))
-    assert list(frame.columns) == ["irradiance", "wind_100m", "temperature"]
+    assert list(frame.columns) == ["irradiance", "wind_100m", "temperature", "cloud_cover"]
     assert len(frame) == 24 and frame.index[0] == pd.Timestamp(START)
 
 
 def test_site_weather_fills_gaps():
-    payload = hourly_block(["global_tilted_irradiance", "wind_speed_100m", "temperature_2m"])
+    payload = hourly_block(["global_tilted_irradiance", "wind_speed_100m", "temperature_2m", "cloud_cover"])
     payload["hourly"]["wind_speed_100m"][30] = None
     frame = fetch_site_weather(make_site(), START, END, json_client(payload))
     assert frame.notna().all(axis=None)

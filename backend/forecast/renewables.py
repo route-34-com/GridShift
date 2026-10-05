@@ -15,9 +15,14 @@ def solar_kw(weather: pd.DataFrame, solar: Solar) -> pd.Series:
     return output.clip(0, solar.kwp).rename("solar_kw")
 
 
+def hub_wind_speed(weather: pd.DataFrame, wind: Wind) -> pd.Series:
+    """Return wind speed in m/s at hub height, scaled from the 100 m forecast."""
+    return (weather["wind_100m"].clip(lower=0).fillna(0) * (wind.hub_height_m / 100) ** (1 / 7)).rename("wind_ms")
+
+
 def wind_kw(weather: pd.DataFrame, wind: Wind) -> pd.Series:
     """Return turbine output in kW from 100 m wind speed adjusted to hub height."""
-    speed = weather["wind_100m"].clip(lower=0).fillna(0) * (wind.hub_height_m / 100) ** (1 / 7)
+    speed = hub_wind_speed(weather, wind)
     speeds, power = zip(*wind.power_curve)
     output = np.interp(speed.to_numpy(), speeds, power, left=0, right=0)
     return pd.Series(np.clip(output, 0, wind.rated_kw), index=weather.index, name="wind_kw")

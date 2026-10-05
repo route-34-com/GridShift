@@ -68,7 +68,7 @@ Every export is a dated download and is recorded in the audit log.
 |---|---|---|
 | Overview | Full plan report: PDF with headline figures, daily cost chart, outlook, machines and schedule; Excel with Summary, Daily, Schedule, Machines and Hourly sheets | PDF, Excel |
 | Overview | Daily summary, price paid per machine | PDF, Excel, CSV |
-| Forecast | Hourly plan and hourly baseline (168 rows) | PDF, Excel, CSV |
+| Forecast | Hourly plan and hourly baseline (168 rows, including site weather) | PDF, Excel, CSV |
 | Schedule | GridShift schedule and run-as-needed schedule | PDF, Excel, CSV |
 | Users | User list | PDF, Excel, CSV |
 | Audit log | Matching entries (respects the filters) | PDF, Excel, CSV |
@@ -100,7 +100,7 @@ Demand history ─────────→ Factory base load forecast
 ```
 
 1. **Prices**: published DE-LU day-ahead prices from Energy-Charts for tomorrow. Later days are estimated by a gradient-boosting model trained on 180 days of real prices and Germany-wide wind, solar and temperature.
-2. **Weather**: Open-Meteo tilted irradiance and 100 m wind speed at the site, converted to kW with a PV temperature model and the turbine power curve.
+2. **Weather**: Open-Meteo tilted irradiance and 100 m wind speed at the site, converted to kW with a PV temperature model and the turbine power curve. The Forecast page shows the weather itself: sunlight on the panels (W/m²) with cloud cover, and wind speed at hub height with the turbine's start, full-power and storm shut-off speeds. Every hourly row and the hourly export carry sunlight, cloud cover, wind speed and temperature.
 3. **Demand**: base load as the weekday × hour average of the last 8 weeks of meter data.
 4. **Optimizer**: a mixed-integer program solved with HiGHS. It minimises grid cost while meeting every quota, deadline, minimum run block, battery limit and grid connection limit.
 5. **Output**: run stored in SQLite, daily email sent, dashboard updated.

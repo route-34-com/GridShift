@@ -36,7 +36,7 @@ def fake_site_weather(site, start, end):
     index = hours(start, end)
     local = index.tz_convert("Europe/Berlin").hour.to_numpy()
     sun = np.clip(np.sin((local - 6) / 13 * np.pi), 0, None) * 700
-    return pd.DataFrame({"irradiance": sun, "wind_100m": 6.0, "temperature": 14.0}, index=index)
+    return pd.DataFrame({"irradiance": sun, "wind_100m": 6.0, "temperature": 14.0, "cloud_cover": 40.0}, index=index)
 
 
 def fake_national(start, end):
