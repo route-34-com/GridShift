@@ -9,6 +9,7 @@ ADMINS = frozenset({"admin"})
 TABLE: dict[str, frozenset] = {
     "plan.view": EVERYONE,
     "plan.run": PLANNERS,
+    "meter.upload": PLANNERS,
     "export": EVERYONE,
     "config.view": EVERYONE,
     "users.manage": ADMINS,

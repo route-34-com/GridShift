@@ -66,6 +66,8 @@ class Grid(Strict):
     max_export_kw: float = Field(0, ge=0)
     fee_eur_per_kwh: float = Field(0, ge=0)
     export_price_eur_per_kwh: float = Field(0, ge=0)
+    peak_charge_eur_per_kw_year: float = Field(0, ge=0)
+    peak_so_far_kw: float = Field(0, ge=0)
 
 
 class Site(Strict):

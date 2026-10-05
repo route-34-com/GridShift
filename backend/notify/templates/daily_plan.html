@@ -42,7 +42,10 @@
       <div style="font-size:20px;font-weight:600;margin-top:4px;">{{ first.renewable_share | pct }}</div>
     </td>
   </tr></table>
-  <div style="font-size:13px;color:#5b6b64;margin-top:10px;">Week ahead: {{ run.summary.optimized.cost_eur | eur }} planned vs {{ run.summary.baseline.cost_eur | eur }} if machines ran as early as possible.</div>
+  <div style="font-size:13px;color:#5b6b64;margin-top:10px;">Week ahead: {{ run.summary.optimized.cost_eur | eur }} planned vs {{ run.summary.baseline.cost_eur | eur }} if machines ran as early as possible.{% if run.summary.peak_savings_eur > 0 %} Running as early as possible would also add {{ run.summary.peak_savings_eur | eur }} to this year's peak charge.{% endif %}</div>
+  {% if run.summary.peak.charge_eur_per_kw_year > 0 %}
+  <div style="font-size:13px;color:#5b6b64;margin-top:4px;">Highest grid draw this week: {{ '{:,.0f}'.format(run.summary.optimized.peak_import_kw) }} kW (this year's record: {{ '{:,.0f}'.format(run.summary.peak.record_kw) }} kW).</div>
+  {% endif %}
 </td></tr>
 
 <tr><td style="padding:20px 28px 0;">

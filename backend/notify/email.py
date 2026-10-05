@@ -27,6 +27,8 @@ def render_plan_email(payload: dict) -> tuple[str, str]:
     first = payload["daily"][0]
     tomorrow = [b for b in payload["blocks"] if b["start"] < payload["daily"][1]["start"]] if len(payload["daily"]) > 1 else payload["blocks"]
     subject = f"GridShift plan for {first['label']}: €{first['cost_eur']:,.0f} tomorrow · €{payload['summary']['savings_eur']:,.0f} saved this week"
+    if payload["summary"].get("peak_savings_eur", 0) > 0:
+        subject += f" · €{payload['summary']['peak_savings_eur']:,.0f} peak charge avoided"
     if payload["alerts"]:
         subject = f"[{len(payload['alerts'])} alert{'s' if len(payload['alerts']) > 1 else ''}] " + subject
     html = TEMPLATES.get_template("daily_plan.html").render(run=payload, first=first, tomorrow=tomorrow)

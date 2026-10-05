@@ -80,6 +80,12 @@ def optimize(inputs: PlanInputs, site: Site, requirements: list[Requirement], ti
         + h.qsum(unmet * UNMET_PENALTY)
         + h.qsum(s * (SHORTFALL_PENALTY + p) for s, p in slack)
     )
+    if grid.peak_charge_eur_per_kw_year > 0:
+        # Any import above this year's record raises the annual peak charge for the whole year.
+        new_peak = h.addVariable(lb=0)
+        for t in range(n):
+            h.addConstr(grid_import[t] <= grid.peak_so_far_kw + new_peak)
+        objective = objective + new_peak * grid.peak_charge_eur_per_kw_year
     h.minimize(objective)
 
     status = h.modelStatusToString(h.getModelStatus())

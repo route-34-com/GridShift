@@ -6,6 +6,7 @@ import type {
   Hour,
   LinkResult,
   Me,
+  PeakRecord,
   Role,
   RunHeader,
   RunSummary,
@@ -104,6 +105,8 @@ export const api = {
   runs: () => request<RunHeader[]>('/api/runs'),
   config: () => request<Config>('/api/config'),
   run: (email = false) => request<RunSummary>(`/api/runs?email=${email}`, { method: 'POST' }),
+  peak: () => request<PeakRecord>('/api/peak'),
+  uploadMeter: (file: File) => request<PeakRecord>('/api/meter', { method: 'POST', body: file, headers: { 'content-type': 'text/csv' } }),
 }
 
 export const auth = {

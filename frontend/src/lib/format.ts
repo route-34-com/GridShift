@@ -25,6 +25,12 @@ export function power(kw: number): string {
   return Math.abs(kw) >= 1000 ? `${number1.format(kw / 1000)} MW` : `${number0.format(kw)} kW`
 }
 
+/** Power in whole kW, never rounded to MW. Peak charges are billed per kW. */
+export function kw(value: number): string {
+  if (!Number.isFinite(value)) return '–'
+  return `${number0.format(value)} kW`
+}
+
 export function mass(kg: number): string {
   if (!Number.isFinite(kg)) return '–'
   return Math.abs(kg) >= 1000 ? `${number1.format(kg / 1000)} t` : `${number0.format(kg)} kg`

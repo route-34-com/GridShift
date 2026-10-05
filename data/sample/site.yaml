@@ -41,6 +41,8 @@ grid:
   max_export_kw: 1500
   fee_eur_per_kwh: 0.09
   export_price_eur_per_kwh: 0.06
+  peak_charge_eur_per_kw_year: 120
+  peak_so_far_kw: 1200
 
 co2_kg_per_kwh: 0.38
 

@@ -8,6 +8,9 @@ export interface Alert {
 
 export interface Metrics {
   cost_eur: number
+  // Absent in runs stored before peak charges were added.
+  peak_charge_eur?: number
+  total_cost_eur?: number
   import_kwh: number
   export_kwh: number
   renewable_used_kwh: number
@@ -52,7 +55,14 @@ export interface RunSummary {
   status: 'ok' | 'attention'
   site_name: string
   solver: { status: string; gap: number }
-  summary: { optimized: Metrics; baseline: Metrics; savings_eur: number; savings_pct: number }
+  summary: {
+    optimized: Metrics
+    baseline: Metrics
+    savings_eur: number
+    savings_pct: number
+    peak_savings_eur?: number
+    peak?: PeakRecord
+  }
   daily: Day[]
   machines: MachineSummary[]
   alerts: Alert[]
@@ -118,7 +128,14 @@ export interface SiteConfig {
     min_soc: number
     initial_soc: number
   }
-  grid: { max_import_kw: number; max_export_kw: number; fee_eur_per_kwh: number; export_price_eur_per_kwh: number }
+  grid: {
+    max_import_kw: number
+    max_export_kw: number
+    fee_eur_per_kwh: number
+    export_price_eur_per_kwh: number
+    peak_charge_eur_per_kw_year: number
+    peak_so_far_kw: number
+  }
   co2_kg_per_kwh: number
   email_recipients: string[]
 }
@@ -198,4 +215,17 @@ export interface SetupStatus {
   needed: boolean
   allowed: boolean
   email: boolean
+}
+
+export interface PeakRecord {
+  year: number
+  record_kw: number
+  source: 'meter' | 'settings'
+  at: string | null
+  settings_kw: number
+  meter_kw: number | null
+  charge_eur_per_kw_year: number
+  annual_eur: number
+  monthly_eur: number
+  meter: { rows: number; start: string; end: string; interval_minutes: number; rows_this_year: number } | null
 }

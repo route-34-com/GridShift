@@ -14,7 +14,7 @@ from backend.forecast.renewables import solar_kw, wind_kw
 from backend.planner.baseline import baseline
 from backend.planner.explain import explain_blocks
 from backend.planner.inputs import PlanInputs, PlanResult
-from backend.planner.metrics import daily_costs, measure
+from backend.planner.metrics import Metrics, daily_costs, measure
 from backend.planner.model import LOCAL_TZ, AlwaysOn, Machine, Site
 from backend.planner.optimizer import PlannerError, optimize
 from backend.planner.requirements import build_requirements
@@ -22,7 +22,8 @@ from backend.settings import Settings
 from backend.sources import price, weather
 from backend.sources.demand_history import load_demand_history
 from backend.sources.http import SourceError
-from backend.sources.site import load_machines, load_site
+from backend.sources.meter import current_peak, load_meter
+from backend.sources.site import ConfigError, load_machines, load_site
 from backend.store import Store
 
 PLAN_CHANGE_THRESHOLD = 0.2
@@ -203,6 +204,28 @@ def _plan_change(store: Store, plan: PlanResult, notes: Notes) -> None:
         notes.alert("plan_change", "info", f"Tomorrow's plan moved {change:.0%} of flexible energy compared with yesterday's preview.")
 
 
+def _meter_readings(settings: Settings, notes: Notes) -> pd.Series | None:
+    try:
+        return load_meter(settings.meter_path)
+    except ConfigError as exc:
+        notes.alert("meter", "warning", f"Meter data could not be read ({exc}); using the peak from the site settings.")
+        return None
+
+
+def _peak_notes(site: Site, plan: Metrics, notes: Notes) -> None:
+    grid = site.grid
+    if grid.peak_charge_eur_per_kw_year <= 0:
+        return
+    if grid.peak_so_far_kw <= 0:
+        notes.warnings.append("No peak record for this year yet, so this week's highest hour counts as a new yearly peak. Upload meter data or set peak_so_far_kw from the latest bill.")
+    elif plan.peak_charge_eur > 0:
+        notes.alert(
+            "new_peak",
+            "warning",
+            f"Plan raises the yearly peak from {grid.peak_so_far_kw:,.0f} to {plan.peak_import_kw:,.0f} kW, adding €{plan.peak_charge_eur:,.0f} to this year's peak charge. Staying under it would cost more.",
+        )
+
+
 def _hourly_records(plan: PlanResult) -> list[dict]:
     frame = plan.hourly.reset_index(names="ts")
     frame["ts"] = frame["ts"].map(lambda t: t.isoformat())
@@ -215,6 +238,10 @@ def run_plan(settings: Settings, store: Store, now: datetime | None = None, sour
     sources = sources or Sources()
     notes = Notes()
     site = load_site(settings.site_path)
+    peak = current_peak(site, _meter_readings(settings, notes), now)
+    if peak.meter and not peak.meter["rows_this_year"]:
+        notes.warnings.append(f"Uploaded meter data has no readings from {peak.year}; using the peak from the site settings.")
+    site = site.model_copy(update={"grid": site.grid.model_copy(update={"peak_so_far_kw": peak.kw})})
     machines = load_machines(settings.machines_path)
     history = load_demand_history(settings.demand_path)
     estimator = estimator_for(settings.price_history_path)
@@ -251,6 +278,7 @@ def run_plan(settings: Settings, store: Store, now: datetime | None = None, sour
     if optimized.unmet_kwh > 0:
         notes.alert("unmet", "error", f"{optimized.unmet_kwh:,.0f} kWh of demand exceeds the grid connection and on-site supply.")
     _plan_change(store, plan, notes)
+    _peak_notes(site, optimized, notes)
 
     savings = round(base.cost_eur - optimized.cost_eur, 2)
     payload = {
@@ -266,6 +294,8 @@ def run_plan(settings: Settings, store: Store, now: datetime | None = None, sour
             "baseline": base.to_dict(),
             "savings_eur": savings,
             "savings_pct": round(savings / base.cost_eur, 4) if base.cost_eur > 0 else 0.0,
+            "peak_savings_eur": round(base.peak_charge_eur - optimized.peak_charge_eur, 2),
+            "peak": peak.to_dict(),
         },
         "daily": _daily(plan, reference, site),
         "machines": _machines(plan, reference, machines, requirements),

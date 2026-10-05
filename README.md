@@ -23,6 +23,8 @@ GridShift plans when a factory's heavy machines should run, when to charge or di
 
    🔋 **Battery strategy** — charge on surplus solar or cheap hours, discharge at peaks
 
+   🏔️ **Peak protection** — keeps grid draw under this year's record so the annual peak charge (Leistungspreis) doesn't go up
+
    🧮 **Optimizer** that finds the lowest-cost schedule while meeting every quota and deadline
 
    📧 **Daily email plan and alerts** plus a web dashboard showing the schedule and savings
@@ -32,6 +34,7 @@ GridShift plans when a factory's heavy machines should run, when to charge or di
 - Hourly 7-day planning horizon, re-planned every day after day-ahead prices are published
 - Three machine types: `always_on`, `daily_quota` and `deadline` jobs, with minimum run blocks
 - Battery charge/discharge plan, with no simultaneous charging and discharging
+- Peak charge awareness: a new yearly grid peak is priced at the full annual €/kW rate, so the planner only raises it when that is cheaper than staying under it
 - Surplus solar and wind detection; flexible load moves onto clean energy
 - Savings measured against a "run every machine as early as possible" baseline
 - One-line explanation for every scheduled block ("avg €58/MWh vs day avg €141/MWh")
@@ -45,8 +48,8 @@ GridShift plans when a factory's heavy machines should run, when to charge or di
 
 | Role | Can do |
 |---|---|
-| **Admin** | Everything: plans, re-plan, exports, invite and manage users, audit log |
-| **Planner** | See plans, re-plan, export |
+| **Admin** | Everything: plans, re-plan, upload meter data, exports, invite and manage users, audit log |
+| **Planner** | See plans, re-plan, upload meter data, export |
 | **Viewer** | See plans, export |
 
 - **First start:** open the app on the computer running GridShift and create the admin account.
@@ -110,6 +113,10 @@ Demand history ─────────→ Factory base load forecast
 | Price API down | All hours estimated; alert in email and dashboard |
 | Weather API down | Last stored forecast reused; run fails cleanly only if none exists |
 | Negative prices | Planner pulls load and battery charging into those hours |
+| Staying under the yearly peak record is impossible | Peak raised as little as possible; alert shows the extra annual charge |
+| No peak record (no meter data, `peak_so_far_kw` not set) | Warning; the week's highest hour is treated as a new yearly peak |
+| Meter data unreadable or from last year | Warning; the peak from `site.yaml` is used |
+| Bad meter upload (wrong columns, daily readings, not a CSV) | Rejected with a clear message; the previous file is kept |
 | DST change inside the week | Quotas counted per local calendar day (23 h / 25 h days) |
 | Deadline impossible in its window | Best partial schedule plus a shortfall alert |
 | Deadline beyond the horizon | Only the hours that cannot fit later are required this week |
@@ -250,17 +257,21 @@ and set `SMTP_HOST=127.0.0.1`, `SMTP_PORT=1025`, `SMTP_TLS=none`.
 Describe the factory in the data folder (`data/sample/` by default):
 
 - `site.yaml`: location, solar, wind turbine power curve, battery, grid limits and fees, email recipients
+  - `grid.peak_charge_eur_per_kw_year`: the grid operator's annual demand charge (Leistungspreis) in €/kW; `0` turns peak protection off
+  - `grid.peak_so_far_kw`: the highest 15-minute grid draw this calendar year from the latest bill. Optional once meter data is uploaded; the planner uses the higher of the two
 - `machines.yaml`: each machine's power, type and rules:
   - `always_on`: runs 24/7; part of the base load
   - `daily_quota`: `hours_per_day`, `min_run_hours`
   - `deadline`: `total_hours` plus `due` (date/time, Berlin time) or `due_in_hours`; optional `earliest_start` or `start_in_hours`
 - `demand_history.csv`: hourly base load (`timestamp,load_kw`), at least one week
 - `price_history.csv`: hourly prices with national weather, used to train the price estimator
+- `meter_data.csv` (optional): the site's 15-minute grid import (RLM load profile), usually uploaded from the dashboard's *Site* page. Columns `timestamp` and either `import_kw` (average kW) or `import_kwh` (kWh per interval); comma or semicolon separated, decimal comma allowed, times without a zone read as German time. GridShift takes this year's highest reading as the peak record and shows the peak charge per month (record kW × €/kW per year ÷ 12)
 
 To use a client's data, point `GRIDSHIFT_DATA_DIR` at a folder with the same four files. Sample history can be regenerated with:
 ```bash
 python -m scripts.make_demand_history
 python -m scripts.make_price_history
+python -m scripts.make_meter_data
 ```
 
 ## Usage
@@ -343,6 +354,8 @@ Tests never call the network: price and weather sources are replaced with fakes.
 | GET | `/api/audit` | Filtered, paged audit trail (admin) |
 | GET | `/api/exports/run/{name}?format=pdf\|xlsx\|csv` | `report`, `summary`, `daily`, `schedule`, `baseline-schedule`, `hourly`, `baseline-hourly`, `machines` |
 | GET | `/api/exports/users`, `/api/exports/audit` | User list and audit trail (admin) |
+| GET | `/api/peak` | This year's peak record, its source, and the peak charge per month and year |
+| POST | `/api/meter` | Upload meter data, admin or planner (CSV body, `content-type: text/csv`); returns the new peak record |
 
 Every endpoint except health and the sign-in flow requires a session.
 

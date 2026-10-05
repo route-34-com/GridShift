@@ -10,14 +10,19 @@ from backend.planner.model import Battery, DailyQuota, Deadline, Grid, Site, Sol
 NOW = datetime(2026, 7, 6, 10, tzinfo=timezone.utc)
 
 
-def make_site(battery: bool = True, max_import: float = 3000, max_export: float = 1000) -> Site:
+def make_site(
+    battery: bool = True, max_import: float = 3000, max_export: float = 1000, peak_charge: float = 0, peak_so_far: float = 0
+) -> Site:
     return Site(
         name="Test",
         latitude=48.8,
         longitude=9.2,
         solar=Solar(kwp=1000),
         battery=Battery(capacity_kwh=1000, max_charge_kw=500, max_discharge_kw=500) if battery else Battery(),
-        grid=Grid(max_import_kw=max_import, max_export_kw=max_export, fee_eur_per_kwh=0.05, export_price_eur_per_kwh=0.04),
+        grid=Grid(
+            max_import_kw=max_import, max_export_kw=max_export, fee_eur_per_kwh=0.05, export_price_eur_per_kwh=0.04,
+            peak_charge_eur_per_kw_year=peak_charge, peak_so_far_kw=peak_so_far,
+        ),
     )
 
 

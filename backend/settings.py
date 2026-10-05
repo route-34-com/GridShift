@@ -55,6 +55,11 @@ class Settings:
         return self.data_dir / "demand_history.csv"
 
     @property
+    def meter_path(self) -> Path:
+        """Return the uploaded interval meter data path."""
+        return self.data_dir / "meter_data.csv"
+
+    @property
     def price_history_path(self) -> Path:
         """Return the price history path."""
         return self.data_dir / "price_history.csv"

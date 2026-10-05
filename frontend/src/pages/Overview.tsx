@@ -1,16 +1,20 @@
-import { Leaf, PiggyBank, Receipt, Sun } from 'lucide-react'
+import { Gauge, PiggyBank, Receipt, Sun } from 'lucide-react'
 import { AlertList } from '@/components/AlertList'
 import { PlanExportMenu, type ExportOption } from '@/components/ExportMenu'
 import { ChartCard } from '@/components/ChartCard'
 import { DailyCostChart } from '@/components/charts/DailyCostChart'
 import { PageLayout } from '@/components/PageLayout'
+import { PeakPanel } from '@/components/PeakPanel'
 import { RunGate } from '@/components/RunGate'
 import { SourceBadges } from '@/components/SourceBadges'
 import { StatCard } from '@/components/StatCard'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
-import { exportsApi } from '@/lib/api'
-import { dayLabel, eur, mass, num, pct } from '@/lib/format'
+import { useAsync } from '@/hooks/useAsync'
+import { useRun } from '@/hooks/RunContext'
+import { api, exportsApi } from '@/lib/api'
+import { dayLabel, eur, kw, mass, num, pct } from '@/lib/format'
 import type { Day, MachineSummary, RunSummary } from '@/lib/types'
 import { SERIES } from '@/lib/utils'
 
@@ -79,8 +83,42 @@ function MachineTable({ machines }: { machines: MachineSummary[] }) {
   )
 }
 
+function PeakCard({ optimized, baseline, peak }: Pick<RunSummary['summary'], 'optimized' | 'baseline' | 'peak'>) {
+  if (!peak || peak.charge_eur_per_kw_year <= 0) {
+    return <StatCard icon={Gauge} label="Highest grid draw" value={kw(optimized.peak_import_kw)} hint="No peak charge configured" />
+  }
+  const added = optimized.peak_charge_eur ?? 0
+  const avoided = (baseline.peak_charge_eur ?? 0) - added
+  const raised = added > 0
+  const hint = raised
+    ? `Above this year's ${kw(peak.record_kw)} record: +${eur(added)} peak charge`
+    : `Under this year's ${kw(peak.record_kw)} record` + (avoided > 0 ? ` · avoids ${eur(avoided)} peak charge` : '')
+  return <StatCard icon={Gauge} tone={raised ? 'solar' : 'positive'} label="Highest grid draw" value={kw(optimized.peak_import_kw)} hint={hint} />
+}
+
+function PeakSection({ run }: { run: RunSummary }) {
+  const live = useAsync(api.peak)
+  const { runNow, running } = useRun()
+  const peak = live.data ?? run.summary.peak
+  if (!peak || peak.charge_eur_per_kw_year <= 0) return null
+  const planned = run.summary.peak?.record_kw
+  const stale = live.data !== null && planned !== undefined && Math.abs(live.data.record_kw - planned) > 0.5
+  return (
+    <PeakPanel peak={peak} planHighestKw={run.summary.optimized.peak_import_kw}>
+      {stale && planned !== undefined && (
+        <div className="flex flex-wrap items-center gap-3 rounded-lg bg-warning-soft p-3 text-sm text-warning">
+          <span>This plan was made with a {kw(planned)} record. Re-plan to protect the new {kw(peak.record_kw)} record.</span>
+          <Button size="sm" variant="primary" onClick={() => void runNow()} disabled={running}>
+            {running ? 'Planning…' : 'Re-plan now'}
+          </Button>
+        </div>
+      )}
+    </PeakPanel>
+  )
+}
+
 function Content({ run }: { run: RunSummary }) {
-  const { optimized, baseline, savings_eur, savings_pct } = run.summary
+  const { optimized, baseline, savings_eur, savings_pct, peak } = run.summary
   const tomorrow = run.daily[0]
   return (
     <div className="space-y-6">
@@ -89,9 +127,11 @@ function Content({ run }: { run: RunSummary }) {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={PiggyBank} tone="positive" label="Saved this week" value={eur(savings_eur)} hint={`${pct(savings_pct, 1)} below run-as-needed (${eur(baseline.cost_eur)})`} />
         <StatCard icon={Receipt} tone="brand" label="Planned energy cost" value={eur(optimized.cost_eur)} hint={`Tomorrow ${eur(tomorrow.cost_eur)}`} />
-        <StatCard icon={Sun} tone="solar" label="On-site renewable share" value={pct(optimized.renewable_share)} hint={`${num(optimized.renewable_used_kwh / 1000, 1)} MWh solar and wind used`} />
-        <StatCard icon={Leaf} tone="positive" label="CO₂ avoided" value={mass(optimized.co2_avoided_kg)} hint="vs. buying the same energy from the grid" />
+        <PeakCard optimized={optimized} baseline={baseline} peak={peak} />
+        <StatCard icon={Sun} tone="solar" label="On-site renewable share" value={pct(optimized.renewable_share)} hint={`${num(optimized.renewable_used_kwh / 1000, 1)} MWh used · ${mass(optimized.co2_avoided_kg)} CO₂ avoided`} />
       </div>
+
+      <PeakSection run={run} />
 
       <div className="grid gap-6 xl:grid-cols-5">
         <ChartCard

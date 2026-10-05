@@ -9,6 +9,22 @@ afterEach(() => {
   window.history.pushState({}, '', '/')
 })
 
+const SITE_CONFIG = {
+  site: {
+    name: 'Werk',
+    latitude: 48.8,
+    longitude: 9.2,
+    solar: { kwp: 1500, tilt: 25, azimuth: 0, performance_ratio: 0.85 },
+    wind: { rated_kw: 0, hub_height_m: 100, power_curve: [[0, 0], [30, 0]] },
+    battery: { capacity_kwh: 1000, max_charge_kw: 500, max_discharge_kw: 500, efficiency: 0.95, min_soc: 0.1, initial_soc: 0.5 },
+    grid: { max_import_kw: 2500, max_export_kw: 1500, fee_eur_per_kwh: 0.09, export_price_eur_per_kwh: 0.06, peak_charge_eur_per_kw_year: 120, peak_so_far_kw: 1200 },
+    co2_kg_per_kwh: 0.38,
+    email_recipients: [],
+  },
+  machines: [],
+}
+const SETTINGS_PEAK = { year: 2026, source: 'settings', at: null, settings_kw: 1200, meter_kw: null, charge_eur_per_kw_year: 120, meter: null }
+
 describe('App', () => {
   it('shows savings and alerts on the overview', async () => {
     mockApi()
@@ -16,6 +32,35 @@ describe('App', () => {
     expect(await screen.findByText('Saved this week')).toBeInTheDocument()
     expect(screen.getAllByText(run.site_name).length).toBeGreaterThan(0)
     expect(screen.getByText('7-day outlook')).toBeInTheDocument()
+  })
+
+  it('shows the highest grid draw against the yearly record', async () => {
+    const { optimized } = run.summary
+    const withPeak = {
+      ...run,
+      summary: {
+        ...run.summary,
+        optimized: { ...optimized, peak_charge_eur: 0, total_cost_eur: optimized.cost_eur },
+        peak_savings_eur: 0,
+        peak: {
+          year: 2026,
+          record_kw: 2000,
+          source: 'meter',
+          at: '2026-02-16T06:15:00+00:00',
+          settings_kw: 1200,
+          meter_kw: 2000,
+          charge_eur_per_kw_year: 120,
+          annual_eur: 240000,
+          monthly_eur: 20000,
+          meter: null,
+        },
+      },
+    }
+    mockApi({ '/api/runs/latest': () => json(withPeak) })
+    render(<App />)
+    expect(await screen.findByText(/Under this year's 2,000 kW record/)).toBeInTheDocument()
+    expect(screen.getByText('Peak charge per month')).toBeInTheDocument()
+    expect(screen.getByText('€20,000')).toBeInTheDocument()
   })
 
   it('offers to create the first plan when none exists', async () => {
@@ -47,6 +92,45 @@ describe('App', () => {
     })
     render(<App />)
     expect(await screen.findByText(/last planning run failed: weather down/i)).toBeInTheDocument()
+  })
+
+  it('uploads meter data and shows the new yearly peak', async () => {
+    let peak: Record<string, unknown> = { ...SETTINGS_PEAK, record_kw: 1200, annual_eur: 144000, monthly_eur: 12000 }
+    const metered = {
+      ...SETTINGS_PEAK,
+      record_kw: 1248,
+      source: 'meter',
+      at: '2026-02-16T06:15:00+00:00',
+      meter_kw: 1248,
+      annual_eur: 149760,
+      monthly_eur: 12480,
+      meter: { rows: 26204, start: '2025-12-31T23:00:00+00:00', end: '2026-09-30T21:45:00+00:00', interval_minutes: 15, rows_this_year: 26204 },
+    }
+    const fetchMock = mockApi({
+      '/api/config': () => json(SITE_CONFIG),
+      '/api/peak': () => json(peak),
+      '/api/meter': () => {
+        peak = metered
+        return json(metered)
+      },
+    })
+    window.history.pushState({}, '', '/site')
+    render(<App />)
+    expect(await screen.findByText('€12,000')).toBeInTheDocument()
+    const input = document.getElementById('meter-file') as HTMLInputElement
+    await userEvent.upload(input, new File(['timestamp,import_kw\n'], 'meter.csv', { type: 'text/csv' }))
+    expect(await screen.findByRole('status')).toHaveTextContent('Highest draw in 2026: 1,248 kW')
+    expect(await screen.findByText('€12,480')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledWith('/api/meter', expect.objectContaining({ method: 'POST' }))
+  })
+
+  it('shows the peak to viewers without the upload button', async () => {
+    const peak = { ...SETTINGS_PEAK, record_kw: 1200, annual_eur: 144000, monthly_eur: 12000 }
+    mockApi({ '/api/config': () => json(SITE_CONFIG), '/api/peak': () => json(peak) }, 'viewer')
+    window.history.pushState({}, '', '/site')
+    render(<App />)
+    expect(await screen.findByText('€12,000')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Upload meter data/ })).not.toBeInTheDocument()
   })
 
   it('switches the schedule between plan and baseline', async () => {

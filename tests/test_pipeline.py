@@ -2,6 +2,7 @@ from dataclasses import replace
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from backend.jobs import execute
 from backend.notify.email import render_plan_email, send_email
@@ -19,6 +20,20 @@ def test_full_run_produces_complete_payload(settings, store):
     assert run["sources"] == {"price": "published", "site_weather": "live", "national_weather": "live"}
     assert run["email"]["status"] == "disabled"
     assert store.latest_run()["id"] == run["id"]
+
+
+def test_summary_includes_peak_charge(settings, store):
+    run = execute(settings, store, NOW, good_sources())
+    summary = run["summary"]
+    peak = summary["peak"]
+    assert (peak["record_kw"], peak["source"], peak["monthly_eur"]) == (1248.0, "meter", 12480.0)
+    for side in ("optimized", "baseline"):
+        m = summary[side]
+        assert m["total_cost_eur"] == pytest.approx(m["cost_eur"] + m["peak_charge_eur"], abs=0.01)
+    energy = summary["baseline"]["cost_eur"] - summary["optimized"]["cost_eur"]
+    peak = summary["baseline"]["peak_charge_eur"] - summary["optimized"]["peak_charge_eur"]
+    assert summary["savings_eur"] == pytest.approx(energy, abs=0.01)
+    assert summary["peak_savings_eur"] == pytest.approx(peak, abs=0.01)
 
 
 def test_price_outage_falls_back_to_estimates(settings, store):

@@ -84,6 +84,28 @@ def test_optimizer_beats_baseline(standard):
     assert measure(plan.hourly, site).cost_eur <= measure(reference.hourly, site).cost_eur
 
 
+def test_peak_charge_keeps_import_under_record():
+    machines = [press(), press(6, id="press-b"), furnace()]
+    inputs = make_inputs()
+    free = solve(inputs, make_site(), machines)
+    site = make_site(peak_charge=120, peak_so_far=900)
+    capped = solve(inputs, site, machines)
+    assert free.hourly.grid_import.max() > 900
+    assert capped.hourly.grid_import.max() <= 900 + TOL
+    assert capped.shortfalls == []
+    assert measure(capped.hourly, site).peak_charge_eur == 0
+
+
+def test_unavoidable_new_peak_is_kept_as_low_as_possible():
+    site = make_site(battery=False, peak_charge=120, peak_so_far=100)
+    inputs = make_inputs(demand=300.0)
+    plan = solve(inputs, site, [press(4, min_run=1), press(4, min_run=1, id="press-b")])
+    metrics = measure(plan.hourly, site)
+    assert plan.hourly.grid_import.max() == pytest.approx(550, abs=TOL)
+    assert metrics.peak_charge_eur == pytest.approx((550 - 100) * 120, abs=0.1)
+    assert metrics.total_cost_eur == pytest.approx(metrics.cost_eur + metrics.peak_charge_eur, abs=0.01)
+
+
 def test_flexible_load_moves_to_cheap_night_hours():
     site = make_site(battery=False)
     inputs = make_inputs()
