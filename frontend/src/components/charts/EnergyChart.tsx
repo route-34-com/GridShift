@@ -1,10 +1,13 @@
-import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { power } from '@/lib/format'
+import { Area, CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { kw, power } from '@/lib/format'
 import type { Hour } from '@/lib/types'
 import { SERIES } from '@/lib/utils'
 import { activeRow, axisProps, hourTitle, toRows, TooltipBox, xAxisProps, type TooltipArgs } from './common'
 
-export function EnergyChart({ hours }: { hours: Hour[] }) {
+/** This year's peak record: grid draw above it raises the yearly peak charge. */
+export const PEAK_COLOR = 'var(--danger)'
+
+export function EnergyChart({ hours, peakKw }: { hours: Hour[]; peakKw?: number | null }) {
   const rows = toRows(hours, (h) => ({
     solar: h.solar,
     wind: h.wind,
@@ -19,6 +22,14 @@ export function EnergyChart({ hours }: { hours: Hour[] }) {
         <CartesianGrid vertical={false} />
         <XAxis {...xAxisProps(hours)} />
         <YAxis {...axisProps} width={64} tickFormatter={(v: number) => power(v)} />
+        {peakKw ? (
+          <ReferenceLine
+            y={peakKw}
+            stroke={PEAK_COLOR}
+            strokeWidth={2}
+            ifOverflow="extendDomain"
+          />
+        ) : null}
         <Tooltip
           content={(args: TooltipArgs) => {
             const row = activeRow(args)
@@ -31,7 +42,8 @@ export function EnergyChart({ hours }: { hours: Hour[] }) {
                   { label: 'Wind', color: SERIES.wind, value: power(row.wind as number) },
                   { label: 'Factory load', color: SERIES.demand, value: power(row.load as number) },
                   { label: 'Base load', color: SERIES.baseline, value: power(row.base as number) },
-                  { label: 'Grid import', color: SERIES.grid, value: power(row.grid as number) },
+                  { label: 'Grid draw', color: SERIES.grid, value: power(row.grid as number) },
+                  ...(peakKw ? [{ label: 'Gap to peak record', color: PEAK_COLOR, value: kw(peakKw - (row.grid as number)) }] : []),
                 ]}
               />
             )
@@ -41,6 +53,7 @@ export function EnergyChart({ hours }: { hours: Hour[] }) {
         <Area dataKey="solar" stackId="re" stroke={SERIES.solar} fill={SERIES.solar} fillOpacity={0.45} strokeWidth={1} isAnimationActive={false} />
         <Line dataKey="base" stroke={SERIES.baseline} strokeWidth={1.5} strokeDasharray="4 3" dot={false} isAnimationActive={false} />
         <Line dataKey="load" stroke={SERIES.demand} strokeWidth={2} dot={false} type="stepAfter" isAnimationActive={false} />
+        <Line dataKey="grid" stroke={SERIES.grid} strokeWidth={2} strokeDasharray="6 3" dot={false} type="stepAfter" isAnimationActive={false} />
       </ComposedChart>
     </ResponsiveContainer>
   )

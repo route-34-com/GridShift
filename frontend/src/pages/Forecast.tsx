@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { ChartCard, Legend, type LegendItem } from '@/components/ChartCard'
 import { PlanExportMenu } from '@/components/ExportMenu'
 import { BatteryChart } from '@/components/charts/BatteryChart'
-import { EnergyChart } from '@/components/charts/EnergyChart'
+import { EnergyChart, PEAK_COLOR } from '@/components/charts/EnergyChart'
 import { PriceChart } from '@/components/charts/PriceChart'
 import { SunlightChart, WindChart } from '@/components/charts/WeatherCharts'
 import { PageLayout } from '@/components/PageLayout'
@@ -19,7 +19,7 @@ import { useClockCycle } from '@/hooks/useClockCycle'
 import { useNow } from '@/hooks/useNow'
 import { useAsync } from '@/hooks/useAsync'
 import { api, exportsApi } from '@/lib/api'
-import { dayLabel, energy, localDate, num, weekday } from '@/lib/format'
+import { dayLabel, energy, kw, localDate, num, weekday } from '@/lib/format'
 import type { ChartHour, Config, Hour, TodayHour } from '@/lib/types'
 import { clockTime } from '@/lib/clock'
 import { SERIES } from '@/lib/utils'
@@ -143,7 +143,30 @@ function panels(
   }
 }
 
-function Content({ all, today, sources, madeAt }: { all: Hour[]; today: TodayHour[]; sources: Record<string, string>; madeAt: string }) {
+/** How close the plan's highest grid draw comes to this year's record. */
+function PeakGap({ hours, peakKw }: { hours: Hour[]; peakKw: number }) {
+  const top = Math.max(...hours.map((h) => h.grid_import))
+  const gap = peakKw - top
+  return (
+    <span className={gap < 0 ? 'text-danger' : undefined}>
+      {' '}Highest planned grid draw {kw(top)}: {gap >= 0 ? `${kw(gap)} below the peak record.` : `${kw(-gap)} above the peak record, which raises the yearly peak charge.`}
+    </span>
+  )
+}
+
+function Content({
+  all,
+  today,
+  sources,
+  madeAt,
+  peakKw,
+}: {
+  all: Hour[]
+  today: TodayHour[]
+  sources: Record<string, string>
+  madeAt: string
+  peakKw: number | null
+}) {
   const config = useAsync(api.config)
   const { view, range, setView } = useForecastParams()
   const now = useNow(60_000)
@@ -182,16 +205,23 @@ function Content({ all, today, sources, madeAt }: { all: Hour[]; today: TodayHou
       </Card>
       <ChartCard
         title="On-site generation and factory load"
-        description={`Solar ${energy(t.solar)} and wind ${energy(t.wind)} expected ${span}`}
+        description={
+          <>
+            Solar {energy(t.solar)} and wind {energy(t.wind)} expected {span}.
+            {peakKw ? <PeakGap hours={hours} peakKw={peakKw} /> : null}
+          </>
+        }
         legend={[
           { label: 'Wind', color: SERIES.wind },
           { label: 'Solar', color: SERIES.solar },
           { label: 'Planned factory load', color: SERIES.demand },
           { label: 'Base load', color: SERIES.baseline, dashed: true },
+          { label: 'Grid draw', color: SERIES.grid, dashed: true },
+          ...(peakKw ? [{ label: 'Peak record (yearly peak charge)', color: PEAK_COLOR }] : []),
         ]}
-        height={300}
+        height={320}
       >
-        <EnergyChart hours={hours} />
+        <EnergyChart hours={hours} peakKw={peakKw} />
       </ChartCard>
       <ChartCard
         title="Battery"
@@ -241,7 +271,13 @@ export function Forecast() {
         </>
       }
     >
-      <RunGate>{({ hourly, today, run }) => <Content all={hourly} today={today} sources={run.sources} madeAt={run.created_at} />}</RunGate>
+      <RunGate>{({ hourly, today, run }) => <Content
+            all={hourly}
+            today={today}
+            sources={run.sources}
+            madeAt={run.created_at}
+            peakKw={run.summary.peak && run.summary.peak.charge_eur_per_kw_year > 0 ? run.summary.peak.record_kw : null}
+          />}</RunGate>
     </PageLayout>
   )
 }
