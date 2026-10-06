@@ -22,3 +22,10 @@ def test_local_admin_has_no_account_to_change(settings):
 
 def test_login_is_still_required_by_default(settings):
     assert make_client(settings).get("/api/runs/latest").status_code == 401
+
+
+def test_large_responses_are_compressed(settings):
+    client = make_client(replace(settings, require_login=False))
+    client.post("/api/runs")
+    response = client.get("/api/runs/latest/hourly", headers={"accept-encoding": "gzip"})
+    assert response.headers.get("content-encoding") == "gzip"

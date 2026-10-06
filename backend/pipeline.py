@@ -1,6 +1,7 @@
 """Run one planning cycle: fetch data, forecast, optimize, compare and store."""
 
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
@@ -54,6 +55,12 @@ class Notes:
     def alert(self, kind: str, level: str, message: str) -> None:
         """Record an alert."""
         self.alerts.append({"kind": kind, "level": level, "message": message})
+
+    def merge(self, other: "Notes") -> None:
+        """Add another set of notes after these ones."""
+        self.warnings.extend(other.warnings)
+        self.alerts.extend(other.alerts)
+        self.sources.update(other.sources)
 
 
 def _cached_weather(store: Store, kind: str, index: pd.DatetimeIndex) -> pd.DataFrame | None:
@@ -299,12 +306,21 @@ def run_plan(settings: Settings, store: Store, now: datetime | None = None, sour
     site = site.model_copy(update={"grid": site.grid.model_copy(update={"peak_so_far_kw": peak.kw})})
     machines = load_machines(settings.machines_path)
     history = load_demand_history(settings.demand_path)
-    estimator = estimator_for(settings.price_history_path)
     index = horizon_index(now)
 
-    actual = _fetch_prices(sources, index, notes)
-    site_weather = _fetch_weather(lambda a, b: sources.site_weather(site, a, b), "site_weather", store, index, notes, True)
-    national = _fetch_weather(lambda a, b: sources.national_weather(a, b), "national_weather", store, index, notes, False)
+    # The downloads and the price model don't depend on each other, so they run side by side. Each keeps its own
+    # notes, merged in a fixed order so alerts read the same every run.
+    price_notes, site_notes, national_notes = Notes(), Notes(), Notes()
+    with ThreadPoolExecutor(max_workers=5) as pool:
+        estimator_job = pool.submit(estimator_for, settings.price_history_path)
+        prices_job = pool.submit(_fetch_prices, sources, index, price_notes)
+        site_job = pool.submit(_fetch_weather, lambda a, b: sources.site_weather(site, a, b), "site_weather", store, index, site_notes, True)
+        national_job = pool.submit(_fetch_weather, lambda a, b: sources.national_weather(a, b), "national_weather", store, index, national_notes, False)
+        today_job = pool.submit(_today, sources, site, now)
+        actual, site_weather, national = prices_job.result(), site_job.result(), national_job.result()
+        estimator, today = estimator_job.result(), today_job.result()
+    for part in (price_notes, site_notes, national_notes):
+        notes.merge(part)
     prices = price_forecast(index, actual, estimator, national)
     inputs = PlanInputs(
         index=index,
@@ -371,7 +387,7 @@ def run_plan(settings: Settings, store: Store, now: datetime | None = None, sour
         "machines": _machines(plan, reference, machines, requirements),
         "blocks": [b.to_dict() for b in explain_blocks(plan.hourly, plan.schedule, flexible)],
         "baseline_blocks": [b.to_dict() for b in explain_blocks(reference.hourly, reference.schedule, flexible)],
-        "today": _today(sources, site, now),
+        "today": today,
         "hourly": _hourly_records(plan, weather_table),
         "baseline_hourly": _hourly_records(reference, weather_table),
         "alerts": notes.alerts,
