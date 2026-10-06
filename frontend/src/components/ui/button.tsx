@@ -4,8 +4,8 @@ import { cn } from '@/lib/utils'
 type Variant = 'primary' | 'secondary' | 'ghost'
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-brand text-brand-fg hover:opacity-90',
-  secondary: 'border border-border bg-surface text-fg hover:bg-surface-2',
+  primary: 'btn-electric font-semibold',
+  secondary: 'border border-border bg-surface text-fg hover:border-brand/40 hover:bg-surface-2',
   ghost: 'text-muted hover:bg-surface-2 hover:text-fg',
 }
 

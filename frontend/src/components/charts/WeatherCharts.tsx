@@ -110,6 +110,7 @@ export function WindChart({ hours, marks, now, nowLabel = 'Now' }: { hours: Char
           }}
         />
         <Line dataKey="speedPast" stroke={PAST_COLOR} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />
+        <Line dataKey="speedNext" stroke={SERIES.wind} strokeWidth={7} strokeOpacity={0.16} dot={false} activeDot={false} isAnimationActive={false} connectNulls={false} legendType="none" tooltipType="none" />
         <Line dataKey="speedNext" stroke={SERIES.wind} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />
       </LineChart>
     </ResponsiveContainer>

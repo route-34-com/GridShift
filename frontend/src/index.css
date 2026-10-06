@@ -1,17 +1,14 @@
 @import 'tailwindcss';
-@import '@fontsource/ibm-plex-sans/400.css';
-@import '@fontsource/ibm-plex-sans/500.css';
-@import '@fontsource/ibm-plex-sans/600.css';
-@import '@fontsource/ibm-plex-sans/700.css';
-@import '@fontsource/ibm-plex-mono/400.css';
-@import '@fontsource/ibm-plex-mono/500.css';
-@import '@fontsource/ibm-plex-mono/600.css';
+@import '@fontsource-variable/sora';
+@import '@fontsource-variable/manrope';
+@import '@fontsource-variable/jetbrains-mono';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-sans: 'Manrope Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Sora Variable', 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
 
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -22,6 +19,8 @@
   --color-brand: var(--brand);
   --color-brand-fg: var(--brand-fg);
   --color-brand-soft: var(--brand-soft);
+  --color-brand-2: var(--brand-2);
+  --color-energy: var(--energy);
   --color-accent: var(--accent);
   --color-mark: var(--mark);
   --color-mark-ink: var(--mark-ink);
@@ -50,93 +49,111 @@
   --color-baseline: var(--series-baseline);
 }
 
+/* Control room: deep night-blue, an electric cyan-to-indigo accent, amber for energy and prices. Dark is the default. */
 :root {
-  /* Industrial slate: quiet neutrals, one deep teal accent for actions and the current page. */
-  --bg: #f3f5f7;
-  --surface: #ffffff;
-  --surface-2: #eef1f4;
-  --border: #dbe1e7;
-  --fg: #16212b;
-  --muted: #5b6875;
-  --brand: #0d6d76;
+  --bg: #eef2fa;
+  --surface: rgb(255 255 255 / 0.86);
+  --surface-solid: #ffffff;
+  --surface-2: rgb(15 23 42 / 0.045);
+  --border: rgb(15 23 42 / 0.09);
+  --grid-line: rgb(15 23 42 / 0.07);
+  --fg: #0b1220;
+  --muted: #56637d;
+  --brand: #0891d6;
+  --brand-2: #5b4ff0;
   --brand-fg: #ffffff;
-  --brand-soft: #e1f0f1;
-  --accent: #0d6d76;
-  --positive: #1a7a48;
-  --positive-soft: #e3f3ea;
-  --warning: #9a5a06;
-  --warning-soft: #fdf1df;
-  --danger: #b4232c;
-  --danger-soft: #fbe9ea;
-  --info: #1f5fbf;
-  --info-soft: #e6eefb;
+  --brand-soft: rgb(8 145 214 / 0.1);
+  --accent: #0891d6;
+  --energy: #ea6a0c;
+  --positive: #0f8a5f;
+  --positive-soft: rgb(16 185 129 / 0.12);
+  --warning: #b45309;
+  --warning-soft: rgb(245 158 11 / 0.14);
+  --danger: #d1243a;
+  --danger-soft: rgb(244 63 94 / 0.11);
+  --info: #2563eb;
+  --info-soft: rgb(59 130 246 / 0.11);
 
-  --topbar: #ffffff;
-  --nav-bg: #17222d;
-  --nav-bg-end: #17222d;
-  --nav-fg: #eef2f6;
-  --nav-muted: #a3b0bd;
+  --topbar: rgb(255 255 255 / 0.9);
+  --nav-bg: #0a1122;
+  --nav-bg-end: #0d1630;
+  --nav-fg: #eef3ff;
+  --nav-muted: #93a0bd;
   --nav-hover: rgb(255 255 255 / 0.05);
-  --nav-active: rgb(255 255 255 / 0.08);
+  --nav-active: rgb(56 189 248 / 0.12);
   --nav-line: rgb(255 255 255 / 0.08);
-  --mark: #3fb3bd;
-  --mark-ink: #062a2f;
+  --mark: #38bdf8;
+  --mark-ink: #04121f;
 
-  --series-price: #c4521c;
-  --series-solar: #d49b0b;
-  --series-wind: #2c7bb6;
-  --series-battery: #6e56c2;
+  --series-price: #ea6a0c;
+  --series-solar: #d9a100;
+  --series-wind: #0891d6;
+  --series-battery: #7c4dea;
   --series-grid: #64748b;
-  --series-demand: #16212b;
-  --series-baseline: #9aa6b2;
-  --scrollbar: #c7cfd8;
-  --scrollbar-hover: #9fabb8;
+  --series-demand: #0b1220;
+  --series-baseline: #94a3b8;
+  --line-glow: rgb(8 145 214 / 0.18);
+  --scrollbar: #c3cbdb;
+  --scrollbar-hover: #9aa6bd;
 
-  --shadow: 0 1px 2px rgb(22 33 43 / 0.06);
+  --aurora-1: rgb(56 189 248 / 0.22);
+  --aurora-2: rgb(99 102 241 / 0.16);
+  --aurora-3: rgb(249 115 22 / 0.1);
+  --shadow: 0 1px 0 rgb(255 255 255 / 0.7) inset, 0 12px 32px -18px rgb(15 23 42 / 0.25);
+  --glow: 0 0 0 1px rgb(8 145 214 / 0.25), 0 16px 40px -18px rgb(8 145 214 / 0.45);
 
   color-scheme: light;
 }
 
 .dark {
-  --bg: #0e141a;
-  --surface: #151d25;
-  --surface-2: #1b252f;
-  --border: #27323e;
-  --fg: #e5ebf0;
-  --muted: #95a2af;
-  --brand: #3fb3bd;
-  --brand-fg: #062a2f;
-  --brand-soft: #12333a;
-  --accent: #3fb3bd;
-  --positive: #4cc488;
-  --positive-soft: #11281d;
-  --warning: #f0b14a;
-  --warning-soft: #2b2112;
-  --danger: #f17a80;
-  --danger-soft: #331a1d;
-  --info: #8db2f2;
-  --info-soft: #172440;
+  --bg: #050914;
+  --surface: rgb(14 21 40 / 0.78);
+  --surface-solid: #0e1528;
+  --surface-2: rgb(255 255 255 / 0.045);
+  --border: rgb(148 163 210 / 0.14);
+  --grid-line: rgb(148 163 210 / 0.08);
+  --fg: #ecf2ff;
+  --muted: #8a97b6;
+  --brand: #38bdf8;
+  --brand-2: #818cf8;
+  --brand-fg: #04121f;
+  --brand-soft: rgb(56 189 248 / 0.12);
+  --accent: #38bdf8;
+  --energy: #fb923c;
+  --positive: #34d399;
+  --positive-soft: rgb(52 211 153 / 0.12);
+  --warning: #fbbf24;
+  --warning-soft: rgb(251 191 36 / 0.12);
+  --danger: #fb7185;
+  --danger-soft: rgb(251 113 133 / 0.12);
+  --info: #93c5fd;
+  --info-soft: rgb(147 197 253 / 0.12);
 
-  --topbar: #151d25;
-  --nav-bg: #0b1117;
-  --nav-bg-end: #0b1117;
-  --nav-fg: #eef2f6;
-  --nav-muted: #93a0ad;
+  --topbar: rgb(8 13 28 / 0.9);
+  --nav-bg: #060b18;
+  --nav-bg-end: #0a1226;
+  --nav-fg: #eef3ff;
+  --nav-muted: #8592b2;
   --nav-hover: rgb(255 255 255 / 0.04);
-  --nav-active: rgb(255 255 255 / 0.07);
+  --nav-active: rgb(56 189 248 / 0.12);
   --nav-line: rgb(255 255 255 / 0.07);
 
-  --series-price: #f08a54;
-  --series-solar: #f2c14e;
-  --series-wind: #5ca8e0;
-  --series-battery: #a08ce8;
+  --series-price: #fb923c;
+  --series-solar: #facc15;
+  --series-wind: #38bdf8;
+  --series-battery: #a78bfa;
   --series-grid: #94a3b8;
-  --series-demand: #e5ebf0;
-  --series-baseline: #5f6d7b;
-  --scrollbar: #2a3642;
-  --scrollbar-hover: #3b4a58;
+  --series-demand: #ecf2ff;
+  --series-baseline: #5c6a8a;
+  --line-glow: rgb(56 189 248 / 0.45);
+  --scrollbar: #1f2a45;
+  --scrollbar-hover: #2d3b5e;
 
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+  --aurora-1: rgb(56 189 248 / 0.16);
+  --aurora-2: rgb(129 140 248 / 0.14);
+  --aurora-3: rgb(251 146 60 / 0.07);
+  --shadow: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 18px 40px -20px rgb(0 0 0 / 0.7);
+  --glow: 0 0 0 1px rgb(56 189 248 / 0.3), 0 18px 48px -18px rgb(56 189 248 / 0.45);
 
   color-scheme: dark;
 }
@@ -154,15 +171,168 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Sidebar: deep navy with a slight top-to-bottom fade. */
+h1,
+h2,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Fixed backdrop: a slow aurora and a faint engineering grid. Never scrolls, never takes clicks. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.backdrop::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(40% 35% at 20% 10%, var(--aurora-1), transparent 70%),
+    radial-gradient(35% 30% at 85% 20%, var(--aurora-2), transparent 70%),
+    radial-gradient(30% 30% at 60% 95%, var(--aurora-3), transparent 70%);
+  will-change: transform;
+  animation: aurora 26s ease-in-out infinite alternate;
+}
+
+.backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 85%);
+}
+
+@keyframes aurora {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(3%, 2%, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(-3%, 1%, 0) scale(1.02);
+  }
+}
+
+/* Translucent panels over the aurora that light up at the edge on hover. No backdrop blur: it is costly to paint on
+   every card, and the soft background doesn't need it. */
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.glass:hover {
+  border-color: color-mix(in oklab, var(--brand) 40%, transparent);
+  box-shadow: var(--shadow), var(--glow);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: var(--surface-solid);
+  }
+}
+
+/* A panel with a gradient edge, for the headline figures. */
+.edge {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--surface-solid), var(--surface-solid)) padding-box,
+    linear-gradient(135deg, color-mix(in oklab, var(--brand) 70%, transparent), var(--border) 45%, color-mix(in oklab, var(--brand-2) 60%, transparent)) border-box;
+}
+
+.text-gradient {
+  background: linear-gradient(100deg, var(--brand), var(--brand-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Primary buttons: electric gradient with a light sweep on hover. */
+.btn-electric {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(110deg, var(--brand), var(--brand-2));
+  color: #fff;
+  box-shadow: 0 8px 24px -10px var(--brand);
+}
+
+.btn-electric::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.7s ease;
+}
+
+.btn-electric:hover::after {
+  transform: translateX(120%);
+}
+
+.btn-electric:hover {
+  box-shadow: 0 10px 30px -8px var(--brand);
+}
+
+/* The logo breathes a soft glow; the live dot pulses. */
+.logo-glow {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  box-shadow: 0 0 18px -2px rgb(56 189 248 / 0.6);
+  animation: breathe 4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  50% {
+    box-shadow: 0 0 26px 2px rgb(99 102 241 / 0.55);
+  }
+}
+
+.live-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--positive);
+}
+
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
 .nav-surface {
   background: linear-gradient(180deg, var(--nav-bg), var(--nav-bg-end));
 }
 
-/* Content eases in when a page or tab opens. */
+/* Sections arrive one after another when a page opens. */
 @keyframes rise {
   from {
     opacity: 0;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -171,7 +341,27 @@ body {
 }
 
 .rise {
-  animation: rise 0.2s ease-out both;
+  animation: rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.stagger > div > * {
+  animation: rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.stagger > div > *:nth-child(2) {
+  animation-delay: 70ms;
+}
+.stagger > div > *:nth-child(3) {
+  animation-delay: 140ms;
+}
+.stagger > div > *:nth-child(4) {
+  animation-delay: 210ms;
+}
+.stagger > div > *:nth-child(5) {
+  animation-delay: 280ms;
+}
+.stagger > div > *:nth-child(n + 6) {
+  animation-delay: 340ms;
 }
 
 * {
@@ -222,9 +412,10 @@ body {
 }
 
 .recharts-cartesian-grid line {
-  stroke: var(--border);
+  stroke: var(--grid-line);
 }
 
+/* Lines on the charts glow in their own colour. */
 .recharts-text {
   fill: var(--muted);
   font-size: 12px;

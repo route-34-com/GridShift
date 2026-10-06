@@ -15,6 +15,12 @@ export function BatteryChart({ hours, capacity }: { hours: Hour[]; capacity: num
   return (
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={rows} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
+        <defs>
+          <linearGradient id="battery-soc" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={SERIES.battery} stopOpacity={0.4} />
+            <stop offset="100%" stopColor={SERIES.battery} stopOpacity={0.02} />
+          </linearGradient>
+        </defs>
         <CartesianGrid vertical={false} />
         <XAxis {...xAxisProps(hours)} />
         <YAxis yAxisId="soc" {...axisProps} width={44} domain={[0, 1]} tickFormatter={(v: number) => pct(v)} />
@@ -50,7 +56,7 @@ export function BatteryChart({ hours, capacity }: { hours: Hour[]; capacity: num
             return <rect x={x} y={top} width={Math.max(1, width)} height={Math.abs(height)} fill={value >= 0 ? 'var(--positive)' : SERIES.price} opacity={0.55} />
           }}
         />
-        <Area yAxisId="soc" dataKey="soc" stroke={SERIES.battery} fill={SERIES.battery} fillOpacity={0.1} strokeWidth={2} type="monotone" isAnimationActive={false} />
+        <Area yAxisId="soc" dataKey="soc" stroke={SERIES.battery} fill="url(#battery-soc)" strokeWidth={2} type="monotone" isAnimationActive={false} />
       </ComposedChart>
     </ResponsiveContainer>
   )

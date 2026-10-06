@@ -63,11 +63,11 @@ const PLAN_TIER = 'Remote Advisor'
 function Brand() {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-mark">
-        <Zap className="h-[18px] w-[18px] text-mark-ink" fill="currentColor" aria-hidden />
+      <div className="logo-glow flex h-9 w-9 items-center justify-center rounded-lg">
+        <Zap className="h-5 w-5 text-white" fill="currentColor" aria-hidden />
       </div>
       <div>
-        <p className="text-[15px] leading-tight font-semibold text-nav-fg">GridShift</p>
+        <p className="font-display text-base leading-tight font-semibold text-nav-fg">GridShift</p>
         <p className="text-[11px] leading-tight text-nav-muted">{PLAN_TIER} plan</p>
       </div>
     </div>
@@ -90,7 +90,7 @@ function NavItems({ compact = false }: { compact?: boolean }) {
         )
       }
     >
-      <span aria-hidden className="absolute top-2 bottom-2 left-0 hidden w-[3px] rounded-r-full bg-mark group-[.active]:block" />
+      <span aria-hidden className="absolute top-1.5 bottom-1.5 left-0 hidden w-[3px] rounded-r-full bg-linear-to-b from-mark to-brand-2 shadow-[0_0_12px_rgb(56_189_248/0.8)] group-[.active]:block" />
       <Icon className="h-4 w-4 shrink-0 group-[.active]:text-mark" aria-hidden />
       {label}
     </NavLink>
@@ -225,7 +225,10 @@ function TopBar() {
           </span>
         )}
       </div>
-      <GermanyClock />
+      <div className="flex items-center gap-3">
+        <span className="live-dot" aria-hidden />
+        <GermanyClock />
+      </div>
     </header>
   )
 }
@@ -235,6 +238,7 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
   const run = data?.run
   return (
     <div className="min-h-screen lg:pl-60">
+      <div className="backdrop" aria-hidden />
       <aside className="nav-surface fixed inset-y-0 left-0 z-20 hidden w-60 flex-col px-3 py-4 lg:flex">
         <div className="px-2">
           <Brand />
@@ -269,11 +273,11 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
 
       <TopBar />
 
-      <main className="rise w-full px-4 py-6 sm:px-6 lg:py-7 2xl:px-8">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <main className="relative z-[1] w-full px-4 py-6 sm:px-6 lg:py-8 2xl:px-8">
+        <div className="rise mb-7 flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0 flex-1 basis-[26rem]">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl leading-tight font-semibold tracking-tight text-fg">{title}</h1>
+              <h1 className="text-[30px] leading-tight font-semibold text-fg">{title}</h1>
               {run && planActions && run.status === 'attention' && <Badge tone="warning">Needs attention</Badge>}
             </div>
             {subtitle && <div className="mt-1 text-sm text-muted">{subtitle}</div>}
@@ -284,7 +288,7 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
           </div>
         </div>
         {planActions && <RunError />}
-        {children}
+        <div className="stagger">{children}</div>
       </main>
     </div>
   )

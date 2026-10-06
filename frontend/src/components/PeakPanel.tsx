@@ -1,14 +1,15 @@
 import { Mountain } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { CountUp } from '@/components/CountUp'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { dateTime, eur, kw, num } from '@/lib/format'
 import type { PeakRecord } from '@/lib/types'
 
 function Figure({ label, value, hint }: { label: string; value: ReactNode; hint?: ReactNode }) {
   return (
-    <div className="min-w-0 rounded-lg bg-surface-2 p-3">
-      <p className="text-xs text-muted">{label}</p>
-      <p className="tabular mt-0.5 truncate font-mono text-lg font-semibold text-fg">{value}</p>
+    <div className="min-w-0 rounded-lg border border-border bg-surface-2 p-3.5">
+      <p className="text-xs font-medium text-muted">{label}</p>
+      <p className="tabular mt-1 truncate font-mono text-xl font-semibold text-fg">{typeof value === 'string' ? <CountUp text={value} /> : value}</p>
       {hint && <p className="mt-0.5 text-xs text-muted">{hint}</p>}
     </div>
   )

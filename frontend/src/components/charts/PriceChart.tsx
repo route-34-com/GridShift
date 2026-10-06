@@ -65,6 +65,8 @@ export function PriceChart({ hours, now, nowLabel = 'Now', release }: PriceChart
           }}
         />
         <Line dataKey="past" stroke={PAST_COLOR} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />
+        {/* A wide faint copy under the line gives it a glow without a costly SVG filter. */}
+        <Line dataKey="actual" stroke={SERIES.price} strokeWidth={7} strokeOpacity={0.18} dot={false} activeDot={false} isAnimationActive={false} connectNulls={false} legendType="none" tooltipType="none" />
         <Line dataKey="actual" stroke={SERIES.price} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />
         <Line
           dataKey="estimate"

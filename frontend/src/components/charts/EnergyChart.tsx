@@ -19,9 +19,20 @@ export function EnergyChart({ hours, peakKw }: { hours: Hour[]; peakKw?: number 
   return (
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+        <defs>
+          <linearGradient id="energy-wind" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={SERIES.wind} stopOpacity={0.55} />
+            <stop offset="100%" stopColor={SERIES.wind} stopOpacity={0.08} />
+          </linearGradient>
+          <linearGradient id="energy-solar" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={SERIES.solar} stopOpacity={0.65} />
+            <stop offset="100%" stopColor={SERIES.solar} stopOpacity={0.1} />
+          </linearGradient>
+        </defs>
         <CartesianGrid vertical={false} />
         <XAxis {...xAxisProps(hours)} />
         <YAxis {...axisProps} width={64} tickFormatter={(v: number) => power(v)} />
+        {peakKw ? <ReferenceLine y={peakKw} stroke={PEAK_COLOR} strokeWidth={8} strokeOpacity={0.15} ifOverflow="extendDomain" /> : null}
         {peakKw ? (
           <ReferenceLine
             y={peakKw}
@@ -49,8 +60,8 @@ export function EnergyChart({ hours, peakKw }: { hours: Hour[]; peakKw?: number 
             )
           }}
         />
-        <Area dataKey="wind" stackId="re" stroke={SERIES.wind} fill={SERIES.wind} fillOpacity={0.35} strokeWidth={1} isAnimationActive={false} />
-        <Area dataKey="solar" stackId="re" stroke={SERIES.solar} fill={SERIES.solar} fillOpacity={0.45} strokeWidth={1} isAnimationActive={false} />
+        <Area dataKey="wind" stackId="re" stroke={SERIES.wind} fill="url(#energy-wind)" strokeWidth={1.5} isAnimationActive={false} />
+        <Area dataKey="solar" stackId="re" stroke={SERIES.solar} fill="url(#energy-solar)" strokeWidth={1.5} isAnimationActive={false} />
         <Line dataKey="base" stroke={SERIES.baseline} strokeWidth={1.5} strokeDasharray="4 3" dot={false} isAnimationActive={false} />
         <Line dataKey="load" stroke={SERIES.demand} strokeWidth={2} dot={false} type="stepAfter" isAnimationActive={false} />
         <Line dataKey="grid" stroke={SERIES.grid} strokeWidth={2} strokeDasharray="6 3" dot={false} type="stepAfter" isAnimationActive={false} />

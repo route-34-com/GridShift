@@ -132,7 +132,7 @@ function Content({ run }: { run: RunSummary }) {
       <OverviewCoverage madeAt={run.created_at} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={PiggyBank} tone="positive" label="Saved this week" value={eur(savings_eur)} hint={`${pct(savings_pct, 1)} below run-as-needed (${eur(baseline.cost_eur)})`} />
+        <StatCard highlight icon={PiggyBank} tone="positive" label="Saved this week" value={eur(savings_eur)} hint={`${pct(savings_pct, 1)} below run-as-needed (${eur(baseline.cost_eur)})`} />
         <StatCard icon={Receipt} tone="brand" label="Planned energy cost" value={eur(optimized.cost_eur)} hint={`Tomorrow ${eur(tomorrow.cost_eur)}`} />
         <PeakCard optimized={optimized} baseline={baseline} peak={peak} />
         <StatCard icon={Sun} tone="solar" label="On-site renewable share" value={pct(optimized.renewable_share)} hint={`${num(optimized.renewable_used_kwh / 1000, 1)} MWh used · ${mass(optimized.co2_avoided_kg)} CO₂ avoided`} />
