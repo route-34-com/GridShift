@@ -16,6 +16,7 @@ const PERMISSION_TEXT: Record<string, string> = {
   'plan.run': 'Re-plan',
   'meter.upload': 'Upload meter data',
   'data.switch': 'Switch sample data on or off',
+  'config.edit': 'Edit site, machines and load history',
   export: 'Download exports',
   'config.view': 'See site and machine setup',
   'users.manage': 'Invite and manage users',

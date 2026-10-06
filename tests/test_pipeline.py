@@ -68,6 +68,26 @@ def test_today_survives_outages(settings, store):
     assert all(h["price"] is None and h["price_source"] is None for h in run["today"])
 
 
+def test_plan_survives_when_peak_protection_cannot_be_solved(settings, store, monkeypatch):
+    import backend.pipeline as pipeline
+    from backend.planner.optimizer import PlannerError
+
+    real = pipeline.optimize
+    calls = []
+
+    def flaky(inputs, site, requirements, time_limit):
+        calls.append(site.grid.peak_charge_eur_per_kw_year)
+        if site.grid.peak_charge_eur_per_kw_year > 0:
+            raise PlannerError("Solver found no feasible plan (Time limit reached)")
+        return real(inputs, site, requirements, time_limit)
+
+    monkeypatch.setattr(pipeline, "optimize", flaky)
+    run = execute(settings, store, NOW, good_sources())
+    assert run["status"] != "failed" and calls == [120.0, 0]
+    assert any(a["kind"] == "peak_skipped" for a in run["alerts"])
+    assert run["summary"]["optimized"]["peak_charge_eur"] >= 0
+
+
 def test_price_outage_falls_back_to_estimates(settings, store):
     sources = replace(good_sources(), day_ahead=broken)
     run = execute(settings, store, NOW, sources)

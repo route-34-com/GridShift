@@ -25,6 +25,23 @@ const SITE_CONFIG = {
 }
 const SETTINGS_PEAK = { year: 2026, source: 'settings', at: null, settings_kw: 1200, meter_kw: null, charge_eur_per_kw_year: 120, meter: null }
 
+const ok = { ok: true }
+function setupFor(editable: boolean, overrides: Record<string, unknown> = {}) {
+  return {
+    dataset: editable ? 'live' : 'sample',
+    editable,
+    ready: true,
+    site: { ...ok, name: 'Werk' },
+    machines: { ...ok, count: 1 },
+    demand: { ...ok, rows: 2016, start: '2026-07-13T22:00:00+00:00', end: '2026-10-04T21:00:00+00:00' },
+    prices: { ok: true, shared: true },
+    meter: { ok: false, missing: true, error: null },
+    site_data: SITE_CONFIG.site,
+    machine_data: [{ id: 'mill', name: 'Cement mill 1', type: 'daily_quota', power_kw: 4500, hours_per_day: 16, min_run_hours: 3 }],
+    ...overrides,
+  }
+}
+
 describe('App', () => {
   it('shows savings and alerts on the overview', async () => {
     mockApi()
@@ -107,7 +124,7 @@ describe('App', () => {
       meter: { rows: 26204, start: '2025-12-31T23:00:00+00:00', end: '2026-09-30T21:45:00+00:00', interval_minutes: 15, rows_this_year: 26204 },
     }
     const fetchMock = mockApi({
-      '/api/config': () => json(SITE_CONFIG),
+      '/api/setup': () => json(setupFor(false)),
       '/api/peak': () => json(peak),
       '/api/meter': () => {
         peak = metered
@@ -126,7 +143,7 @@ describe('App', () => {
 
   it('shows the peak to viewers without the upload button', async () => {
     const peak = { ...SETTINGS_PEAK, record_kw: 1200, annual_eur: 144000, monthly_eur: 12000 }
-    mockApi({ '/api/config': () => json(SITE_CONFIG), '/api/peak': () => json(peak) }, 'viewer')
+    mockApi({ '/api/setup': () => json(setupFor(false)), '/api/peak': () => json(peak) }, 'viewer')
     window.history.pushState({}, '', '/site')
     render(<App />)
     expect(await screen.findByText('€12,000')).toBeInTheDocument()
@@ -205,6 +222,58 @@ describe('App', () => {
     render(<App />)
     expect(await screen.findByText("Your real data isn't set up yet")).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Turn sample data on/ })).toBeInTheDocument()
+  })
+
+  it('walks an empty company setup through the checklist', async () => {
+    const missing = { ok: false, missing: true, error: null }
+    const fetchMock = mockApi({
+      '/api/setup': () => json(setupFor(true, { ready: false, site: missing, machines: missing, demand: missing, site_data: null, machine_data: [] })),
+      '/api/setup/copy-sample': () => json(setupFor(true)),
+    })
+    window.history.pushState({}, '', '/site')
+    render(<App />)
+    expect(await screen.findByText('Set up your site')).toBeInTheDocument()
+    expect(screen.getByText(/No machines yet/)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /Start from the Holcim sample/ }))
+    expect(await screen.findByText('Your site is ready to plan')).toBeInTheDocument()
+    expect(screen.getByText('Cement mill 1')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledWith('/api/setup/copy-sample', expect.objectContaining({ method: 'POST' }))
+  })
+
+  it('adds a machine with the form', async () => {
+    let saved: unknown = null
+    mockApi({
+      '/api/setup': () => json(setupFor(true)),
+      '/api/peak': () => json({ ...SETTINGS_PEAK, record_kw: 1200, annual_eur: 144000, monthly_eur: 12000 }),
+      '/api/setup/machines': (init) => {
+        saved = JSON.parse(String(init?.body)).machines
+        return json(setupFor(true, { machine_data: saved }))
+      },
+    })
+    window.history.pushState({}, '', '/site')
+    render(<App />)
+    await userEvent.click((await screen.findAllByRole('button', { name: /Add machine/ }))[0])
+    await userEvent.type(screen.getByLabelText('Name'), 'Raw mill')
+    await userEvent.type(screen.getByLabelText('Power (kW)'), '4200')
+    await userEvent.clear(screen.getByLabelText('Hours every day'))
+    await userEvent.type(screen.getByLabelText('Hours every day'), '18')
+    await userEvent.clear(screen.getByLabelText('Shortest run (hours)'))
+    await userEvent.type(screen.getByLabelText('Shortest run (hours)'), '4')
+    await userEvent.click(screen.getByRole('button', { name: 'Add machine' }))
+    await waitFor(() => expect(saved).toHaveLength(2))
+    expect((saved as Record<string, unknown>[])[1]).toEqual({ id: 'raw-mill', name: 'Raw mill', type: 'daily_quota', power_kw: 4200, hours_per_day: 18, min_run_hours: 4 })
+    expect(await screen.findByText('Raw mill')).toBeInTheDocument()
+  })
+
+  it('refuses a shortest run longer than the daily hours before saving', async () => {
+    mockApi({ '/api/setup': () => json(setupFor(true)), '/api/peak': () => json({ ...SETTINGS_PEAK, record_kw: 1200, annual_eur: 144000, monthly_eur: 12000 }) })
+    window.history.pushState({}, '', '/site')
+    render(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit Cement mill 1' }))
+    await userEvent.clear(screen.getByLabelText('Shortest run (hours)'))
+    await userEvent.type(screen.getByLabelText('Shortest run (hours)'), '20')
+    await userEvent.click(screen.getByRole('button', { name: 'Save machine' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('cannot be longer than the hours per day')
   })
 
   it('switches the schedule between plan and baseline', async () => {

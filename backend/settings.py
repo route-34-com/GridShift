@@ -67,8 +67,11 @@ class Settings:
 
     @property
     def price_history_path(self) -> Path:
-        """Return the price history path."""
-        return self.data_dir / "price_history.csv"
+        """Return the price history path; German market history is shared with the sample when a site has none."""
+        own = self.data_dir / "price_history.csv"
+        if not own.exists() and self.sample_dir is not None and (self.sample_dir / "price_history.csv").exists():
+            return self.sample_dir / "price_history.csv"
+        return own
 
 
 def _path(name: str, default: str) -> Path:

@@ -324,7 +324,20 @@ def run_plan(settings: Settings, store: Store, now: datetime | None = None, sour
     try:
         plan = optimize(inputs, site, requirements, settings.solver_time_limit)
     except PlannerError as exc:
-        raise RunError(str(exc)) from exc
+        if site.grid.peak_charge_eur_per_kw_year <= 0:
+            raise RunError(str(exc)) from exc
+        # Keeping every hour under a low record can be too hard to solve in time; a plan without it beats no plan.
+        unguarded = site.model_copy(update={"grid": site.grid.model_copy(update={"peak_charge_eur_per_kw_year": 0})})
+        try:
+            plan = optimize(inputs, unguarded, requirements, settings.solver_time_limit)
+        except PlannerError as again:
+            raise RunError(str(again)) from again
+        notes.alert(
+            "peak_skipped",
+            "warning",
+            f"Peak protection could not be solved in time with a record of {site.grid.peak_so_far_kw:,.0f} kW, so this plan ignores the yearly peak. "
+            "Enter this year's highest kW from the bill or upload meter data.",
+        )
     reference = baseline(inputs, site, requirements)
     if plan.status == "time_limit":
         notes.warnings.append(f"Solver hit its time limit; plan is within {plan.gap:.1%} of optimal.")

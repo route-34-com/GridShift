@@ -258,7 +258,17 @@ and set `SMTP_HOST=127.0.0.1`, `SMTP_PORT=1025`, `SMTP_TLS=none`.
 
 **Sample data vs real data.** The sidebar has a *Sample data* switch (admins only, audit-logged). On, every page, the daily run and meter uploads use the **Holcim sample** in `data/holcim/`: an illustrative cement plant sized like a Holcim works in northern Germany (kiln line about 11 MW always on; raw mill, two cement mills and the quarry crusher about 14 MW that can shift; 6 MWp solar, a 4.2 MW turbine, a 10 MWh battery; peak record 26,180 kW). The figures are made up for demonstrations, not Holcim's real data. Off, GridShift uses the company's own folder (`data/live/` by default) and says so if it isn't set up yet. Each data set keeps its own plans and weather cache; plans made before the switch existed are hidden from both.
 
-Describe the factory in the data folder (`data/live/` for real data):
+**Setting up a company's own site.** Switch *Sample data* off and open *Site & machines*. A checklist shows the three things the planner needs, each with its own form or upload; admins and planners can edit, every change is audit-logged, and the files below are written for you:
+
+1. **Site details**: location, grid connection, fees, peak charge and this year's record, solar, wind and battery.
+2. **Machines**: add, edit or delete. *Always on*, *Hours every day* (with the shortest allowed run) or *Job with a deadline* (total hours, due date or hours after the plan starts, optional earliest start).
+3. **Load history**: a CSV of at least one week of the hourly always-on load (`timestamp,load_kw`; comma or semicolon separated, decimal comma allowed).
+
+*Start from the Holcim sample* copies the sample's site, machines and load history (and its peak record) as a starting point, never overwriting files that exist. German market price history is shared with the sample, so nothing needs uploading for prices. The sample itself is read-only on this page.
+
+If a peak charge is set but this year's record is unknown, the checklist warns: every kW would count as a new peak, which makes the plan much harder to solve. Should the planner run out of time with peak protection on, it plans again without it and says so in an alert rather than producing no plan.
+
+The same files can also be edited by hand. Describe the factory in the data folder (`data/live/` for real data):
 
 - `site.yaml`: location, solar, wind turbine power curve, battery, grid limits and fees, email recipients
   - `grid.peak_charge_eur_per_kw_year`: the grid operator's annual demand charge (Leistungspreis) in €/kW; `0` turns peak protection off

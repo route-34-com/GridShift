@@ -110,6 +110,28 @@ export interface ChartHour {
 /** Today's hours before the plan starts: published prices and weather, no plan. */
 export type TodayHour = Omit<ChartHour, 'solar' | 'wind'>
 
+export interface SetupCheck {
+  ok: boolean
+  missing?: boolean
+  error?: string | null
+}
+
+/** What the planner needs for the data set in use, and what is in place. */
+export interface SiteSetup {
+  dataset: DatasetName
+  editable: boolean
+  ready: boolean
+  site: SetupCheck & { name?: string }
+  machines: SetupCheck & { count?: number }
+  demand: SetupCheck & { rows?: number; start?: string; end?: string }
+  prices: { ok: boolean; shared: boolean }
+  meter: SetupCheck & { rows?: number }
+  /** A peak charge is set but this year's record is unknown, so every kW would count as a new peak. */
+  peak_unknown?: boolean
+  site_data: SiteConfig | null
+  machine_data: MachineConfig[]
+}
+
 export type DatasetName = 'sample' | 'live'
 
 export interface DatasetInfo {

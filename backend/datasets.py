@@ -39,11 +39,15 @@ def choose(db: sqlite3.Connection, name: str) -> None:
     db.execute("INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)", (KEY, name))
 
 
+def ready(settings: Settings) -> bool:
+    """Return whether a data folder has everything a plan needs."""
+    return settings.site_path.exists() and settings.machines_path.exists() and settings.demand_path.exists()
+
+
 def describe(settings: Settings, store: Store, active: str | None = None) -> dict:
     """Return which data set is on and whether each one has site data."""
     def info(name: str) -> dict:
-        data = resolve(settings, store, name).settings
-        return {"available": data.site_path.exists() and data.machines_path.exists()}
+        return {"available": ready(resolve(settings, store, name).settings)}
 
     return {
         "active": active or active_name(settings, store),
