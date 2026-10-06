@@ -127,6 +127,17 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
   const { me, signOut } = useAuth()
   const navigate = useNavigate()
   if (!me) return null
+  if (me.local) {
+    return compact ? null : (
+      <div className="flex items-center gap-3 p-2" title="Sign-in is switched off on this server">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-nav-fg ring-1 ring-white/15">LA</span>
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-medium text-nav-fg">Local admin</span>
+          <span className="block truncate text-xs text-nav-muted">Sign-in off</span>
+        </span>
+      </div>
+    )
+  }
   const avatar = (
     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-nav-fg ring-1 ring-white/15">{initials(me.name, me.email)}</span>
   )

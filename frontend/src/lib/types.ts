@@ -223,6 +223,8 @@ export interface Me {
   created_at: string | null
   last_login_at: string | null
   permissions: string[]
+  /** Sign-in is switched off and this is the built-in local admin. */
+  local?: boolean
 }
 
 export interface Account {
@@ -267,6 +269,8 @@ export interface SetupStatus {
   needed: boolean
   allowed: boolean
   email: boolean
+  /** False when the server runs without sign-in. */
+  login?: boolean
 }
 
 export interface PeakRecord {

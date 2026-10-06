@@ -22,13 +22,24 @@ def _setup_allowed(request: Request, db) -> bool:
 
 
 def _me(user: dict) -> dict:
-    return {**users.public(user), "permissions": permissions_for(user["role"])}
+    return {**users.public(user), "permissions": permissions_for(user["role"]), "local": bool(user.get("local"))}
+
+
+def _account(ctx) -> None:
+    if ctx.actor.get("local"):
+        raise AppError(409, "Sign-in is switched off, so there is no personal account to change.")
 
 
 @router.get("/setup")
 def setup_status(request: Request, db: Db) -> dict:
     """Tell the sign-in page whether the first admin still has to be created."""
-    return {"needed": not users.has_users(db), "allowed": _setup_allowed(request, db), "email": mail_status(state(request).settings.smtp)["configured"]}
+    login = state(request).settings.require_login
+    return {
+        "needed": login and not users.has_users(db),
+        "allowed": _setup_allowed(request, db),
+        "email": mail_status(state(request).settings.smtp)["configured"],
+        "login": login,
+    }
 
 
 @router.post("/setup")
@@ -93,12 +104,14 @@ def reset_password(body: dict, ctx: AnonCtx) -> dict:
 @router.put("/profile")
 def update_profile(body: dict, ctx: AuthCtx) -> dict:
     """Change your display name."""
+    _account(ctx)
     return {**users.update_profile(ctx, body), "permissions": permissions_for(ctx.actor["role"])}
 
 
 @router.post("/password")
 def change_password(request: Request, response: Response, body: dict, ctx: AuthCtx) -> dict:
     """Change your password; other sessions are signed out and this one renewed."""
+    _account(ctx)
     users.change_own_password(ctx, body.get("current"), body.get("new"))
     create_session(ctx.db, request, response, ctx.settings, ctx.actor["id"])
     return {"ok": True}

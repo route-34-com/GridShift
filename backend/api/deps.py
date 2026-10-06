@@ -56,9 +56,15 @@ def get_ctx(request: Request, db: Annotated[sqlite3.Connection, Depends(get_db)]
     return Ctx(db, state(request).settings, None, origin(request), str(request.base_url))
 
 
+#: Who acts when sign-in is switched off. Has no account row, so it can't change a password or sign out.
+LOCAL_ADMIN = {"id": None, "email": "local@gridshift", "name": "Local admin", "role": "admin", "status": "active", "created_at": None, "last_login_at": None, "local": True}
+
+
 def get_user(request: Request, db: Annotated[sqlite3.Connection, Depends(get_db)]) -> dict:
-    """Return the signed-in user or answer 401."""
+    """Return the signed-in user, the local admin when sign-in is off, or answer 401."""
     user = session_user(db, request)
+    if not user and not state(request).settings.require_login:
+        return dict(LOCAL_ADMIN)
     if not user:
         raise AppError(401, "Please sign in.")
     return user

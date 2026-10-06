@@ -40,6 +40,8 @@ class Settings:
     allow_remote_setup: bool = False
     #: Built-in sample data set the dashboard can switch to; None disables the switch.
     sample_dir: Path | None = None
+    #: When False, nobody signs in: every request acts as a built-in local admin.
+    require_login: bool = True
 
     def for_data(self, data_dir: Path) -> "Settings":
         """Return these settings reading site data from another folder."""
@@ -107,4 +109,5 @@ def load_settings() -> Settings:
         trust_proxy=_flag("TRUST_PROXY"),
         allow_remote_setup=_flag("GRIDSHIFT_ALLOW_SETUP"),
         sample_dir=None if _flag("GRIDSHIFT_NO_SAMPLE") else _path("GRIDSHIFT_SAMPLE_DIR", "data/holcim"),
+        require_login=_flag("GRIDSHIFT_REQUIRE_LOGIN"),
     )

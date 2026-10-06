@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
-import { json, mockApi, run } from './test/mockApi'
+import { json, me, mockApi, run } from './test/mockApi'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -274,6 +274,13 @@ describe('App', () => {
     await userEvent.type(screen.getByLabelText('Shortest run (hours)'), '20')
     await userEvent.click(screen.getByRole('button', { name: 'Save machine' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('cannot be longer than the hours per day')
+  })
+
+  it('opens without sign-in as the local admin', async () => {
+    mockApi({ '/api/auth/me': () => json({ ...me('admin'), local: true }), '/api/auth/setup': () => json({ needed: false, allowed: true, email: false, login: false }) })
+    render(<App />)
+    expect(await screen.findByText('Sign-in off')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Lena|Test admin/ })).not.toBeInTheDocument()
   })
 
   it('switches the schedule between plan and baseline', async () => {
