@@ -52,7 +52,7 @@ export function PriceCoverage({ hours, today = [], madeAt }: { hours: Hour[]; to
           })}
         </ol>
         {c.stale ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-warning-soft px-4 py-3 text-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-warning-soft px-4 py-3 text-sm">
             <span className="text-fg">
               Prices for {dayLabel(dayIso(c.publishedThrough))} are already out. Re-plan to use them instead of estimates.
             </span>

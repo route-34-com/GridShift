@@ -29,10 +29,10 @@ export function DataSwitch() {
   }
 
   return (
-    <div className="rounded-xl border border-nav-line bg-nav-hover p-3">
+    <div className="rounded-lg border border-nav-line bg-nav-hover p-3">
       <div className="flex items-center justify-between gap-3">
         <label htmlFor="sample-data" className="flex items-center gap-2 text-sm font-medium text-nav-fg">
-          <FlaskConical className={cn('h-4 w-4', on ? 'text-volt' : 'text-nav-muted')} aria-hidden />
+          <FlaskConical className={cn('h-4 w-4', on ? 'text-mark' : 'text-nav-muted')} aria-hidden />
           Sample data
         </label>
         <button
@@ -45,10 +45,10 @@ export function DataSwitch() {
           title={allowed ? undefined : 'Only admins can switch'}
           className={cn(
             'relative h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-60',
-            on ? 'bg-volt' : 'bg-white/20',
+            on ? 'bg-mark' : 'bg-white/20',
           )}
         >
-          <span aria-hidden className={cn('absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform', on && 'translate-x-4 bg-volt-ink')} />
+          <span aria-hidden className={cn('absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform', on && 'translate-x-4 bg-mark-ink')} />
         </button>
       </div>
       <p className="mt-1.5 text-[11px] leading-snug text-nav-muted">{on ? 'Holcim sample: illustrative figures, not real plant data.' : 'Showing your company’s own data.'}</p>

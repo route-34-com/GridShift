@@ -20,7 +20,7 @@ export function Dialog({ open, onOpenChange, title, description, children, foote
         <RadixDialog.Overlay className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]" />
         <RadixDialog.Content
           className={cn(
-            'fixed top-1/2 left-1/2 z-50 max-h-[90vh] w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-border bg-surface shadow-2xl',
+            'fixed top-1/2 left-1/2 z-50 max-h-[90vh] w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg border border-border bg-surface shadow-2xl',
             wide ? 'max-w-2xl' : 'max-w-md',
           )}
         >

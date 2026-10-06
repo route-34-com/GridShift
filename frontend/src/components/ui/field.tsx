@@ -3,7 +3,7 @@ import { useId, useState, type InputHTMLAttributes, type ReactNode, type SelectH
 import { cn } from '@/lib/utils'
 
 const CONTROL =
-  'h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-fg placeholder:text-muted/70 transition-colors duration-200 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-60'
+  'h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-fg placeholder:text-muted/70 transition-colors duration-200 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-60'
 
 interface FieldProps {
   label: string

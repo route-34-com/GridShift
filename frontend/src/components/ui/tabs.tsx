@@ -50,7 +50,7 @@ export function MetricTabs<T extends string>({ label, items, active, onChange, i
             onClick={() => onChange(item.id)}
             onKeyDown={(e) => onKey(e, index)}
             className={cn(
-              'group relative flex min-w-0 cursor-pointer items-center gap-3 overflow-hidden rounded-xl border px-3 py-2.5 text-left sm:px-4 sm:py-3 transition-[background-color,border-color,box-shadow] duration-200',
+              'group relative flex min-w-0 cursor-pointer items-center gap-3 overflow-hidden rounded-lg border px-3 py-2.5 text-left sm:px-4 sm:py-3 transition-[background-color,border-color,box-shadow] duration-200',
               selected ? 'border-transparent bg-surface shadow-(--shadow) ring-1 ring-border' : 'border-transparent bg-surface-2 hover:bg-surface hover:ring-1 hover:ring-border',
             )}
           >

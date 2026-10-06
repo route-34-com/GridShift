@@ -10,7 +10,7 @@ export function Select({ options, className, ...props }: SelectProps) {
   return (
     <span className={cn('relative inline-flex', className)}>
       <select
-        className="h-10 cursor-pointer appearance-none rounded-lg border border-border bg-surface pr-9 pl-3.5 text-sm font-medium text-fg transition-colors hover:bg-surface-2"
+        className="h-10 cursor-pointer appearance-none rounded-md border border-border bg-surface pr-9 pl-3.5 text-sm font-medium text-fg transition-colors hover:bg-surface-2"
         {...props}
       >
         {options.map((o) => (

@@ -14,19 +14,19 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
     <div className="flex min-h-screen bg-bg">
       <div className="relative hidden w-[44%] max-w-[640px] flex-col justify-between overflow-hidden bg-nav p-10 text-nav-fg lg:flex">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-volt">
-            <Zap className="h-5 w-5 text-volt-ink" fill="currentColor" aria-hidden />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-mark">
+            <Zap className="h-5 w-5 text-mark-ink" fill="currentColor" aria-hidden />
           </div>
           <span className="text-lg font-semibold">GridShift</span>
         </div>
         <div className="max-w-md">
-          <p className="text-4xl leading-[1.1] font-semibold tracking-[-0.03em]">Run the right machines at the <span className="text-volt">right hour.</span></p>
+          <p className="text-4xl leading-[1.1] font-semibold tracking-[-0.03em]">Run the right machines at the <span className="text-mark">right hour.</span></p>
           <p className="mt-4 text-base leading-relaxed text-white/75">
             Day-ahead prices, a 7-day weather outlook and an optimizer that plans every machine and the battery for the lowest energy bill.
           </p>
         </div>
         <p className="text-sm text-white/60">Smart energy scheduling for industry</p>
-        <svg aria-hidden className="pointer-events-none absolute -right-24 -bottom-24 h-96 w-96 text-volt/10" viewBox="0 0 100 100">
+        <svg aria-hidden className="pointer-events-none absolute -right-24 -bottom-24 h-96 w-96 text-mark/10" viewBox="0 0 100 100">
           <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="2" />
           <circle cx="50" cy="50" r="34" fill="none" stroke="currentColor" strokeWidth="2" />
           <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="2" />
@@ -35,8 +35,8 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
       <main className="flex flex-1 items-center justify-center px-4 py-10">
         <div className="w-full max-w-[420px]">
           <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-nav">
-              <Zap className="h-5 w-5 text-volt" fill="currentColor" aria-hidden />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-nav">
+              <Zap className="h-5 w-5 text-mark" fill="currentColor" aria-hidden />
             </div>
             <span className="text-lg font-semibold text-fg">GridShift</span>
           </div>

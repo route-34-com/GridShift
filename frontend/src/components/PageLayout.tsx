@@ -57,15 +57,18 @@ const SECTIONS: { title: string; items: NavEntry[] }[] = [
   },
 ]
 
+/** The customer's service tier; the Integrated plan (live data and control) comes next. */
+const PLAN_TIER = 'Remote Advisor'
+
 function Brand() {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-volt">
-        <Zap className="h-5 w-5 text-volt-ink" fill="currentColor" aria-hidden />
+      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-mark">
+        <Zap className="h-[18px] w-[18px] text-mark-ink" fill="currentColor" aria-hidden />
       </div>
       <div>
-        <p className="text-base leading-tight font-semibold tracking-tight text-nav-fg">GridShift</p>
-        <p className="text-xs leading-tight text-nav-muted">Energy scheduling</p>
+        <p className="text-[15px] leading-tight font-semibold text-nav-fg">GridShift</p>
+        <p className="text-[11px] leading-tight text-nav-muted">{PLAN_TIER} plan</p>
       </div>
     </div>
   )
@@ -81,14 +84,14 @@ function NavItems({ compact = false }: { compact?: boolean }) {
       end={to === '/'}
       className={({ isActive }) =>
         cn(
-          'group relative flex cursor-pointer items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-200',
-          compact ? 'shrink-0 px-3 py-2' : 'px-3 py-2.5',
+          'group relative flex cursor-pointer items-center gap-3 rounded-md text-sm font-medium transition-colors duration-150',
+          compact ? 'shrink-0 px-3 py-2' : 'px-3 py-2',
           isActive ? 'active bg-nav-active text-nav-fg' : 'text-nav-muted hover:bg-nav-hover hover:text-nav-fg',
         )
       }
     >
-      <span aria-hidden className="absolute top-2 bottom-2 left-0 hidden w-[3px] rounded-r-full bg-volt group-[.active]:block" />
-      <Icon className="h-4 w-4 shrink-0 group-[.active]:text-volt" aria-hidden />
+      <span aria-hidden className="absolute top-2 bottom-2 left-0 hidden w-[3px] rounded-r-full bg-mark group-[.active]:block" />
+      <Icon className="h-4 w-4 shrink-0 group-[.active]:text-mark" aria-hidden />
       {label}
     </NavLink>
   )
@@ -97,7 +100,7 @@ function NavItems({ compact = false }: { compact?: boolean }) {
     <>
       {sections.map((section) => (
         <div key={section.title} className="space-y-1">
-          <p className="px-3 pb-1 font-mono text-[11px] tracking-wider text-nav-muted/60 uppercase">{section.title}</p>
+          <p className="px-3 pb-1 text-[11px] font-semibold tracking-wider text-nav-muted/70 uppercase">{section.title}</p>
           {section.items.map(link)}
         </div>
       ))}
@@ -205,27 +208,42 @@ interface PageLayoutProps {
   children: ReactNode
 }
 
-export function PageLayout({ title, subtitle, actions, planActions = true, children }: PageLayoutProps) {
+/** Context for every page: which site, which data, how fresh the plan is, and German time. */
+function TopBar() {
   const { data, dataset } = useRun()
   const run = data?.run
+  const sample = dataset?.active === 'sample'
   return (
-    <div className="min-h-screen lg:pl-64">
-      <aside className="nav-surface fixed inset-y-0 left-0 z-20 hidden w-64 flex-col px-4 py-5 lg:flex">
-        <Brand />
-        <nav className="mt-8 flex flex-col gap-6" aria-label="Main">
+    <header className="sticky top-0 z-10 hidden h-14 items-center justify-between gap-6 border-b border-border bg-topbar px-6 lg:flex 2xl:px-8">
+      <div className="flex min-w-0 items-center gap-3 text-sm">
+        <Factory className="h-4 w-4 shrink-0 text-muted" aria-hidden />
+        <span className="truncate font-medium text-fg">{run?.site_name ?? (sample ? 'Holcim sample' : 'Your site')}</span>
+        {dataset?.switchable && <Badge tone={sample ? 'brand' : 'neutral'}>{sample ? 'Sample data' : 'Company data'}</Badge>}
+        {run && (
+          <span className="hidden truncate text-muted xl:inline">
+            Plan #{run.id} · made {dateTime(run.created_at)} · {relative(run.created_at)}
+          </span>
+        )}
+      </div>
+      <GermanyClock />
+    </header>
+  )
+}
+
+export function PageLayout({ title, subtitle, actions, planActions = true, children }: PageLayoutProps) {
+  const { data } = useRun()
+  const run = data?.run
+  return (
+    <div className="min-h-screen lg:pl-60">
+      <aside className="nav-surface fixed inset-y-0 left-0 z-20 hidden w-60 flex-col px-3 py-4 lg:flex">
+        <div className="px-2">
+          <Brand />
+        </div>
+        <nav className="mt-7 flex flex-col gap-6" aria-label="Main">
           <NavItems />
         </nav>
         <div className="mt-auto space-y-3">
           <DataSwitch />
-          <GermanyClock />
-          {run && (
-            <div className="rounded-xl border border-nav-line bg-nav-hover p-3 text-xs text-nav-muted">
-              <p className="font-medium text-nav-fg">{run.site_name}</p>
-              <p className="mt-1 font-mono text-[11px]">
-                Plan #{run.id} · {relative(run.created_at)}
-              </p>
-            </div>
-          )}
           <div className="flex items-center gap-1 border-t border-nav-line pt-3">
             <div className="min-w-0 flex-1">
               <UserMenu />
@@ -249,18 +267,18 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
         </nav>
       </header>
 
-      <main className="rise w-full px-4 py-6 sm:px-6 lg:px-10 lg:py-9 2xl:px-12">
-        <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+      <TopBar />
+
+      <main className="rise w-full px-4 py-6 sm:px-6 lg:py-7 2xl:px-8">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0 flex-1 basis-[26rem]">
             <div className="flex items-center gap-3">
-              <h1 className="text-[28px] leading-tight font-semibold tracking-[-0.025em] text-fg">{title}</h1>
-              {dataset?.active === 'sample' && <Badge tone="brand">Sample data</Badge>}
+              <h1 className="text-2xl leading-tight font-semibold tracking-tight text-fg">{title}</h1>
               {run && planActions && run.status === 'attention' && <Badge tone="warning">Needs attention</Badge>}
             </div>
             {subtitle && <div className="mt-1 text-sm text-muted">{subtitle}</div>}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {run && planActions && <span className="hidden font-mono text-xs text-muted xl:inline">Updated {dateTime(run.created_at)}</span>}
             {actions}
             {planActions && <RunButton />}
           </div>

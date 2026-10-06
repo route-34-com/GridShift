@@ -30,28 +30,26 @@ export function GermanyClock({ compact = false, className }: { compact?: boolean
     )
   }
   return (
-    <div className={cn('rounded-xl border border-nav-line bg-nav-hover p-3', className)} aria-label="Date and time in Germany">
-      <div className="flex items-center justify-between gap-2">
-        <p className="flex items-center gap-1.5 text-[11px] text-nav-muted">
-          <Clock className="h-3.5 w-3.5" aria-hidden /> Germany · {zoneName(now)}
-        </p>
-        <div role="radiogroup" aria-label="Clock format" className="flex rounded-md bg-white/5 p-0.5 text-[10px] font-medium">
-          {(['24h', '12h'] as const).map((c) => (
-            <button
-              key={c}
-              type="button"
-              role="radio"
-              aria-checked={cycle === c}
-              onClick={() => setCycle(c)}
-              className={cn('cursor-pointer rounded px-1.5 py-0.5 transition-colors', cycle === c ? 'bg-white/15 text-nav-fg' : 'text-nav-muted hover:text-nav-fg')}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+    <div className={cn('flex shrink-0 items-center gap-3 text-sm', className)} aria-label="Date and time in Germany">
+      <Clock className="h-4 w-4 text-muted" aria-hidden />
+      <span className="text-muted">Germany</span>
+      <span className="tabular font-mono font-medium text-fg">{FORMATS[cycle].format(now)}</span>
+      <span className="hidden text-muted 2xl:inline">{date.format(now)}</span>
+      <span className="text-xs text-muted">{zoneName(now)}</span>
+      <div role="radiogroup" aria-label="Clock format" className="flex rounded-md border border-border p-0.5 text-[11px] font-medium">
+        {(['24h', '12h'] as const).map((c) => (
+          <button
+            key={c}
+            type="button"
+            role="radio"
+            aria-checked={cycle === c}
+            onClick={() => setCycle(c)}
+            className={cn('cursor-pointer rounded px-1.5 py-0.5 transition-colors', cycle === c ? 'bg-surface-2 text-fg' : 'text-muted hover:text-fg')}
+          >
+            {c}
+          </button>
+        ))}
       </div>
-      <p className="tabular mt-1.5 font-mono text-xl leading-none font-semibold tracking-tight text-nav-fg">{FORMATS[cycle].format(now)}</p>
-      <p className="mt-1 text-xs text-nav-muted">{date.format(now)}</p>
     </div>
   )
 }

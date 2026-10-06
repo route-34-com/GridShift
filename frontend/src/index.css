@@ -1,12 +1,17 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/geist';
-@import '@fontsource-variable/geist-mono';
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-sans/700.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -18,8 +23,9 @@
   --color-brand-fg: var(--brand-fg);
   --color-brand-soft: var(--brand-soft);
   --color-accent: var(--accent);
-  --color-volt: var(--volt);
-  --color-volt-ink: var(--volt-ink);
+  --color-mark: var(--mark);
+  --color-mark-ink: var(--mark-ink);
+  --color-topbar: var(--topbar);
   --color-nav: var(--nav-bg);
   --color-nav-fg: var(--nav-fg);
   --color-nav-muted: var(--nav-muted);
@@ -45,90 +51,92 @@
 }
 
 :root {
-  /* Ink and volt: cool ink neutrals, one electric-lime accent for action and "now". */
-  --bg: #f1f3f7;
+  /* Industrial slate: quiet neutrals, one deep teal accent for actions and the current page. */
+  --bg: #f3f5f7;
   --surface: #ffffff;
-  --surface-2: #edf0f5;
-  --border: #e0e4ec;
-  --fg: #0e1424;
-  --muted: #5a6478;
-  --brand: #0e1424;
-  --brand-fg: #d9f75a;
-  --brand-soft: #eef8cf;
-  --accent: #b7e335;
-  --positive: #1e7a3c;
-  --positive-soft: #e5f5ea;
-  --warning: #9a5b00;
-  --warning-soft: #fff1dc;
-  --danger: #c0262d;
-  --danger-soft: #fdeaea;
-  --info: #2459d6;
-  --info-soft: #e7eeff;
+  --surface-2: #eef1f4;
+  --border: #dbe1e7;
+  --fg: #16212b;
+  --muted: #5b6875;
+  --brand: #0d6d76;
+  --brand-fg: #ffffff;
+  --brand-soft: #e1f0f1;
+  --accent: #0d6d76;
+  --positive: #1a7a48;
+  --positive-soft: #e3f3ea;
+  --warning: #9a5a06;
+  --warning-soft: #fdf1df;
+  --danger: #b4232c;
+  --danger-soft: #fbe9ea;
+  --info: #1f5fbf;
+  --info-soft: #e6eefb;
 
-  --nav-bg: #111a2e;
-  --nav-bg-end: #0b1222;
-  --nav-fg: #f3f5fa;
-  --nav-muted: #a4adc3;
+  --topbar: #ffffff;
+  --nav-bg: #17222d;
+  --nav-bg-end: #17222d;
+  --nav-fg: #eef2f6;
+  --nav-muted: #a3b0bd;
   --nav-hover: rgb(255 255 255 / 0.05);
-  --nav-active: rgb(255 255 255 / 0.09);
+  --nav-active: rgb(255 255 255 / 0.08);
   --nav-line: rgb(255 255 255 / 0.08);
-  --volt: #d9f75a;
-  --volt-ink: #0e1424;
+  --mark: #3fb3bd;
+  --mark-ink: #062a2f;
 
-  --series-price: #f0552f;
-  --series-solar: #f2a900;
-  --series-wind: #2f86ff;
-  --series-battery: #8b5cf6;
+  --series-price: #c4521c;
+  --series-solar: #d49b0b;
+  --series-wind: #2c7bb6;
+  --series-battery: #6e56c2;
   --series-grid: #64748b;
-  --series-demand: #0e1424;
-  --series-baseline: #a2abbb;
-  --scrollbar: #c8cfdb;
-  --scrollbar-hover: #a3adbf;
+  --series-demand: #16212b;
+  --series-baseline: #9aa6b2;
+  --scrollbar: #c7cfd8;
+  --scrollbar-hover: #9fabb8;
 
-  --shadow: 0 1px 2px rgb(14 20 36 / 0.04), 0 12px 32px -18px rgb(14 20 36 / 0.18);
+  --shadow: 0 1px 2px rgb(22 33 43 / 0.06);
 
   color-scheme: light;
 }
 
 .dark {
-  --bg: #090d18;
-  --surface: #10162a;
-  --surface-2: #161e36;
-  --border: #222b45;
-  --fg: #e9edf7;
-  --muted: #95a0b8;
-  --brand: #d9f75a;
-  --brand-fg: #0e1424;
-  --brand-soft: #262f17;
-  --accent: #d9f75a;
-  --positive: #5ad37f;
-  --positive-soft: #12281c;
-  --warning: #f6b73c;
-  --warning-soft: #2c2210;
-  --danger: #ff7a7a;
-  --danger-soft: #331619;
-  --info: #8fb2ff;
-  --info-soft: #172341;
+  --bg: #0e141a;
+  --surface: #151d25;
+  --surface-2: #1b252f;
+  --border: #27323e;
+  --fg: #e5ebf0;
+  --muted: #95a2af;
+  --brand: #3fb3bd;
+  --brand-fg: #062a2f;
+  --brand-soft: #12333a;
+  --accent: #3fb3bd;
+  --positive: #4cc488;
+  --positive-soft: #11281d;
+  --warning: #f0b14a;
+  --warning-soft: #2b2112;
+  --danger: #f17a80;
+  --danger-soft: #331a1d;
+  --info: #8db2f2;
+  --info-soft: #172440;
 
-  --nav-bg: #0d1426;
-  --nav-bg-end: #080d1a;
-  --nav-fg: #f3f5fa;
-  --nav-muted: #96a0b8;
+  --topbar: #151d25;
+  --nav-bg: #0b1117;
+  --nav-bg-end: #0b1117;
+  --nav-fg: #eef2f6;
+  --nav-muted: #93a0ad;
   --nav-hover: rgb(255 255 255 / 0.04);
-  --nav-active: rgb(255 255 255 / 0.08);
+  --nav-active: rgb(255 255 255 / 0.07);
   --nav-line: rgb(255 255 255 / 0.07);
 
-  --series-price: #ff7a52;
-  --series-solar: #ffc533;
-  --series-wind: #5aa2ff;
-  --series-battery: #a78bfa;
+  --series-price: #f08a54;
+  --series-solar: #f2c14e;
+  --series-wind: #5ca8e0;
+  --series-battery: #a08ce8;
   --series-grid: #94a3b8;
-  --series-demand: #e9edf7;
-  --series-baseline: #5d6883;
-  --scrollbar: #263050;
-  --scrollbar-hover: #36426a;
+  --series-demand: #e5ebf0;
+  --series-baseline: #5f6d7b;
+  --scrollbar: #2a3642;
+  --scrollbar-hover: #3b4a58;
 
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 16px 40px -20px rgb(0 0 0 / 0.6);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.35);
 
   color-scheme: dark;
 }
@@ -143,10 +151,7 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-sans);
-  font-feature-settings: 'ss01', 'cv11';
   -webkit-font-smoothing: antialiased;
-  background-image: radial-gradient(1200px 420px at 85% -120px, color-mix(in oklab, var(--volt) 22%, transparent), transparent 70%);
-  background-repeat: no-repeat;
 }
 
 /* Sidebar: deep navy with a slight top-to-bottom fade. */
@@ -158,7 +163,6 @@ body {
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -167,7 +171,7 @@ body {
 }
 
 .rise {
-  animation: rise 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: rise 0.2s ease-out both;
 }
 
 * {

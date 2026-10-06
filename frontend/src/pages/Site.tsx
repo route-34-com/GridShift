@@ -402,7 +402,7 @@ function Editor({ setup, onChange }: { setup: SiteSetup; onChange: (s: SiteSetup
 function SampleView({ setup }: { setup: SiteSetup }) {
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm">
+      <div className="flex items-start gap-3 rounded-lg border border-border bg-surface px-4 py-3 text-sm">
         <FlaskConical className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden />
         <p className="text-fg">
           You're looking at the Holcim sample, which can't be edited here. Turn <span className="font-medium">Sample data</span> off in the sidebar to set up your own site and machines.

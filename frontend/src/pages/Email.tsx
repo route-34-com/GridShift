@@ -42,7 +42,7 @@ function Preview({ run }: { run: RunSummary }) {
       ) : html.loading || !html.data ? (
         <Skeleton className="h-[900px]" />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-[#f4f6f5]">
+        <div className="overflow-hidden rounded-lg border border-border bg-[#f4f6f5]">
           <iframe title="Daily plan email preview" srcDoc={html.data} sandbox="" className="h-[1100px] w-full" />
         </div>
       )}
