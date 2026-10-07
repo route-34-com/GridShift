@@ -2,6 +2,7 @@ import { Clock } from 'lucide-react'
 import { useClockCycle } from '@/hooks/useClockCycle'
 import { useNow } from '@/hooks/useNow'
 import { clockTime } from '@/lib/clock'
+import { Segmented } from '@/components/ui/segmented'
 import { cn } from '@/lib/utils'
 
 const TZ = 'Europe/Berlin'
@@ -22,7 +23,7 @@ export function GermanyClock({ compact = false, className }: { compact?: boolean
       <button
         type="button"
         onClick={() => setCycle(cycle === '24h' ? '12h' : '24h')}
-        className={cn('tabular cursor-pointer rounded-md px-1.5 py-1  text-xs text-nav-muted hover:text-nav-fg', className)}
+        className={cn('tabular cursor-pointer rounded-md px-1.5 py-1 text-xs text-nav-muted hover:text-nav-fg', className)}
         aria-label={`Time in Germany, ${clockTime(now, cycle)}. Switch to ${cycle === '24h' ? '12' : '24'}-hour clock`}
       >
         DE {clockTime(now, cycle)}
@@ -36,20 +37,16 @@ export function GermanyClock({ compact = false, className }: { compact?: boolean
       <span className="tabular font-medium text-fg">{FORMATS[cycle].format(now)}</span>
       <span className="hidden text-muted 2xl:inline">{date.format(now)}</span>
       <span className="text-xs text-muted">{zoneName(now)}</span>
-      <div role="radiogroup" aria-label="Clock format" className="flex rounded-md border border-border p-0.5 text-[11px] font-medium">
-        {(['24h', '12h'] as const).map((c) => (
-          <button
-            key={c}
-            type="button"
-            role="radio"
-            aria-checked={cycle === c}
-            onClick={() => setCycle(c)}
-            className={cn('cursor-pointer rounded px-1.5 py-0.5 transition-colors', cycle === c ? 'bg-surface-2 text-fg' : 'text-muted hover:text-fg')}
-          >
-            {c}
-          </button>
-        ))}
-      </div>
+      <Segmented
+        label="Clock format"
+        size="sm"
+        value={cycle}
+        options={[
+          { value: '24h', label: '24h' },
+          { value: '12h', label: '12h' },
+        ]}
+        onChange={setCycle}
+      />
     </div>
   )
 }

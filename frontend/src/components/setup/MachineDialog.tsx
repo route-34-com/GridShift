@@ -121,13 +121,7 @@ export function MachineDialog({ open, machine, takenIds, onClose, onSave }: Mach
         </div>
         <Field label="How it runs" hint={kind.hint}>
           {(id) => (
-            <Select id={id} value={draft.type} onChange={(e) => set({ type: e.target.value as Kind })}>
-              {KINDS.map((k) => (
-                <option key={k.value} value={k.value}>
-                  {k.label}
-                </option>
-              ))}
-            </Select>
+            <Select id={id} value={draft.type} onValueChange={(v) => set({ type: v as Kind })} options={KINDS} />
           )}
         </Field>
 
@@ -153,10 +147,15 @@ export function MachineDialog({ open, machine, takenIds, onClose, onSave }: Mach
             <Field label="Due">
               {(id) => (
                 <div className="space-y-2">
-                  <Select id={id} value={draft.dueMode} onChange={(e) => set({ dueMode: e.target.value as Draft['dueMode'] })}>
-                    <option value="date">On a date and time</option>
-                    <option value="hours">Hours after the plan starts</option>
-                  </Select>
+                  <Select
+                    id={id}
+                    value={draft.dueMode}
+                    onValueChange={(v) => set({ dueMode: v as Draft['dueMode'] })}
+                    options={[
+                      { value: 'date', label: 'On a date and time' },
+                      { value: 'hours', label: 'Hours after the plan starts' },
+                    ]}
+                  />
                   {draft.dueMode === 'date' ? (
                     <Input type="datetime-local" aria-label="Due date and time" value={draft.due} onChange={(e) => set({ due: e.target.value })} />
                   ) : (
@@ -168,11 +167,16 @@ export function MachineDialog({ open, machine, takenIds, onClose, onSave }: Mach
             <Field label="Earliest start">
               {(id) => (
                 <div className="space-y-2">
-                  <Select id={id} value={draft.startMode} onChange={(e) => set({ startMode: e.target.value as Draft['startMode'] })}>
-                    <option value="none">Any time</option>
-                    <option value="date">Not before a date and time</option>
-                    <option value="hours">Hours after the plan starts</option>
-                  </Select>
+                  <Select
+                    id={id}
+                    value={draft.startMode}
+                    onValueChange={(v) => set({ startMode: v as Draft['startMode'] })}
+                    options={[
+                      { value: 'none', label: 'Any time' },
+                      { value: 'date', label: 'Not before a date and time' },
+                      { value: 'hours', label: 'Hours after the plan starts' },
+                    ]}
+                  />
                   {draft.startMode === 'date' && <Input type="datetime-local" aria-label="Earliest start" value={draft.start} onChange={(e) => set({ start: e.target.value })} />}
                   {draft.startMode === 'hours' && <Input type="number" min="0" aria-label="Start after hours" value={draft.startIn} onChange={(e) => set({ startIn: e.target.value })} />}
                 </div>

@@ -83,13 +83,7 @@ function InviteDialog({ open, onClose, onDone }: { open: boolean; onClose: () =>
           </Field>
           <Field label="Role" hint={ROLES.find((r) => r.value === role)?.help}>
             {(id) => (
-              <Select id={id} value={role} onChange={(e) => setRole(e.target.value as Role)}>
-                {ROLES.map((r) => (
-                  <option key={r.value} value={r.value}>
-                    {r.label}
-                  </option>
-                ))}
-              </Select>
+              <Select id={id} value={role} onValueChange={(v) => setRole(v as Role)} options={ROLES} />
             )}
           </Field>
         </form>
@@ -184,13 +178,7 @@ function UserRow({ user, onChanged, onConfirm, onLink }: { user: Account; onChan
         {user.you ? (
           <span className="text-sm text-fg capitalize">{user.role}</span>
         ) : (
-          <Select aria-label={`Role for ${user.email}`} value={user.role} disabled={saving} onChange={(e) => void changeRole(e.target.value as Role)} className="h-9 w-32">
-            {ROLES.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}
-              </option>
-            ))}
-          </Select>
+          <Select aria-label={`Role for ${user.email}`} value={user.role} disabled={saving} onValueChange={(v) => void changeRole(v as Role)} options={ROLES} className="h-9 w-32" />
         )}
       </td>
       <td className="py-3 pr-4">

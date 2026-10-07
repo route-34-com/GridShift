@@ -28,30 +28,32 @@ export function DataSwitch() {
     }
   }
 
+  const hint = on ? 'Holcim sample: illustrative figures, not real plant data.' : 'Showing your company’s own data.'
   return (
-    <div className="rounded-lg border border-nav-line bg-nav-hover p-3">
-      <div className="flex items-center justify-between gap-3">
-        <label htmlFor="sample-data" className="flex items-center gap-2 text-sm font-medium text-nav-fg">
-          <FlaskConical className={cn('h-4 w-4', on ? 'text-mark' : 'text-nav-muted')} aria-hidden />
-          Sample data
-        </label>
-        <button
-          id="sample-data"
-          type="button"
-          role="switch"
-          aria-checked={on}
-          disabled={!allowed || busy}
-          onClick={() => void toggle()}
-          title={allowed ? undefined : 'Only admins can switch'}
-          className={cn(
-            'relative h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-60',
-            on ? 'bg-mark' : 'bg-nav-muted/35',
-          )}
-        >
-          <span aria-hidden className={cn('absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform', on && 'translate-x-4')} />
-        </button>
-      </div>
-      <p className="mt-1.5 text-[11px] leading-snug text-nav-muted">{on ? 'Holcim sample: illustrative figures, not real plant data.' : 'Showing your company’s own data.'}</p>
+    <div className="flex items-center justify-between gap-2 rounded-md border border-nav-line bg-nav-hover px-2.5 py-1.5" title={hint}>
+      <label htmlFor="sample-data" className="flex items-center gap-1.5 text-xs font-medium text-nav-fg">
+        <FlaskConical className={cn('h-3.5 w-3.5', on ? 'text-mark' : 'text-nav-muted')} aria-hidden />
+        Sample data
+      </label>
+      <span id="sample-data-hint" className="sr-only">
+        {hint}
+      </span>
+      <button
+        id="sample-data"
+        type="button"
+        role="switch"
+        aria-checked={on}
+        aria-describedby="sample-data-hint"
+        disabled={!allowed || busy}
+        onClick={() => void toggle()}
+        title={allowed ? hint : 'Only admins can switch'}
+        className={cn(
+          'relative h-4 w-7 shrink-0 cursor-pointer rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-60',
+          on ? 'bg-mark' : 'bg-nav-muted/35',
+        )}
+      >
+        <span aria-hidden className={cn('absolute top-0.5 left-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform', on && 'translate-x-3')} />
+      </button>
     </div>
   )
 }

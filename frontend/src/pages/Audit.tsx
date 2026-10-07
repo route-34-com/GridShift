@@ -153,7 +153,7 @@ export function AuditPage() {
     >
       <div className="space-y-4">
         <Card>
-          <CardBody className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+          <CardBody className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-7">
             <div className="sm:col-span-2 lg:col-span-1 2xl:col-span-2">
               <Field label="Search">
                 {(id) => (
@@ -166,37 +166,34 @@ export function AuditPage() {
             </div>
             <Field label="Activity">
               {(id) => (
-                <Select id={id} value={filters.category} onChange={(e) => set('category', e.target.value)}>
-                  {CATEGORIES.map((c) => (
-                    <option key={c.value} value={c.value}>
-                      {c.label}
-                    </option>
-                  ))}
-                </Select>
+                <Select id={id} value={filters.category} onValueChange={(v) => set('category', v)} options={CATEGORIES} />
               )}
             </Field>
             <Field label="User">
               {(id) => (
-                <Select id={id} value={filters.user_id} onChange={(e) => set('user_id', e.target.value)}>
-                  <option value="">Everyone</option>
-                  {(users.data ?? []).map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name ? `${u.name} (${u.email})` : u.email}
-                    </option>
-                  ))}
-                </Select>
+                <Select
+                  id={id}
+                  value={filters.user_id}
+                  onValueChange={(v) => set('user_id', v)}
+                  options={[{ value: '', label: 'Everyone' }, ...(users.data ?? []).map((u) => ({ value: String(u.id), label: u.name ? `${u.name} (${u.email})` : u.email }))]}
+                />
               )}
             </Field>
             <Field label="Outcome">
               {(id) => (
-                <Select id={id} value={filters.outcome} onChange={(e) => set('outcome', e.target.value)}>
-                  <option value="">Any</option>
-                  <option value="success">Success</option>
-                  <option value="failure">Failure</option>
-                </Select>
+                <Select
+                  id={id}
+                  value={filters.outcome}
+                  onValueChange={(v) => set('outcome', v)}
+                  options={[
+                    { value: '', label: 'Any' },
+                    { value: 'success', label: 'Success' },
+                    { value: 'failure', label: 'Failure' },
+                  ]}
+                />
               )}
             </Field>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 2xl:col-span-2">
               <Field label="From">{(id) => <Input id={id} type="date" value={filters.from} max={filters.to || undefined} onChange={(e) => set('from', e.target.value)} />}</Field>
               <Field label="To">{(id) => <Input id={id} type="date" value={filters.to} min={filters.from || undefined} onChange={(e) => set('to', e.target.value)} />}</Field>
             </div>

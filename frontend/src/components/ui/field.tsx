@@ -1,5 +1,6 @@
-import { Eye, EyeOff } from 'lucide-react'
-import { useId, useState, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react'
+import * as RadixSelect from '@radix-ui/react-select'
+import { Check, ChevronDown, Eye, EyeOff } from 'lucide-react'
+import { useId, useState, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
 const CONTROL =
@@ -46,12 +47,69 @@ export function PasswordInput({ className, ...props }: InputHTMLAttributes<HTMLI
   )
 }
 
-export function Select({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+export interface SelectOption {
+  value: string
+  label: string
+}
+
+interface SelectProps {
+  value: string
+  onValueChange: (value: string) => void
+  options: SelectOption[]
+  id?: string
+  'aria-label'?: string
+  disabled?: boolean
+  /** Sizes the trigger; full width by default. */
+  className?: string
+}
+
+/** Radix needs a non-empty value per item, so an empty choice (e.g. "Everyone") travels under this stand-in. */
+const EMPTY = '__empty__'
+
+/** The one dropdown used across the app: a themed trigger and list with keyboard support. */
+export function Select({ value, onValueChange, options, id, disabled, className, ...aria }: SelectProps) {
   return (
-    <select className={cn(CONTROL, 'cursor-pointer appearance-none bg-[length:16px] bg-[right_0.6rem_center] bg-no-repeat pr-9', className)} style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%2355645d%27 stroke-width=%272%27%3E%3Cpath d=%27m6 9 6 6 6-6%27/%3E%3C/svg%3E")' }} {...props}>
-      {children}
-    </select>
+    <RadixSelect.Root value={value === '' ? EMPTY : value} onValueChange={(v) => onValueChange(v === EMPTY ? '' : v)} disabled={disabled}>
+      <RadixSelect.Trigger
+        id={id}
+        aria-label={aria['aria-label']}
+        className={cn(CONTROL, 'flex cursor-pointer items-center justify-between gap-2 text-left hover:bg-surface-2 data-[placeholder]:text-muted', className)}
+      >
+        <span className="truncate">
+          <RadixSelect.Value />
+        </span>
+        <RadixSelect.Icon>
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted" aria-hidden />
+        </RadixSelect.Icon>
+      </RadixSelect.Trigger>
+      <RadixSelect.Portal>
+        <RadixSelect.Content
+          position="popper"
+          sideOffset={6}
+          className="z-50 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden rounded-lg border border-border bg-surface-solid p-1 text-sm text-fg shadow-xl"
+        >
+          <RadixSelect.Viewport>
+            {options.map((o) => (
+              <RadixSelect.Item
+                key={o.value}
+                value={o.value === '' ? EMPTY : o.value}
+                className="relative flex cursor-pointer items-center rounded-md py-2 pr-8 pl-2.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-surface-2 data-[state=checked]:font-medium"
+              >
+                <RadixSelect.ItemText>{o.label}</RadixSelect.ItemText>
+                <RadixSelect.ItemIndicator className="absolute right-2.5 text-brand">
+                  <Check className="h-4 w-4" aria-hidden />
+                </RadixSelect.ItemIndicator>
+              </RadixSelect.Item>
+            ))}
+          </RadixSelect.Viewport>
+        </RadixSelect.Content>
+      </RadixSelect.Portal>
+    </RadixSelect.Root>
   )
+}
+
+export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea className={cn(CONTROL, 'h-auto py-2', className)} {...props} />
 }
 
 export function FormError({ message }: { message: string | null }) {

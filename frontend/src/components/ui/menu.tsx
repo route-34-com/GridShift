@@ -12,7 +12,7 @@ export function MenuContent({ children, align = 'end' }: { children: ReactNode; 
         align={align}
         sideOffset={6}
         collisionPadding={12}
-        className="z-50 min-w-56 rounded-lg border border-border bg-surface p-1 text-sm shadow-xl"
+        className="z-50 min-w-56 rounded-lg border border-border bg-surface-solid p-1 text-sm shadow-xl"
       >
         {children}
       </Menu.Content>

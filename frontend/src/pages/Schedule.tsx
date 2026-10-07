@@ -9,7 +9,8 @@ import type { RunData } from '@/hooks/RunContext'
 import { exportsApi } from '@/lib/api'
 import { dayLabel, energy, eur, time } from '@/lib/format'
 import type { Block } from '@/lib/types'
-import { cn, machineColor } from '@/lib/utils'
+import { Segmented } from '@/components/ui/segmented'
+import { machineColor } from '@/lib/utils'
 
 type View = 'plan' | 'baseline'
 
@@ -18,25 +19,7 @@ function Toggle({ view, onChange }: { view: View; onChange: (v: View) => void })
     { value: 'plan', label: 'GridShift plan' },
     { value: 'baseline', label: 'Run-as-needed' },
   ]
-  return (
-    <div role="radiogroup" aria-label="Schedule view" className="inline-flex rounded-lg border border-border bg-surface-2 p-0.5">
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          role="radio"
-          aria-checked={view === o.value}
-          onClick={() => onChange(o.value)}
-          className={cn(
-            'cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-200',
-            view === o.value ? 'bg-surface text-fg shadow-sm' : 'text-muted hover:text-fg',
-          )}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  )
+  return <Segmented label="Schedule view" value={view} options={options} onChange={onChange} />
 }
 
 function BlockList({ blocks, order }: { blocks: Block[]; order: string[] }) {

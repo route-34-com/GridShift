@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useSyncExternalStore } from 'react'
 
 export type Theme = 'light' | 'dark'
 
@@ -14,6 +14,17 @@ function remember(theme: Theme): void {
   } catch {
     return
   }
+}
+
+function subscribe(onChange: () => void): () => void {
+  const observer = new MutationObserver(onChange)
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+  return () => observer.disconnect()
+}
+
+/** Whether dark mode is on, updating every component when the theme is switched anywhere. */
+export function useIsDark(): boolean {
+  return useSyncExternalStore(subscribe, () => current() === 'dark')
 }
 
 export function useTheme(): [Theme, () => void] {

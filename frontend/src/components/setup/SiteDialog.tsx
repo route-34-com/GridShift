@@ -1,7 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
-import { Field, FormError, Input } from '@/components/ui/field'
+import { Field, FormError, Input, Textarea } from '@/components/ui/field'
 import { EMPTY_SITE } from '@/lib/site'
 import type { SiteConfig } from '@/lib/types'
 
@@ -146,13 +146,7 @@ export function SiteDialog({ open, site, onClose, onSave }: SiteDialogProps) {
               <div className="sm:col-span-2">
                 <Field label="Power curve" hint='One "wind speed in m/s, power in kW" pair per line, from the turbine datasheet.'>
                   {(id) => (
-                    <textarea
-                      id={id}
-                      rows={5}
-                      value={values.curve}
-                      onChange={(e) => setValues((v) => ({ ...v, curve: e.target.value }))}
-                      className="w-full rounded-lg border border-border bg-surface px-3 py-2 font-mono text-sm text-fg focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none"
-                    />
+                    <Textarea id={id} rows={5} value={values.curve} onChange={(e) => setValues((v) => ({ ...v, curve: e.target.value }))} className="font-mono" />
                   )}
                 </Field>
               </div>

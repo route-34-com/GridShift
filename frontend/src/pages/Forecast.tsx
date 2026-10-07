@@ -12,7 +12,7 @@ import { PriceCoverage } from '@/components/PriceCoverage'
 import { RunGate } from '@/components/RunGate'
 import { SourceBadges } from '@/components/SourceBadges'
 import { Card, CardBody } from '@/components/ui/card'
-import { Select } from '@/components/ui/select'
+import { Select } from '@/components/ui/field'
 import { MetricTabs, type TabItem } from '@/components/ui/tabs'
 import { useRun } from '@/hooks/RunContext'
 import { useClockCycle } from '@/hooks/useClockCycle'
@@ -241,7 +241,7 @@ function Content({
 
 function RangeSelect() {
   const { range, setRange } = useForecastParams()
-  return <Select aria-label="Time range" value={range} options={RANGES} onChange={(e) => setRange(e.target.value as Range)} />
+  return <Select aria-label="Time range" className="w-40" value={range} options={RANGES} onValueChange={(v) => setRange(v as Range)} />
 }
 
 function Subtitle() {
