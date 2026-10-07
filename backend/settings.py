@@ -89,6 +89,14 @@ def _flag(name: str, default: bool = False) -> bool:
     return value in ("1", "true", "yes") if value else default
 
 
+def _database_url() -> str:
+    """Return the Postgres URL, also when a Vercel storage integration added a prefix (e.g. Database_DATABASE_URL)."""
+    if os.getenv("DATABASE_URL"):
+        return os.environ["DATABASE_URL"]
+    prefixed = sorted(name for name, value in os.environ.items() if name.upper().endswith("_DATABASE_URL") and value)
+    return os.environ[prefixed[0]] if prefixed else ""
+
+
 def _tls() -> str:
     mode = (os.getenv("SMTP_TLS") or "starttls").strip().lower()
     return mode if mode in TLS_MODES else "starttls"
@@ -100,7 +108,7 @@ def load_settings() -> Settings:
     return Settings(
         # Vercel only lets a function write under /tmp, so the company's files are kept there (and in the database).
         data_dir=_path("GRIDSHIFT_DATA_DIR", "/tmp/gridshift/live" if os.getenv("VERCEL") else "data/live"),
-        db_path=os.getenv("DATABASE_URL") or _path("GRIDSHIFT_DB_PATH", "/tmp/gridshift/gridshift.db" if os.getenv("VERCEL") else "data/gridshift.db"),
+        db_path=_database_url() or _path("GRIDSHIFT_DB_PATH", "/tmp/gridshift/gridshift.db" if os.getenv("VERCEL") else "data/gridshift.db"),
         solver_time_limit=float(os.getenv("GRIDSHIFT_SOLVER_TIME_LIMIT") or 60),
         smtp=Smtp(
             host=os.getenv("SMTP_HOST", ""),

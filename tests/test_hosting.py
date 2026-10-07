@@ -24,6 +24,18 @@ def test_daily_cron_runs_and_audits_the_plan(settings):
     assert entry["detail"]["trigger"] == "scheduled"
 
 
+def test_database_url_is_found_under_an_integration_prefix(monkeypatch):
+    from backend.settings import load_settings
+
+    monkeypatch.setattr("backend.settings.load_dotenv", lambda *a, **k: None)
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setenv("Database_DATABASE_URL", "postgresql://u@host/db")
+    monkeypatch.setenv("Database_DATABASE_URL_UNPOOLED", "postgresql://u@direct/db")
+    assert load_settings().db_path == "postgresql://u@host/db"
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u@main/db")
+    assert load_settings().db_path == "postgresql://u@main/db"
+
+
 def test_audit_search_ignores_case(settings):
     client = make_client(settings)
     client.post("/api/auth/setup", json={"email": "admin@example.com", "password": PASSWORD, "name": "Ada"})
