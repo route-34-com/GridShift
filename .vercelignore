@@ -1,0 +1,10 @@
+.env
+myenv/
+**/node_modules/
+frontend/dist/
+**/__pycache__/
+.pytest_cache/
+.playwright-mcp/
+*.db
+data/mail/
+data/live/

@@ -4,11 +4,12 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.api.main import create_app
+from backend.settings import ROOT
 from tests.conftest import PASSWORD, broken, good_sources
 
 
 def signed_in(settings, sources=None, dist=None):
-    client = TestClient(create_app(settings, sources or good_sources(), **({"dist": dist} if dist else {"dist": settings.db_path.parent / "no-dist"})))
+    client = TestClient(create_app(settings, sources or good_sources(), **({"dist": dist} if dist else {"dist": ROOT / "no-dist"})))
     if client.get("/api/auth/setup").json()["needed"]:
         client.post("/api/auth/setup", json={"email": "admin@example.com", "password": PASSWORD})
     else:

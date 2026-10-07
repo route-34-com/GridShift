@@ -6,6 +6,7 @@ import httpx
 import uvicorn
 
 from backend.api.main import create_app
+from backend.settings import ROOT
 from tests.conftest import PASSWORD, good_sources
 
 
@@ -17,7 +18,7 @@ def free_port() -> int:
 
 def test_real_server_handles_sign_in_and_parallel_requests(settings):
     port = free_port()
-    server = uvicorn.Server(uvicorn.Config(create_app(settings, good_sources(), dist=settings.db_path.parent / "no-dist"), host="127.0.0.1", port=port, log_level="warning"))
+    server = uvicorn.Server(uvicorn.Config(create_app(settings, good_sources(), dist=ROOT / "no-dist"), host="127.0.0.1", port=port, log_level="warning"))
     thread = threading.Thread(target=server.run, daemon=True)
     thread.start()
     base = f"http://127.0.0.1:{port}"

@@ -33,11 +33,10 @@ class Store:
     def save_run(self, payload: dict) -> int:
         """Insert a run and return its id."""
         with connect(self.path) as db:
-            cursor = db.execute(
-                "INSERT INTO runs (created_at, horizon_start, status, payload, dataset) VALUES (?, ?, ?, ?, ?)",
+            run_id = db.execute(
+                "INSERT INTO runs (created_at, horizon_start, status, payload, dataset) VALUES (?, ?, ?, ?, ?) RETURNING id",
                 (payload["created_at"], payload["horizon_start"], payload["status"], "{}", self.dataset),
-            )
-            run_id = cursor.lastrowid
+            ).fetchall()[0][0]
             payload["id"] = run_id
             db.execute("UPDATE runs SET payload = ? WHERE id = ?", (json.dumps(payload), run_id))
         return run_id
@@ -71,7 +70,8 @@ class Store:
         stamp = datetime.now(timezone.utc).isoformat()
         with connect(self.path) as db:
             db.execute(
-                "INSERT OR REPLACE INTO weather_cache (kind, fetched_at, payload) VALUES (?, ?, ?)",
+                "INSERT INTO weather_cache (kind, fetched_at, payload) VALUES (?, ?, ?) "
+                "ON CONFLICT (kind) DO UPDATE SET fetched_at = excluded.fetched_at, payload = excluded.payload",
                 (self._weather_key(kind), stamp, frame.to_json(orient="split", date_format="iso")),
             )
 

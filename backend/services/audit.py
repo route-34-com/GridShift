@@ -3,6 +3,7 @@
 import json
 import sqlite3
 from dataclasses import dataclass
+from datetime import date, timedelta
 
 from backend.database import insert, now_iso, one, rows
 
@@ -91,8 +92,16 @@ FILTERS = (
     ("outcome", "a.outcome = ?"),
     ("entity", "a.entity = ?"),
     ("from", "a.at >= ?"),
-    ("to", "a.at < date(?, '+1 day')"),
+    ("to", "a.at < ?"),
 )
+
+
+def _day_after(value: object) -> str:
+    """Return the day after an ISO date, or an empty string that matches nothing when it isn't a date."""
+    try:
+        return (date.fromisoformat(str(value)[:10]) + timedelta(days=1)).isoformat()
+    except ValueError:
+        return ""
 
 
 def _where(query: dict) -> tuple[str, list]:
@@ -100,7 +109,7 @@ def _where(query: dict) -> tuple[str, list]:
     for key, condition in FILTERS:
         if query.get(key) not in (None, ""):
             clauses.append(condition)
-            params.append(query[key])
+            params.append(_day_after(query[key]) if key == "to" else query[key])
     if query.get("category"):
         clauses.append("a.action LIKE ?")
         params.append(f"{query['category']}.%")

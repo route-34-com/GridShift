@@ -1,3 +1,4 @@
+import os
 import socket
 from dataclasses import replace
 from datetime import datetime, timezone
@@ -7,9 +8,11 @@ from email.policy import default
 import numpy as np
 import pandas as pd
 import pytest
+import psycopg
 from aiosmtpd.controller import Controller
 from fastapi.testclient import TestClient
 
+from backend import datafiles
 from backend.api.main import create_app
 from backend.auth import lockout
 from backend.auth.passwords import hash_password
@@ -20,6 +23,19 @@ from backend.sources.http import SourceError
 from backend.store import Store
 
 NOW = datetime(2026, 10, 1, 11, 30, tzinfo=timezone.utc)
+#: Run the suite against Postgres too, e.g. GRIDSHIFT_TEST_DATABASE_URL=postgresql://user@localhost/gridshift_test
+TEST_DATABASE_URL = os.getenv("GRIDSHIFT_TEST_DATABASE_URL", "")
+
+
+def fresh_database(tmp_path):
+    """Return an empty database: a new SQLite file, or the Postgres test database wiped clean."""
+    datafiles.forget()
+    if not TEST_DATABASE_URL:
+        return tmp_path / "test.db"
+    with psycopg.connect(TEST_DATABASE_URL, autocommit=True) as conn:
+        conn.execute("DROP SCHEMA public CASCADE")
+        conn.execute("CREATE SCHEMA public")
+    return TEST_DATABASE_URL
 
 
 def hours(start, end):
@@ -51,7 +67,7 @@ def broken(*args, **kwargs):
 def settings(tmp_path) -> Settings:
     return Settings(
         data_dir=ROOT / "data" / "sample",
-        db_path=tmp_path / "test.db",
+        db_path=fresh_database(tmp_path),
         solver_time_limit=30,
         smtp=Smtp("", 587, "", "", "gridshift@example.com", "none"),
         app_url="http://gridshift.test",
@@ -116,7 +132,7 @@ PASSWORD = "secret-pass-1"
 
 
 def make_client(settings: Settings, sources: Sources | None = None) -> TestClient:
-    return TestClient(create_app(settings, sources or good_sources(), dist=settings.db_path.parent / "no-dist"))
+    return TestClient(create_app(settings, sources or good_sources(), dist=ROOT / "no-dist"))
 
 
 def add_user(settings: Settings, email: str, role: str, status: str = "active") -> int:

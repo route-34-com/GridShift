@@ -381,16 +381,24 @@ Interactive docs: `http://127.0.0.1:8000/docs`.
 
 ## Hosting
 
-The dashboard runs on Vercel and the API on Render. Vercel forwards every `/api` request to Render, so the browser sees one address and sign-in cookies just work.
+### Vercel + Neon (free)
 
-**API on Render** (needs a paid plan for the disk that keeps accounts, plans and the audit log):
-1. *New → Blueprint*, pick this repository. `render.yaml` creates `gridshift-api` in Frankfurt with a 1 GB disk at `/var/data`.
-2. Set `APP_URL` to the Vercel address and, if you want email, the `SMTP_*` values.
-3. Open the Vercel address and create the admin account straight away, then set `GRIDSHIFT_ALLOW_SETUP=false` on Render.
+Dashboard and API run on Vercel; accounts, plans, the audit log and the company's own site files live in a free Neon Postgres database. `vercel.json` builds the dashboard, runs the API as one Python function in Frankfurt and starts the daily plan with Vercel Cron.
 
-**Dashboard on Vercel:** import the repository with `frontend` as the root directory. If the Render service gets a different address than `gridshift-api.onrender.com`, change it in `frontend/vercel.json`.
+1. Import the repository into Vercel with an empty root directory.
+2. *Storage → Create Database → Neon* (free, Frankfurt) and connect it to the project. This adds `DATABASE_URL`.
+3. Add environment variables: `APP_URL` (the site address), `TRUST_PROXY=true`, `CRON_SECRET` (any long random text) and, only until the first admin exists, `GRIDSHIFT_ALLOW_SETUP=true`. Optional: the `SMTP_*` values.
+4. Deploy, open the site, create the admin account, then set `GRIDSHIFT_ALLOW_SETUP=false` and redeploy.
 
-The daily 13:30 run isn't scheduled on Render yet; use **Re-plan now** or call `POST /api/runs?email=true` from a scheduler.
+The daily plan runs between 12:00 and 13:00 UTC (after day-ahead prices are published) and is emailed if SMTP is set.
+
+Without `DATABASE_URL` the app falls back to SQLite under `/tmp`, which Vercel wipes on every restart.
+
+### Render (paid disk)
+
+`render.yaml` runs the API with a persistent disk for SQLite instead; point a dashboard at it by forwarding `/api` to the Render address.
+
+To run the tests against Postgres as well: `GRIDSHIFT_TEST_DATABASE_URL=postgresql://user@localhost/gridshift_test pytest` (the database is wiped for every test).
 
 ## Deactivating the Environment
 

@@ -32,7 +32,8 @@ class Settings:
     """Paths, solver limits, mail and access settings."""
 
     data_dir: Path
-    db_path: Path
+    #: SQLite file, or a Postgres URL when hosted somewhere without a lasting disk.
+    db_path: Path | str
     solver_time_limit: float
     smtp: Smtp
     app_url: str = ""
@@ -42,6 +43,8 @@ class Settings:
     sample_dir: Path | None = None
     #: When False, nobody signs in: every request acts as a built-in local admin.
     require_login: bool = True
+    #: Shared secret the host's scheduler sends to start the daily run; empty disables it.
+    cron_secret: str = ""
 
     def for_data(self, data_dir: Path) -> "Settings":
         """Return these settings reading site data from another folder."""
@@ -95,8 +98,9 @@ def load_settings() -> Settings:
     """Read settings from the environment and an optional .env file."""
     load_dotenv(ROOT / ".env")
     return Settings(
-        data_dir=_path("GRIDSHIFT_DATA_DIR", "data/live"),
-        db_path=_path("GRIDSHIFT_DB_PATH", "data/gridshift.db"),
+        # Vercel only lets a function write under /tmp, so the company's files are kept there (and in the database).
+        data_dir=_path("GRIDSHIFT_DATA_DIR", "/tmp/gridshift/live" if os.getenv("VERCEL") else "data/live"),
+        db_path=os.getenv("DATABASE_URL") or _path("GRIDSHIFT_DB_PATH", "/tmp/gridshift/gridshift.db" if os.getenv("VERCEL") else "data/gridshift.db"),
         solver_time_limit=float(os.getenv("GRIDSHIFT_SOLVER_TIME_LIMIT") or 60),
         smtp=Smtp(
             host=os.getenv("SMTP_HOST", ""),
@@ -111,4 +115,5 @@ def load_settings() -> Settings:
         allow_remote_setup=_flag("GRIDSHIFT_ALLOW_SETUP"),
         sample_dir=None if _flag("GRIDSHIFT_NO_SAMPLE") else _path("GRIDSHIFT_SAMPLE_DIR", "data/holcim"),
         require_login=_flag("GRIDSHIFT_REQUIRE_LOGIN", default=True),
+        cron_secret=(os.getenv("CRON_SECRET") or "").strip(),
     )

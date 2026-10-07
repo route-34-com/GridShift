@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Request
 
+from backend import datafiles
 from backend.api.deps import AppDep, AppState, AuthCtx, require
 from backend.datasets import LIVE
 from backend.services.audit import FAILURE, record
@@ -53,10 +54,13 @@ async def upload_meter(request: Request, app: AppDep, ctx: AuthCtx) -> dict:
     except AppError as exc:
         record(ctx.db, ctx.actor, "meter.upload_failed", ctx.origin, outcome=FAILURE, entity="meter", detail={"bytes": len(body), "error": exc.message})
         raise
-    path = app.data.settings.meter_path
+    settings = app.data.settings
+    path = settings.meter_path
+    path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_suffix(".upload")
     temp.write_text(text, encoding="utf-8")
     os.replace(temp, path)
+    datafiles.save(settings)
     result = _peak(app)
     record(ctx.db, ctx.actor, "meter.upload", ctx.origin, entity="meter", detail={"rows": len(readings), "record_kw": result["record_kw"]})
     return result

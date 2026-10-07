@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
+from backend import datafiles
 from backend.api.deps import AppDep, AuthCtx, require
 from backend.datasets import LIVE, ready
 from backend.services.audit import FAILURE, record
@@ -104,6 +105,7 @@ def put_site(body: dict, app: AppDep, ctx: AuthCtx) -> dict:
     except ConfigError as exc:
         raise _reject(ctx, "site", exc) from exc
     save_site(settings.site_path, site)
+    datafiles.save(settings)
     record(ctx.db, ctx.actor, "config.site", ctx.origin, entity="config", entity_id="site", detail={"name": site.name})
     return setup_status(settings, LIVE)
 
@@ -122,6 +124,7 @@ def put_machines(body: MachineList, app: AppDep, ctx: AuthCtx) -> dict:
         before = {}
     after = {m.id: m for m in machines}
     save_machines(settings.machines_path, machines)
+    datafiles.save(settings)
     detail = {
         "added": sorted(after.keys() - before.keys()),
         "removed": sorted(before.keys() - after.keys()),
@@ -154,6 +157,7 @@ async def post_demand(request: Request, app: AppDep, ctx: AuthCtx) -> dict:
     temp = path.with_suffix(".tmp")
     frame.round(1).to_csv(temp, index=False)
     os.replace(temp, path)
+    datafiles.save(settings)
     record(ctx.db, ctx.actor, "config.demand", ctx.origin, entity="config", entity_id="demand", detail={"rows": len(series)})
     return setup_status(settings, LIVE)
 
@@ -183,5 +187,6 @@ def copy_sample(app: AppDep, ctx: AuthCtx) -> dict:
             copied.append(name)
     if "site.yaml" in copied:
         _carry_sample_peak(settings)
+    datafiles.save(settings)
     record(ctx.db, ctx.actor, "config.copy_sample", ctx.origin, entity="config", entity_id="sample", detail={"copied": copied})
     return setup_status(settings, LIVE)

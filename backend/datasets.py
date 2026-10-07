@@ -3,6 +3,7 @@
 import sqlite3
 from dataclasses import dataclass
 
+from backend import datafiles
 from backend.settings import Settings
 from backend.store import Store
 
@@ -31,12 +32,13 @@ def resolve(settings: Settings, store: Store, name: str | None = None) -> DataSe
     name = name or active_name(settings, store)
     if name == SAMPLE and settings.sample_dir is not None:
         return DataSet(SAMPLE, settings.for_data(settings.sample_dir), store.scoped(SAMPLE))
+    datafiles.restore(settings)
     return DataSet(LIVE, settings, store.scoped(LIVE))
 
 
 def choose(db: sqlite3.Connection, name: str) -> None:
     """Make a data set the active one for everyone, including the daily run, inside the caller's transaction."""
-    db.execute("INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)", (KEY, name))
+    db.execute("INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value", (KEY, name))
 
 
 def ready(settings: Settings) -> bool:
