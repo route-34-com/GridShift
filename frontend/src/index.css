@@ -59,11 +59,11 @@
   --grid-line: rgb(15 23 42 / 0.07);
   --fg: #0b1220;
   --muted: #56637d;
-  --brand: #0891d6;
+  --brand: #0a6fb0;
   --brand-2: #5b4ff0;
   --brand-fg: #ffffff;
-  --brand-soft: rgb(8 145 214 / 0.1);
-  --accent: #0891d6;
+  --brand-soft: rgb(10 111 176 / 0.09);
+  --accent: #0a6fb0;
   --energy: #ea6a0c;
   --positive: #0f8a5f;
   --positive-soft: rgb(16 185 129 / 0.12);
@@ -80,9 +80,9 @@
   --nav-fg: #0b1220;
   --nav-muted: #56637d;
   --nav-hover: rgb(15 23 42 / 0.05);
-  --nav-active: rgb(8 145 214 / 0.1);
+  --nav-active: rgb(10 111 176 / 0.09);
   --nav-line: rgb(15 23 42 / 0.09);
-  --mark: #0891d6;
+  --mark: #0a6fb0;
   --mark-ink: #ffffff;
 
   --series-price: #ea6a0c;
@@ -92,7 +92,6 @@
   --series-grid: #64748b;
   --series-demand: #0b1220;
   --series-baseline: #94a3b8;
-  --line-glow: rgb(8 145 214 / 0.18);
   --scrollbar: #c3cbdb;
   --scrollbar-hover: #9aa6bd;
 
@@ -100,7 +99,6 @@
   --aurora-2: rgb(99 102 241 / 0.16);
   --aurora-3: rgb(249 115 22 / 0.1);
   --shadow: 0 1px 0 rgb(255 255 255 / 0.7) inset, 0 12px 32px -18px rgb(15 23 42 / 0.25);
-  --glow: 0 0 0 1px rgb(8 145 214 / 0.25), 0 16px 40px -18px rgb(8 145 214 / 0.45);
 
   color-scheme: light;
 }
@@ -147,7 +145,6 @@
   --series-grid: #94a3b8;
   --series-demand: #ecf2ff;
   --series-baseline: #5c6a8a;
-  --line-glow: rgb(56 189 248 / 0.45);
   --scrollbar: #1f2a45;
   --scrollbar-hover: #2d3b5e;
 
@@ -155,7 +152,6 @@
   --aurora-2: rgb(129 140 248 / 0.14);
   --aurora-3: rgb(251 146 60 / 0.07);
   --shadow: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 18px 40px -20px rgb(0 0 0 / 0.7);
-  --glow: 0 0 0 1px rgb(56 189 248 / 0.3), 0 18px 48px -18px rgb(56 189 248 / 0.45);
 
   color-scheme: dark;
 }
@@ -236,8 +232,7 @@ h2,
 }
 
 .glass:hover {
-  border-color: color-mix(in oklab, var(--brand) 40%, transparent);
-  box-shadow: var(--shadow), var(--glow);
+  border-color: color-mix(in oklab, var(--brand) 22%, var(--border));
 }
 
 @media (prefers-reduced-transparency: reduce) {
@@ -246,58 +241,19 @@ h2,
   }
 }
 
-/* A panel with a gradient edge, for the headline figures. */
-.edge {
-  border: 1px solid transparent;
-  background:
-    linear-gradient(var(--surface-solid), var(--surface-solid)) padding-box,
-    linear-gradient(135deg, color-mix(in oklab, var(--brand) 70%, transparent), var(--border) 45%, color-mix(in oklab, var(--brand-2) 60%, transparent)) border-box;
-}
-
-.text-gradient {
-  background: linear-gradient(100deg, var(--brand), var(--brand-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Primary buttons: electric gradient with a light sweep on hover. */
+/* Primary buttons: one solid brand colour, a hairline shadow and a slightly deeper shade on hover. */
 .btn-electric {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(110deg, var(--brand), var(--brand-2));
-  color: #fff;
-  box-shadow: 0 8px 24px -10px var(--brand);
-}
-
-.btn-electric::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.35) 50%, transparent 70%);
-  transform: translateX(-120%);
-  transition: transform 0.7s ease;
-}
-
-.btn-electric:hover::after {
-  transform: translateX(120%);
+  background: var(--brand);
+  color: var(--brand-fg);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.16);
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .btn-electric:hover {
-  box-shadow: 0 10px 30px -8px var(--brand);
-}
-
-/* The logo breathes a soft glow; the live dot pulses. */
-.logo-glow {
-  background: linear-gradient(135deg, #38bdf8, #6366f1);
-  box-shadow: 0 0 18px -2px rgb(56 189 248 / 0.6);
-  animation: breathe 4s ease-in-out infinite;
-}
-
-@keyframes breathe {
-  50% {
-    box-shadow: 0 0 26px 2px rgb(99 102 241 / 0.55);
-  }
+  background: color-mix(in oklab, var(--brand) 88%, var(--fg));
+  box-shadow: 0 2px 6px -1px rgb(15 23 42 / 0.22);
 }
 
 .live-dot {
@@ -419,7 +375,6 @@ h2,
   stroke: var(--grid-line);
 }
 
-/* Lines on the charts glow in their own colour. */
 .recharts-text {
   fill: var(--muted);
   font-size: 12px;

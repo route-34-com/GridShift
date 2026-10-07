@@ -16,6 +16,7 @@ const Site = page(() => import('@/pages/Site'), 'Site')
 const Users = page(() => import('@/pages/Users'), 'UsersPage')
 const Audit = page(() => import('@/pages/Audit'), 'AuditPage')
 const Account = page(() => import('@/pages/Account'), 'AccountPage')
+const Guide = page(() => import('@/pages/Guide'), 'GuidePage')
 const Login = page(() => import('@/pages/auth/Login'), 'Login')
 const Setup = page(() => import('@/pages/auth/Setup'), 'Setup')
 const ForgotPassword = page(() => import('@/pages/auth/ForgotPassword'), 'ForgotPassword')
@@ -45,6 +46,7 @@ export default function App() {
                 <Route path="/email" element={signedIn(<Email />)} />
                 <Route path="/site" element={signedIn(<Site />)} />
                 <Route path="/account" element={signedIn(<Account />)} />
+                <Route path="/guide" element={signedIn(<Guide />)} />
                 <Route path="/users" element={allowed('users.manage', <Users />)} />
                 <Route path="/audit" element={allowed('audit.view', <Audit />)} />
                 <Route path="*" element={<Navigate to="/" replace />} />

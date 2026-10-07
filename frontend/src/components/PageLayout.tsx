@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   CalendarRange,
   ChevronsUpDown,
   Factory,
@@ -14,13 +15,13 @@ import {
   UserCog,
   Users,
   X,
-  Zap,
   type LucideIcon,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { DataSwitch } from '@/components/DataSwitch'
 import { GermanyClock } from '@/components/GermanyClock'
+import { Logo } from '@/components/Logo'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { MenuContent, MenuItem, MenuRoot, MenuSeparator, MenuTrigger } from '@/components/ui/menu'
@@ -55,6 +56,10 @@ const SECTIONS: { title: string; items: NavEntry[] }[] = [
       { to: '/audit', label: 'Audit log', icon: ScrollText, permission: 'audit.view' },
     ],
   },
+  {
+    title: 'Help',
+    items: [{ to: '/guide', label: 'Units & terms', icon: BookOpen }],
+  },
 ]
 
 /** The customer's service tier; the Integrated plan (live data and control) comes next. */
@@ -63,9 +68,7 @@ const PLAN_TIER = 'Remote Advisor'
 function Brand() {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="logo-glow flex h-9 w-9 items-center justify-center rounded-lg">
-        <Zap className="h-5 w-5 text-white" fill="currentColor" aria-hidden />
-      </div>
+      <Logo />
       <div>
         <p className="font-display text-base leading-tight font-semibold text-nav-fg">GridShift</p>
         <p className="text-[11px] leading-tight text-nav-muted">{PLAN_TIER} plan</p>
@@ -90,7 +93,7 @@ function NavItems({ compact = false }: { compact?: boolean }) {
         )
       }
     >
-      <span aria-hidden className="absolute top-1.5 bottom-1.5 left-0 hidden w-[3px] rounded-r-full bg-linear-to-b from-mark to-brand-2 shadow-[0_0_12px_rgb(56_189_248/0.8)] group-[.active]:block" />
+      <span aria-hidden className="absolute top-1.5 bottom-1.5 left-0 hidden w-[3px] rounded-r-full bg-mark group-[.active]:block" />
       <Icon className="h-4 w-4 shrink-0 group-[.active]:text-mark" aria-hidden />
       {label}
     </NavLink>
