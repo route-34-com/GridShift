@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: gridshift-api
+    runtime: python
+    plan: starter
+    region: frankfurt
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    disk:
+      name: gridshift-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.1
+      - key: GRIDSHIFT_DATA_DIR
+        value: /var/data/live
+      - key: GRIDSHIFT_DB_PATH
+        value: /var/data/gridshift.db
+      - key: GRIDSHIFT_REQUIRE_LOGIN
+        value: "true"
+      - key: GRIDSHIFT_ALLOW_SETUP
+        value: "true"
+      - key: TRUST_PROXY
+        value: "true"
+      - key: APP_URL
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_TLS
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false

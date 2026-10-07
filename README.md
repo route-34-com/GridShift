@@ -379,6 +379,19 @@ Every endpoint except health and the sign-in flow requires a session.
 
 Interactive docs: `http://127.0.0.1:8000/docs`.
 
+## Hosting
+
+The dashboard runs on Vercel and the API on Render. Vercel forwards every `/api` request to Render, so the browser sees one address and sign-in cookies just work.
+
+**API on Render** (needs a paid plan for the disk that keeps accounts, plans and the audit log):
+1. *New → Blueprint*, pick this repository. `render.yaml` creates `gridshift-api` in Frankfurt with a 1 GB disk at `/var/data`.
+2. Set `APP_URL` to the Vercel address and, if you want email, the `SMTP_*` values.
+3. Open the Vercel address and create the admin account straight away, then set `GRIDSHIFT_ALLOW_SETUP=false` on Render.
+
+**Dashboard on Vercel:** import the repository with `frontend` as the root directory. If the Render service gets a different address than `gridshift-api.onrender.com`, change it in `frontend/vercel.json`.
+
+The daily 13:30 run isn't scheduled on Render yet; use **Re-plan now** or call `POST /api/runs?email=true` from a scheduler.
+
 ## Deactivating the Environment
 
 When you're done working with the project, deactivate the virtual environment:
