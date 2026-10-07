@@ -24,7 +24,7 @@ function DayCard({ day, first }: { day: Day; first: boolean }) {
     <li className="rounded-lg border border-border p-4">
       <p className="font-medium whitespace-nowrap text-fg">{day.label}</p>
       <div className="mt-1 h-5">{first ? <Badge tone="brand">Tomorrow</Badge> : day.price_estimated && <Badge>est. price</Badge>}</div>
-      <p className="tabular mt-2 font-mono text-lg font-semibold text-fg">{eur(day.cost_eur)}</p>
+      <p className="tabular mt-2  text-lg font-semibold text-fg">{eur(day.cost_eur)}</p>
       <p className="text-xs text-muted">
         avg €{num(day.avg_price)}/MWh · {pct(day.renewable_share)} renewable
       </p>
@@ -57,13 +57,13 @@ function MachineTable({ machines }: { machines: MachineSummary[] }) {
                   <p className="font-medium text-fg">{m.name}</p>
                   <p className="text-xs text-muted">{m.type === 'deadline' ? 'Deadline job' : 'Daily quota'}</p>
                 </td>
-                <td className="tabular py-2.5 pr-4 font-mono">
+                <td className="tabular py-2.5 pr-4 ">
                   <span className={short ? 'text-danger' : 'text-fg'}>
                     {m.scheduled_hours}/{m.required_hours} h
                   </span>
                 </td>
-                <td className="tabular py-2.5 pr-4 text-right font-mono text-fg">{m.avg_price != null ? `€${num(m.avg_price)}` : '–'}</td>
-                <td className="tabular py-2.5 pr-4 text-right font-mono text-muted">
+                <td className="tabular py-2.5 pr-4 text-right  text-fg">{m.avg_price != null ? `€${num(m.avg_price)}` : '–'}</td>
+                <td className="tabular py-2.5 pr-4 text-right  text-muted">
                   {m.baseline_avg_price != null ? `€${num(m.baseline_avg_price)}` : '–'}
                 </td>
                 <td className="py-2.5 text-right">
@@ -160,11 +160,11 @@ function Content({ run }: { run: RunSummary }) {
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-lg bg-surface-2 p-3">
                 <p className="text-xs text-muted">Planned cost</p>
-                <p className="tabular font-mono text-lg font-semibold text-fg">{eur(tomorrow.cost_eur)}</p>
+                <p className="tabular text-lg font-semibold text-fg">{eur(tomorrow.cost_eur)}</p>
               </div>
               <div className="rounded-lg bg-surface-2 p-3">
                 <p className="text-xs text-muted">Avg grid price</p>
-                <p className="tabular font-mono text-lg font-semibold text-fg">€{num(tomorrow.avg_price)}/MWh</p>
+                <p className="tabular text-lg font-semibold text-fg">€{num(tomorrow.avg_price)}/MWh</p>
               </div>
             </div>
             <div>

@@ -30,7 +30,7 @@ function Spec({ icon: Icon, title, rows }: { icon: LucideIcon; title: string; ro
           {rows.map(([label, value]) => (
             <div key={label} className="flex justify-between gap-4">
               <dt className="text-muted">{label}</dt>
-              <dd className="tabular text-right font-mono text-fg">{value}</dd>
+              <dd className="tabular text-right  text-fg">{value}</dd>
             </div>
           ))}
         </dl>
@@ -165,8 +165,8 @@ function MachineTable({ machines, onEdit, onDelete }: MachineTableProps) {
             <td className="py-2.5 pr-4">
               <Badge tone={m.type === 'always_on' ? 'neutral' : m.type === 'deadline' ? 'warning' : 'info'}>{TYPE_LABEL[m.type]}</Badge>
             </td>
-            <td className="tabular py-2.5 pr-4 text-right font-mono text-fg">{power(m.power_kw)}</td>
-            <td className="tabular py-2.5 pr-4 text-right font-mono text-muted">{m.type === 'always_on' ? '–' : `${m.min_run_hours} h`}</td>
+            <td className="tabular py-2.5 pr-4 text-right  text-fg">{power(m.power_kw)}</td>
+            <td className="tabular py-2.5 pr-4 text-right  text-muted">{m.type === 'always_on' ? '–' : `${m.min_run_hours} h`}</td>
             <td className="py-2.5 pr-4 text-muted">{rule(m)}</td>
             {editable && (
               <td className="py-2 text-right whitespace-nowrap">

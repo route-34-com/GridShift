@@ -59,7 +59,7 @@ export function TooltipBox({ title, lines, footer }: { title: string; lines: Too
               <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: line.color }} />
               {line.label}
             </span>
-            <span className="tabular font-mono text-fg">{line.value}</span>
+            <span className="tabular text-fg">{line.value}</span>
           </li>
         ))}
       </ul>

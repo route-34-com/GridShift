@@ -29,7 +29,7 @@ export function StatCard({ label, value, hint, icon: Icon, tone = 'neutral', hig
       </div>
       <div className="min-w-0">
         <p className="text-sm font-medium text-muted">{label}</p>
-        <p className={cn('tabular mt-2 truncate font-mono text-[28px] leading-none font-semibold tracking-tight', highlight ? 'text-gradient' : 'text-fg')}>
+        <p className={cn('tabular mt-2 truncate  text-[28px] leading-none font-semibold tracking-tight', highlight ? 'text-gradient' : 'text-fg')}>
           {typeof value === 'string' ? <CountUp text={value} /> : value}
         </p>
         {hint && <p className="mt-2 text-xs leading-relaxed text-muted">{hint}</p>}

@@ -45,10 +45,10 @@ export function DataSwitch() {
           title={allowed ? undefined : 'Only admins can switch'}
           className={cn(
             'relative h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-60',
-            on ? 'bg-mark' : 'bg-white/20',
+            on ? 'bg-mark' : 'bg-nav-muted/35',
           )}
         >
-          <span aria-hidden className={cn('absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform', on && 'translate-x-4 bg-mark-ink')} />
+          <span aria-hidden className={cn('absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform', on && 'translate-x-4')} />
         </button>
       </div>
       <p className="mt-1.5 text-[11px] leading-snug text-nav-muted">{on ? 'Holcim sample: illustrative figures, not real plant data.' : 'Showing your company’s own data.'}</p>

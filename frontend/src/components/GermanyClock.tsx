@@ -22,7 +22,7 @@ export function GermanyClock({ compact = false, className }: { compact?: boolean
       <button
         type="button"
         onClick={() => setCycle(cycle === '24h' ? '12h' : '24h')}
-        className={cn('tabular cursor-pointer rounded-md px-1.5 py-1 font-mono text-xs text-nav-muted hover:text-nav-fg', className)}
+        className={cn('tabular cursor-pointer rounded-md px-1.5 py-1  text-xs text-nav-muted hover:text-nav-fg', className)}
         aria-label={`Time in Germany, ${clockTime(now, cycle)}. Switch to ${cycle === '24h' ? '12' : '24'}-hour clock`}
       >
         DE {clockTime(now, cycle)}
@@ -33,7 +33,7 @@ export function GermanyClock({ compact = false, className }: { compact?: boolean
     <div className={cn('flex shrink-0 items-center gap-3 text-sm', className)} aria-label="Date and time in Germany">
       <Clock className="h-4 w-4 text-muted" aria-hidden />
       <span className="text-muted">Germany</span>
-      <span className="tabular font-mono font-medium text-fg">{FORMATS[cycle].format(now)}</span>
+      <span className="tabular font-medium text-fg">{FORMATS[cycle].format(now)}</span>
       <span className="hidden text-muted 2xl:inline">{date.format(now)}</span>
       <span className="text-xs text-muted">{zoneName(now)}</span>
       <div role="radiogroup" aria-label="Clock format" className="flex rounded-md border border-border p-0.5 text-[11px] font-medium">

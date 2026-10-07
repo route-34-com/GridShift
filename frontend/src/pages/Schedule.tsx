@@ -57,7 +57,7 @@ function BlockList({ blocks, order }: { blocks: Block[]; order: string[] }) {
                 <div className="min-w-0">
                   <p className="text-fg">
                     <span className="font-medium">{b.machine_name}</span>{' '}
-                    <span className="tabular font-mono text-muted">
+                    <span className="tabular whitespace-nowrap text-muted">
                       {time(b.start)}–{time(b.end)}
                     </span>
                   </p>

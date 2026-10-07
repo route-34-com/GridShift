@@ -63,7 +63,7 @@ export function MetricTabs<T extends string>({ label, items, active, onChange, i
             </span>
             <span className="min-w-0">
               <span className={cn('block text-sm font-medium', selected ? 'text-fg' : 'text-muted group-hover:text-fg')}>{item.label}</span>
-              {item.value != null && <span className="tabular block truncate font-mono text-[11px] text-muted sm:text-xs">{item.value}</span>}
+              {item.value != null && <span className="tabular block truncate  text-[11px] text-muted sm:text-xs">{item.value}</span>}
             </span>
             <span aria-hidden className={cn('absolute inset-x-3 bottom-0 sm:inset-x-4 h-[3px] rounded-t-full transition-opacity', selected ? 'opacity-100' : 'opacity-0')} style={{ background: item.color }} />
           </button>

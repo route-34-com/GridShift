@@ -13,7 +13,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
   return (
     <div className="relative flex min-h-screen bg-bg">
       <div className="backdrop" aria-hidden />
-      <div className="relative z-[1] hidden w-[44%] max-w-[640px] flex-col justify-between overflow-hidden bg-nav p-10 text-nav-fg lg:flex">
+      <div className="dark relative z-[1] hidden w-[44%] max-w-[640px] flex-col justify-between overflow-hidden bg-nav p-10 text-nav-fg lg:flex">
         <div className="flex items-center gap-2.5">
           <div className="logo-glow flex h-9 w-9 items-center justify-center rounded-lg">
             <Zap className="h-5 w-5 text-white" fill="currentColor" aria-hidden />

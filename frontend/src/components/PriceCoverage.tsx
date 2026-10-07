@@ -45,8 +45,11 @@ export function PriceCoverage({ hours, today = [], madeAt }: { hours: Hour[]; to
                   aria-hidden
                 />
                 <p className="mt-2 text-xs font-medium text-fg">{d.day === c.today ? 'Today' : weekday(iso)}</p>
-                <p className="tabular font-mono text-[11px] text-muted">{dayLabel(iso).split(' ').slice(1).join(' ')}</p>
-                <p className={cn('mt-0.5 text-[11px]', real ? 'text-price' : 'text-muted')}>{real ? 'Real' : partial ? 'Part real' : 'Estimate'}</p>
+                <p className="tabular truncate text-[11px] text-muted">{dayLabel(iso).split(' ').slice(1).join(' ')}</p>
+                <p className={cn('mt-0.5 truncate text-[11px]', real ? 'text-price' : 'text-muted')}>
+                  {real ? 'Real' : partial ? 'Part' : <><span className="sm:hidden">Est.</span><span className="hidden sm:inline">Estimate</span></>}
+                  {partial && <span className="hidden sm:inline"> real</span>}
+                </p>
               </li>
             )
           })}
@@ -65,7 +68,7 @@ export function PriceCoverage({ hours, today = [], madeAt }: { hours: Hour[]; to
         ) : (
           <p className="text-sm text-muted">
             Next: prices for <span className="font-medium text-fg">{dayLabel(dayIso(c.next.day))}</span> come out {nextWhen} German time, in{' '}
-            <span className="tabular font-mono text-fg">{countdown(now, c.next.at)}</span>.
+            <span className="tabular text-fg">{countdown(now, c.next.at)}</span>.
           </p>
         )}
       </CardBody>

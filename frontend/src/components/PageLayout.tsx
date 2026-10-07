@@ -130,7 +130,7 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
   if (me.local) {
     return compact ? null : (
       <div className="flex items-center gap-3 p-2" title="Sign-in is switched off on this server">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-nav-fg ring-1 ring-white/15">LA</span>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-nav-hover text-xs font-semibold text-nav-fg ring-1 ring-nav-line">LA</span>
         <span className="min-w-0">
           <span className="block truncate text-sm font-medium text-nav-fg">Local admin</span>
           <span className="block truncate text-xs text-nav-muted">Sign-in off</span>
@@ -139,7 +139,7 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
     )
   }
   const avatar = (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-nav-fg ring-1 ring-white/15">{initials(me.name, me.email)}</span>
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-nav-hover text-xs font-semibold text-nav-fg ring-1 ring-nav-line">{initials(me.name, me.email)}</span>
   )
   return (
     <MenuRoot>
@@ -250,7 +250,7 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
   return (
     <div className="min-h-screen lg:pl-60">
       <div className="backdrop" aria-hidden />
-      <aside className="nav-surface fixed inset-y-0 left-0 z-20 hidden w-60 flex-col px-3 py-4 lg:flex">
+      <aside className="nav-surface fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r px-3 py-4 lg:flex">
         <div className="px-2">
           <Brand />
         </div>
@@ -268,7 +268,7 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
         </div>
       </aside>
 
-      <header className="nav-surface sticky top-0 z-10 lg:hidden">
+      <header className="nav-surface sticky top-0 z-10 border-b lg:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <Brand />
           <div className="flex items-center gap-1">
