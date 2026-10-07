@@ -161,7 +161,7 @@ Demand history ─────────→ Factory base load forecast
 
 ### Step 2: Install Prerequisites
 
-- [Python 3.11+](https://www.python.org/downloads/) (tested on 3.13)
+- [Python 3.12+](https://www.python.org/downloads/) (tested on 3.13)
 - [Node.js 20+](https://nodejs.org/) (tested on 22)
 
 Verify the installation:
