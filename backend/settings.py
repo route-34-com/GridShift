@@ -81,8 +81,9 @@ def _path(name: str, default: str) -> Path:
     return path if path.is_absolute() else ROOT / path
 
 
-def _flag(name: str) -> bool:
-    return (os.getenv(name) or "").strip().lower() in ("1", "true", "yes")
+def _flag(name: str, default: bool = False) -> bool:
+    value = (os.getenv(name) or "").strip().lower()
+    return value in ("1", "true", "yes") if value else default
 
 
 def _tls() -> str:
@@ -109,5 +110,5 @@ def load_settings() -> Settings:
         trust_proxy=_flag("TRUST_PROXY"),
         allow_remote_setup=_flag("GRIDSHIFT_ALLOW_SETUP"),
         sample_dir=None if _flag("GRIDSHIFT_NO_SAMPLE") else _path("GRIDSHIFT_SAMPLE_DIR", "data/holcim"),
-        require_login=_flag("GRIDSHIFT_REQUIRE_LOGIN"),
+        require_login=_flag("GRIDSHIFT_REQUIRE_LOGIN", default=True),
     )

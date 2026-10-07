@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Request
 
 from backend.api.deps import AppDep, AppState, AuthCtx, require
+from backend.datasets import LIVE
 from backend.services.audit import FAILURE, record
 from backend.services.errors import AppError
 from backend.sources.meter import current_peak, load_meter, parse_meter_csv
@@ -37,6 +38,8 @@ async def upload_meter(request: Request, app: AppDep, ctx: AuthCtx) -> dict:
     """Replace the stored meter data with an uploaded CSV and return the new peak record."""
     body = await request.body()
     try:
+        if app.data.name != LIVE:
+            raise AppError(409, "Turn sample data off to upload your own meter data. The Holcim sample can't be changed here.")
         if len(body) > MAX_UPLOAD_BYTES:
             raise AppError(413, "Meter file is larger than 20 MB.")
         try:

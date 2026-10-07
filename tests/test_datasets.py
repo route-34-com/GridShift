@@ -67,3 +67,13 @@ def test_only_admins_switch(switchable):
     assert planner.get("/api/dataset").json()["active"] == "sample"
     assert planner.put("/api/dataset", json={"active": "live"}).status_code == 403
     assert planner.put("/api/dataset", json={"active": "other"}).status_code in (403, 422)
+
+
+def test_sample_meter_data_cannot_be_replaced(switchable):
+    admin = make_client(switchable)
+    admin.post("/api/auth/setup", json={"email": "admin@example.com", "password": PASSWORD, "name": "Ada"})
+    meter = switchable.sample_dir / "meter_data.csv"
+    before = meter.read_bytes() if meter.exists() else None
+    response = admin.post("/api/meter", content="timestamp,import_kw\n2026-03-02T06:00:00Z,1\n2026-03-02T06:15:00Z,2\n", headers={"content-type": "text/csv"})
+    assert response.status_code == 409
+    assert (meter.read_bytes() if meter.exists() else None) == before

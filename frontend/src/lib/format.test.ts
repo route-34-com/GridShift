@@ -39,5 +39,7 @@ describe('eurShort', () => {
   it('shortens large chart amounts', () => {
     expect(eurShort(140000)).toBe('€140k')
     expect(eurShort(4500)).toBe('€4,500')
+    expect(eurShort(2_225_300)).toBe('€2.2M')
+    expect(eurShort(-140000)).toBe('-€140k')
   })
 })

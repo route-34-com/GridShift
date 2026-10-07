@@ -242,7 +242,7 @@ SMTP_FROM=GridShift <your-account@gmail.com>
 - `APP_URL` is the address put into invitation and reset links. Set it to the public address when hosted.
 - `SMTP_TLS` is `starttls` (port 587), `ssl` (port 465) or `none`. For Gmail, use an [app password](https://myaccount.google.com/apppasswords).
 - `TRUST_PROXY=true` only behind a reverse proxy (nginx), so the real client IP is logged.
-- `GRIDSHIFT_REQUIRE_LOGIN=true` turns sign-in on. It is off by default for now: the dashboard opens straight away and every action is logged as a built-in *Local admin*. Turn it on before hosting GridShift for a customer.
+- `GRIDSHIFT_REQUIRE_LOGIN` is on by default. Set it to `false` only on a single computer nobody else can reach: the dashboard then opens straight away and every action is logged as a built-in *Local admin*.
 - `GRIDSHIFT_ALLOW_SETUP=true` allows creating the first admin from another computer.
 - If `SMTP_HOST` is empty, nothing is emailed: the dashboard shows invite and reset links to copy, and the daily plan can still be previewed.
 - After changing `.env`, restart the server. Inviting yourself or using *Forgot password?* confirms email works.

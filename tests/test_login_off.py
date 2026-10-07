@@ -29,3 +29,13 @@ def test_large_responses_are_compressed(settings):
     client.post("/api/runs")
     response = client.get("/api/runs/latest/hourly", headers={"accept-encoding": "gzip"})
     assert response.headers.get("content-encoding") == "gzip"
+
+
+def test_sign_in_is_required_unless_switched_off(monkeypatch):
+    from backend.settings import load_settings
+
+    monkeypatch.delenv("GRIDSHIFT_REQUIRE_LOGIN", raising=False)
+    monkeypatch.setattr("backend.settings.load_dotenv", lambda *a, **k: None)
+    assert load_settings().require_login is True
+    monkeypatch.setenv("GRIDSHIFT_REQUIRE_LOGIN", "false")
+    assert load_settings().require_login is False
