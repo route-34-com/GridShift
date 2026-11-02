@@ -3,6 +3,7 @@
 import re
 import sqlite3
 import threading
+import time
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -125,6 +126,15 @@ class PgConnection:
 
 _pools: dict[str, ConnectionPool] = {}
 _pools_guard = threading.Lock()
+#: A pooled connection used this recently is handed out without a test query first.
+FRESH_SECONDS = 30.0
+_last_used: dict[int, float] = {}
+
+
+def _check(conn: psycopg.Connection) -> None:
+    """Test a pooled connection only when it sat idle long enough to have been dropped (e.g. a frozen serverless host)."""
+    if time.monotonic() - _last_used.get(id(conn), 0.0) > FRESH_SECONDS:
+        ConnectionPool.check_connection(conn)
 
 
 def _pool(url: str) -> ConnectionPool:
@@ -138,8 +148,7 @@ def _pool(url: str) -> ConnectionPool:
                 max_size=8,
                 max_idle=120,
                 kwargs={"prepare_threshold": None},
-                # A serverless host can freeze the process for minutes; check a pooled connection before handing it out.
-                check=ConnectionPool.check_connection,
+                check=_check,
                 open=True,
             )
             _pools[url] = pool
@@ -167,6 +176,7 @@ def _pg_session(url: str):
         conn.commit() if getattr(exc, "keeps_writes", False) else conn.rollback()
         raise
     finally:
+        _last_used[id(conn)] = time.monotonic()
         pool.putconn(conn)
 
 
