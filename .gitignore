@@ -66,3 +66,6 @@ desktop.ini
 
 # Local mail catcher and test databases
 data/mail/
+
+# Vercel CLI project link
+.vercel/

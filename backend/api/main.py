@@ -1,6 +1,7 @@
 """FastAPI application serving the planner API and the built dashboard."""
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -10,10 +11,12 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from backend.api.deps import AppState
 from backend.api.routes import audit, auth, cron, dataset, exports, meter, runs, setup, system, users
-from backend.pipeline import Sources
 from backend.services.errors import AppError
 from backend.settings import ROOT, Settings, load_settings
 from backend.store import Store
+
+if TYPE_CHECKING:
+    from backend.pipeline import Sources
 
 DIST = ROOT / "frontend" / "dist"
 SECURITY_HEADERS = {
@@ -57,7 +60,7 @@ def _handlers(app: FastAPI) -> None:
         return response
 
 
-def create_app(settings: Settings | None = None, sources: Sources | None = None, dist: Path = DIST) -> FastAPI:
+def create_app(settings: Settings | None = None, sources: "Sources | None" = None, dist: Path = DIST) -> FastAPI:
     """Build the API application."""
     settings = settings or load_settings()
     app = FastAPI(title="GridShift", version="0.2.0")

@@ -4,7 +4,6 @@ from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
 from backend.api.deps import AppDep, AuthCtx, latest_or_404, require
-from backend.jobs import execute
 from backend.notify.email import render_plan_email
 from backend.services.errors import AppError
 
@@ -26,6 +25,8 @@ def list_runs(app: AppDep, limit: int = 20) -> list[dict]:
 @router.post("", status_code=201, dependencies=[require("plan.run")])
 def create_run(app: AppDep, ctx: AuthCtx, email: bool = False) -> dict:
     """Run the planner now."""
+    from backend.jobs import execute
+
     if not app.lock.acquire(blocking=False):
         raise AppError(409, "A planning run is already in progress.")
     try:
@@ -42,6 +43,17 @@ def create_run(app: AppDep, ctx: AuthCtx, email: bool = False) -> dict:
 def latest(app: AppDep) -> dict:
     """Return the newest successful run summary."""
     return _summary(latest_or_404(app))
+
+
+@router.get("/latest/full")
+def latest_full(app: AppDep) -> dict:
+    """Return the newest successful run with its hourly flows and blocks in one response."""
+    run = latest_or_404(app)
+    return {
+        "run": _summary(run),
+        "hourly": {"plan": run["hourly"], "baseline": run["baseline_hourly"], "today": run.get("today", [])},
+        "blocks": {"plan": run["blocks"], "baseline": run["baseline_blocks"]},
+    }
 
 
 @router.get("/latest/hourly")

@@ -1,7 +1,7 @@
 import { vi } from 'vitest'
 import fixture from './run.json'
 
-type Handler = (init?: RequestInit) => Response
+type Handler = (init?: RequestInit) => Response | Promise<Response>
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
 
@@ -27,6 +27,13 @@ export function mockApi(overrides: Record<string, Handler> = {}, role: TestRole 
     '/api/runs/latest': () => json(run),
     '/api/runs/latest/hourly': () => json({ plan: run.hourly, baseline: run.baseline_hourly }),
     '/api/runs/latest/blocks': () => json({ plan: run.blocks, baseline: run.baseline_blocks }),
+    '/api/runs/latest/full': async () => {
+      const parts = await Promise.all(['/api/runs/latest', '/api/runs/latest/hourly', '/api/runs/latest/blocks'].map((path) => routes[path]()))
+      const failed = parts.find((response) => !response.ok)
+      if (failed) return failed
+      const [summary, hourly, blocks] = await Promise.all(parts.map((response) => response.json()))
+      return json({ run: summary, hourly, blocks })
+    },
     '/api/runs/latest/email': () => new Response('<p>email</p>', { headers: { 'content-type': 'text/html' } }),
     ...overrides,
   }

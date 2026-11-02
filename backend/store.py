@@ -5,9 +5,12 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-import pandas as pd
+from typing import TYPE_CHECKING
 
 from backend.database import connect, init_db
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 class Store:
@@ -65,7 +68,7 @@ class Store:
             found = db.execute("SELECT id, created_at, horizon_start, status FROM runs WHERE dataset = ? ORDER BY id DESC LIMIT ?", (self.dataset, limit)).fetchall()
         return [dict(r) for r in found]
 
-    def save_weather(self, kind: str, frame: pd.DataFrame) -> None:
+    def save_weather(self, kind: str, frame: "pd.DataFrame") -> None:
         """Cache a weather frame for fallback use."""
         stamp = datetime.now(timezone.utc).isoformat()
         with connect(self.path) as db:
@@ -75,8 +78,10 @@ class Store:
                 (self._weather_key(kind), stamp, frame.to_json(orient="split", date_format="iso")),
             )
 
-    def load_weather(self, kind: str) -> pd.DataFrame | None:
+    def load_weather(self, kind: str) -> "pd.DataFrame | None":
         """Return the cached weather frame, if any."""
+        import pandas as pd
+
         with connect(self.path) as db:
             row = db.execute("SELECT payload FROM weather_cache WHERE kind = ?", (self._weather_key(kind),)).fetchone()
         if not row:

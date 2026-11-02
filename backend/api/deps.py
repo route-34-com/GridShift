@@ -4,7 +4,7 @@ import sqlite3
 import threading
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 from fastapi import Depends, Request
 
@@ -12,12 +12,14 @@ from backend.auth.permissions import can
 from backend.auth.sessions import client_ip, session_user, user_agent
 from backend.database import connect
 from backend.datasets import DataSet, resolve
-from backend.pipeline import Sources
 from backend.services.audit import Origin
 from backend.services.context import Ctx
 from backend.services.errors import AppError
 from backend.settings import Settings
 from backend.store import Store
+
+if TYPE_CHECKING:
+    from backend.pipeline import Sources
 
 
 @dataclass
@@ -26,7 +28,7 @@ class AppState:
 
     settings: Settings
     store: Store
-    sources: Sources | None = None
+    sources: "Sources | None" = None
     lock: threading.Lock = field(default_factory=threading.Lock)
 
     @property

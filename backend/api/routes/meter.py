@@ -10,7 +10,6 @@ from backend.api.deps import AppDep, AppState, AuthCtx, require
 from backend.datasets import LIVE
 from backend.services.audit import FAILURE, record
 from backend.services.errors import AppError
-from backend.sources.meter import current_peak, load_meter, parse_meter_csv
 from backend.sources.site import ConfigError, load_site
 
 router = APIRouter(prefix="/api", tags=["meter"])
@@ -19,6 +18,8 @@ MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 
 
 def _peak(app: AppState) -> dict:
+    from backend.sources.meter import current_peak, load_meter
+
     try:
         data = app.data.settings
         site = load_site(data.site_path)
@@ -37,6 +38,8 @@ def peak(app: AppDep) -> dict:
 @router.post("/meter", dependencies=[require("meter.upload")])
 async def upload_meter(request: Request, app: AppDep, ctx: AuthCtx) -> dict:
     """Replace the stored meter data with an uploaded CSV and return the new peak record."""
+    from backend.sources.meter import parse_meter_csv
+
     body = await request.body()
     try:
         if app.data.name != LIVE:

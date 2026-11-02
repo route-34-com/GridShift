@@ -5,7 +5,6 @@ import hmac
 from fastapi import APIRouter, Request
 
 from backend.api.deps import AppDep
-from backend.jobs import execute
 from backend.services.errors import AppError
 
 router = APIRouter(prefix="/api/cron", tags=["cron"])
@@ -14,6 +13,8 @@ router = APIRouter(prefix="/api/cron", tags=["cron"])
 @router.get("/daily")
 def daily(request: Request, app: AppDep) -> dict:
     """Run, store and email the daily plan when called with the scheduler's secret."""
+    from backend.jobs import execute
+
     secret = app.settings.cron_secret
     if not secret or not hmac.compare_digest(request.headers.get("authorization", ""), f"Bearer {secret}"):
         raise AppError(401, "Only the scheduler can start the daily run.")

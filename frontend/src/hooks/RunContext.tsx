@@ -31,7 +31,7 @@ interface RunContextValue {
 const RunContext = createContext<RunContextValue | null>(null)
 
 async function loadRun(): Promise<RunData> {
-  const [run, hourly, blocks] = await Promise.all([api.latest(), api.hourly(), api.blocks()])
+  const { run, hourly, blocks } = await api.full()
   return { run, hourly: hourly.plan, today: hourly.today ?? [], baselineHourly: hourly.baseline, blocks: blocks.plan, baselineBlocks: blocks.baseline }
 }
 

@@ -13,8 +13,6 @@ from backend.datasets import LIVE, ready
 from backend.services.audit import FAILURE, record
 from backend.services.errors import AppError
 from backend.settings import Settings
-from backend.sources.demand_history import load_demand_history, parse_demand_history
-from backend.sources.meter import current_peak, load_meter
 from backend.sources.site import ConfigError, load_machines, load_site, save_machines, save_site, validate_machines, validate_site
 
 router = APIRouter(prefix="/api/setup", tags=["setup"])
@@ -37,6 +35,8 @@ def _check(load) -> dict:
 
 def setup_status(settings: Settings, dataset: str) -> dict:
     """Return what the planner needs for this data set and what is in place."""
+    from backend.sources.demand_history import load_demand_history
+    from backend.sources.meter import load_meter
 
     def demand():
         series = load_demand_history(settings.demand_path)
@@ -137,6 +137,8 @@ def put_machines(body: MachineList, app: AppDep, ctx: AuthCtx) -> dict:
 @router.post("/demand", dependencies=[require("config.edit")])
 async def post_demand(request: Request, app: AppDep, ctx: AuthCtx) -> dict:
     """Replace the load history with an uploaded CSV."""
+    from backend.sources.demand_history import parse_demand_history
+
     settings = _editable(app)
     body = await request.body()
     try:
@@ -164,6 +166,8 @@ async def post_demand(request: Request, app: AppDep, ctx: AuthCtx) -> dict:
 
 def _carry_sample_peak(settings: Settings) -> None:
     """Give the copied site the sample's peak record, since the sample's meter data stays behind."""
+    from backend.sources.meter import current_peak, load_meter
+
     readings = load_meter(settings.sample_dir / "meter_data.csv")
     site = load_site(settings.site_path)
     if readings is None or site.grid.peak_so_far_kw > 0:

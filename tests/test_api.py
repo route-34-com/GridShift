@@ -30,6 +30,7 @@ def test_no_runs_yet_returns_404_with_guidance(client):
     response = client.get("/api/runs/latest")
     assert response.status_code == 404
     assert "Run the planner" in response.json()["detail"]
+    assert client.get("/api/runs/latest/full").status_code == 404
     assert client.get("/api/status").json()["latest"] is None
 
 
@@ -46,6 +47,23 @@ def test_run_then_read_everything(client):
     assert len(client.get("/api/runs").json()) == 1
     email = client.get("/api/runs/latest/email")
     assert email.status_code == 200 and "GridShift" in email.text
+
+
+def test_full_latest_run_matches_the_separate_endpoints(client):
+    client.post("/api/runs")
+    full = client.get("/api/runs/latest/full").json()
+    assert full["run"] == client.get("/api/runs/latest").json()
+    assert full["hourly"] == client.get("/api/runs/latest/hourly").json()
+    assert full["blocks"] == client.get("/api/runs/latest/blocks").json()
+
+
+def test_starting_the_api_does_not_load_the_planner_libraries():
+    import subprocess
+    import sys
+
+    code = "import sys, backend.api.main; print(','.join(m for m in ('pandas', 'numpy', 'sklearn', 'highspy', 'openpyxl', 'reportlab') if m in sys.modules))"
+    loaded = subprocess.run([sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
+    assert loaded == ""
 
 
 def test_failed_first_run_returns_502_and_reports_failure(settings):

@@ -2,11 +2,13 @@
 
 import re
 import sqlite3
+import threading
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
 import psycopg
+from psycopg_pool import ConnectionPool
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS runs (
@@ -121,8 +123,51 @@ class PgConnection:
         return cursor
 
 
-def _pg_connect(url: str) -> psycopg.Connection:
-    return psycopg.connect(url, prepare_threshold=None)
+_pools: dict[str, ConnectionPool] = {}
+_pools_guard = threading.Lock()
+
+
+def _pool(url: str) -> ConnectionPool:
+    """Return this process's connection pool for a database, so requests skip the connect and TLS handshake."""
+    with _pools_guard:
+        pool = _pools.get(url)
+        if pool is None:
+            pool = ConnectionPool(
+                url,
+                min_size=0,
+                max_size=8,
+                max_idle=120,
+                kwargs={"prepare_threshold": None},
+                # A serverless host can freeze the process for minutes; check a pooled connection before handing it out.
+                check=ConnectionPool.check_connection,
+                open=True,
+            )
+            _pools[url] = pool
+        return pool
+
+
+def close_pools() -> None:
+    """Close every pooled Postgres connection."""
+    with _pools_guard:
+        pools = list(_pools.values())
+        _pools.clear()
+    for pool in pools:
+        pool.close()
+
+
+@contextmanager
+def _pg_session(url: str):
+    """Yield a pooled connection that commits on success and rolls back on error."""
+    pool = _pool(url)
+    conn = pool.getconn()
+    try:
+        yield conn
+        conn.commit()
+    except BaseException as exc:
+        conn.commit() if getattr(exc, "keeps_writes", False) else conn.rollback()
+        raise
+    finally:
+        pool.putconn(conn)
 
 
 def _migrate(db: sqlite3.Connection) -> None:
@@ -146,7 +191,7 @@ def iso(moment: datetime) -> str:
 def init_db(path: Target) -> None:
     """Create the database and every table."""
     if is_postgres(path):
-        with _pg_connect(path) as conn:
+        with _pg_session(path) as conn:
             conn.execute("SELECT pg_advisory_xact_lock(3405)")
             conn.execute(PG_SCHEMA)
             conn.execute("ALTER TABLE runs ADD COLUMN IF NOT EXISTS dataset TEXT NOT NULL DEFAULT 'legacy'")
@@ -165,15 +210,8 @@ def init_db(path: Target) -> None:
 def connect(path: Target):
     """Yield a connection that commits on success and rolls back on error."""
     if is_postgres(path):
-        conn = _pg_connect(path)
-        try:
+        with _pg_session(path) as conn:
             yield PgConnection(conn)
-            conn.commit()
-        except BaseException as exc:
-            conn.commit() if getattr(exc, "keeps_writes", False) else conn.rollback()
-            raise
-        finally:
-            conn.close()
         return
     db = sqlite3.connect(path, timeout=30, isolation_level=None, check_same_thread=False)
     db.row_factory = sqlite3.Row

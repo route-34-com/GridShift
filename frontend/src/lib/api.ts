@@ -107,6 +107,8 @@ export const api = {
   latest: () => request<RunSummary>('/api/runs/latest'),
   hourly: () => request<{ plan: Hour[]; baseline: Hour[]; today?: TodayHour[] }>('/api/runs/latest/hourly'),
   blocks: () => request<{ plan: Block[]; baseline: Block[] }>('/api/runs/latest/blocks'),
+  full: () =>
+    request<{ run: RunSummary; hourly: { plan: Hour[]; baseline: Hour[]; today?: TodayHour[] }; blocks: { plan: Block[]; baseline: Block[] } }>('/api/runs/latest/full'),
   email: () => request<string>('/api/runs/latest/email'),
   runs: () => request<RunHeader[]>('/api/runs'),
   config: () => request<Config>('/api/config'),
