@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from backend.forecast.demand import base_demand
-from backend.forecast.horizon import horizon_index, local_dates, today_index
+from backend.forecast.horizon import align, horizon_end, horizon_index, local_dates, step_hours, today_index
 from backend.forecast.price_estimate import estimator_for, price_forecast
 from backend.forecast.renewables import hub_wind_speed, solar_kw, wind_kw
 from backend.planner.baseline import baseline
@@ -23,6 +23,7 @@ from backend.settings import Settings
 from backend.sources import price, weather
 from backend.sources.demand_history import load_demand_history
 from backend.sources.http import SourceError
+from backend.sources.price import to_steps
 from backend.sources.meter import current_peak, load_meter
 from backend.sources.site import ConfigError, load_machines, load_site
 from backend.store import Store
@@ -67,22 +68,22 @@ def _cached_weather(store: Store, kind: str, index: pd.DatetimeIndex) -> pd.Data
     cached = store.load_weather(kind)
     if cached is None or cached.empty:
         return None
-    aligned = cached.reindex(index)
+    aligned = align(cached, index)
     profile = cached.groupby(cached.index.hour).mean()
     fill = pd.DataFrame([profile.loc[h] if h in profile.index else profile.mean() for h in index.hour], index=index)
     return aligned.fillna(fill)
 
 
 def _fetch_prices(sources: Sources, index: pd.DatetimeIndex, notes: Notes) -> pd.Series | None:
-    start, end = index[0].to_pydatetime(), (index[-1] + pd.Timedelta(hours=1)).to_pydatetime()
+    start, end = index[0].to_pydatetime(), horizon_end(index).to_pydatetime()
     try:
-        actual = sources.day_ahead(start, end)
+        raw = sources.day_ahead(start, end)
     except SourceError as exc:
         primary_error = exc
         try:
             if sources.backup_day_ahead is None:
                 raise SourceError("no backup price source configured")
-            actual = sources.backup_day_ahead(start, end)
+            raw = sources.backup_day_ahead(start, end)
         except SourceError as backup_error:
             notes.sources["price"] = "estimated"
             notes.alert(
@@ -93,22 +94,26 @@ def _fetch_prices(sources: Sources, index: pd.DatetimeIndex, notes: Notes) -> pd
             )
             return None
         notes.alert("price_backup", "info", f"Energy-Charts didn't respond, so the real market prices came from aWATTar instead ({primary_error}).")
-    first_day = (local_dates(index) == local_dates(index)[0]).sum()
-    known = actual.reindex(index).notna()
-    if known[:first_day].all():
+    actual = to_steps(raw, index)
+    first_day = local_dates(index) == local_dates(index)[0]
+    known = actual.notna().to_numpy()
+    if known[first_day].all():
         notes.sources["price"] = "published"
     else:
+        hours = step_hours(index)
         notes.sources["price"] = "partial"
-        notes.warnings.append(f"Day-ahead prices for the first day are not fully published yet ({int(known[:first_day].sum())}/{first_day} h); missing hours are estimated.")
+        notes.warnings.append(
+            f"Day-ahead prices for the first day are not fully published yet ({hours[first_day & known].sum():g}/{hours[first_day].sum():g} h); missing hours are estimated."
+        )
     return actual
 
 
 def _fetch_weather(fetch: Callable, kind: str, store: Store, index: pd.DatetimeIndex, notes: Notes, required: bool) -> pd.DataFrame | None:
     try:
-        frame = fetch(index[0].to_pydatetime(), (index[-1] + pd.Timedelta(hours=1)).to_pydatetime())
+        frame = fetch(index[0].to_pydatetime(), horizon_end(index).to_pydatetime())
         store.save_weather(kind, frame)
         notes.sources[kind] = "live"
-        return frame
+        return align(frame, index).ffill().bfill()
     except SourceError as exc:
         cached = _cached_weather(store, kind, index)
         if cached is not None:
@@ -134,11 +139,12 @@ def _day_label(day) -> str:
 def _battery_note(day: pd.DataFrame, site: Site) -> str:
     if site.battery.capacity_kwh <= 0:
         return "No battery configured."
-    charge, discharge = day["charge"].sum(), day["discharge"].sum()
+    dt = day["hours"]
+    charge, discharge = (day["charge"] * dt).sum(), (day["discharge"] * dt).sum()
     if charge < 1 and discharge < 1:
         return f"Idle; holds {day['soc'].iloc[-1] / site.battery.capacity_kwh:.0%} charge."
     cheap = day[day["charge"] > 1]
-    renewable_charge = (np.minimum(cheap["charge"], (cheap["solar"] + cheap["wind"] - cheap["demand"] - cheap["flexible"]).clip(lower=0))).sum()
+    renewable_charge = (np.minimum(cheap["charge"], (cheap["solar"] + cheap["wind"] - cheap["demand"] - cheap["flexible"]).clip(lower=0)) * cheap["hours"]).sum()
     source = "mostly from surplus solar/wind" if renewable_charge > charge / 2 else "mostly in cheap grid hours"
     return f"Charges {charge:,.0f} kWh ({source}), discharges {discharge:,.0f} kWh in expensive hours, ends the day {day['soc'].iloc[-1] / site.battery.capacity_kwh:.0%} full."
 
@@ -147,15 +153,16 @@ def _daily(plan: PlanResult, ref: PlanResult, site: Site) -> list[dict]:
     hourly = plan.hourly
     dates = local_dates(hourly.index)
     costs, ref_costs = daily_costs(hourly, site), daily_costs(ref.hourly, site)
-    renewable = (hourly["solar"] + hourly["wind"]).groupby(dates).sum()
-    week_renewable, week_price = renewable.mean(), hourly["price"].mean()
+    dt = hourly["hours"]
+    renewable = ((hourly["solar"] + hourly["wind"]) * dt).groupby(dates).sum()
+    week_renewable, week_price = renewable.mean(), float((hourly["price"] * dt).sum() / dt.sum())
     rows = []
     for day in dict.fromkeys(dates):
         mask = dates == day
         part, ref_part = hourly[mask], ref.hourly[mask]
         metrics = measure(part, site)
-        avg_price = float(part["price"].mean())
-        flex, ref_flex = part["flexible"].sum(), ref_part["flexible"].sum()
+        avg_price = float((part["price"] * part["hours"]).sum() / part["hours"].sum())
+        flex, ref_flex = (part["flexible"] * part["hours"]).sum(), (ref_part["flexible"] * ref_part["hours"]).sum()
         outlook = []
         if renewable[day] >= 1.25 * week_renewable and renewable[day] > 0:
             outlook.append(f"strong solar/wind ({renewable[day] / 1000:,.1f} MWh on site)")
@@ -193,17 +200,22 @@ def _daily(plan: PlanResult, ref: PlanResult, site: Site) -> list[dict]:
 
 def _machines(plan: PlanResult, ref: PlanResult, machines: list[Machine], requirements) -> list[dict]:
     required = {r.machine.id: sum(g.required for g in r.groups) for r in requirements}
-    price = plan.hourly["price"]
+    price, dt = plan.hourly["price"], plan.hourly["hours"]
+
+    def avg(on: pd.Series) -> float | None:
+        weight = dt[on == 1]
+        return round(float((price[on == 1] * weight).sum() / weight.sum()), 2) if weight.sum() else None
+
     rows = []
     for m in machines:
         row = {"id": m.id, "name": m.name, "type": m.type, "power_kw": m.power_kw}
         if m.id in plan.schedule:
             on, ref_on = plan.schedule[m.id], ref.schedule[m.id]
             row |= {
-                "scheduled_hours": int(on.sum()),
+                "scheduled_hours": round(float((on * dt).sum()), 2),
                 "required_hours": required[m.id],
-                "avg_price": round(float(price[on == 1].mean()), 2) if on.sum() else None,
-                "baseline_avg_price": round(float(price[ref_on == 1].mean()), 2) if ref_on.sum() else None,
+                "avg_price": avg(on),
+                "baseline_avg_price": avg(ref_on),
             }
         rows.append(row)
     return rows
@@ -213,9 +225,9 @@ def _plan_change(store: Store, plan: PlanResult, notes: Notes) -> None:
     previous = store.latest_run(successful=True)
     if not previous:
         return
-    old = pd.Series({pd.Timestamp(r["ts"]): r["flexible"] for r in previous["hourly"]})
+    old = pd.Series({pd.Timestamp(r["ts"]): r["flexible"] for r in previous["hourly"]}).sort_index().resample("h").mean()
     dates = local_dates(plan.hourly.index)
-    first = plan.hourly["flexible"][dates == dates[0]]
+    first = plan.hourly["flexible"][dates == dates[0]].resample("h").mean()
     overlap = old.reindex(first.index).dropna()
     if overlap.empty or overlap.sum() <= 0:
         return
@@ -272,7 +284,7 @@ def _today(sources: Sources, site: Site, now: datetime) -> list[dict]:
         if fetch is None:
             continue
         try:
-            prices = fetch(start, end)
+            prices = to_steps(fetch(start, end), index)
             break
         except SourceError:
             continue
@@ -371,7 +383,7 @@ def run_plan(settings: Settings, store: Store, now: datetime | None = None, sour
         "id": None,
         "created_at": now.isoformat(),
         "horizon_start": index[0].isoformat(),
-        "horizon_end": (index[-1] + pd.Timedelta(hours=1)).isoformat(),
+        "horizon_end": horizon_end(index).isoformat(),
         "status": "ok" if not any(a["level"] == "error" for a in notes.alerts) else "attention",
         "site_name": site.name,
         "solver": {"status": plan.status, "gap": plan.gap},

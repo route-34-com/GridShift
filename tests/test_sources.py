@@ -25,19 +25,19 @@ def quarter_hours(start, hours):
     return [int(start.timestamp()) + 900 * i for i in range(hours * 4)]
 
 
-def test_price_resamples_quarter_hours_to_hourly_mean():
+def test_price_keeps_quarter_hour_resolution():
     stamps = quarter_hours(START, 24)
     prices = [float(i % 4) for i in range(len(stamps))]
     series = fetch_day_ahead(START, END, json_client({"unix_seconds": stamps, "price": prices}))
-    assert len(series) == 24
-    assert (series == 1.5).all()
+    assert len(series) == 96
+    assert series.iloc[:4].tolist() == [0.0, 1.0, 2.0, 3.0]
 
 
 def test_price_skips_null_values_and_returns_partial_day():
     stamps = quarter_hours(START, 12)
     prices = [None if i < 4 else 50.0 for i in range(len(stamps))]
     series = fetch_day_ahead(START, END, json_client({"unix_seconds": stamps, "price": prices}))
-    assert len(series) == 11
+    assert len(series) == 12 * 4 - 4
 
 
 def test_price_empty_response_returns_empty_series():

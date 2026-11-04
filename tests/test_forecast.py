@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from backend.forecast.demand import base_demand
-from backend.forecast.horizon import horizon_index
+from backend.forecast.horizon import horizon_end, horizon_index
 from backend.forecast.price_estimate import PriceEstimator, load_price_history, price_forecast
 from backend.forecast.renewables import solar_kw, wind_kw
 from backend.planner.model import Solar, Wind
@@ -19,7 +19,9 @@ SAMPLE = Path(__file__).resolve().parents[1] / "data" / "sample"
 def test_horizon_starts_at_next_local_midnight():
     index = horizon_index(datetime(2026, 7, 6, 21, 30, tzinfo=timezone.utc))
     assert index[0] == pd.Timestamp("2026-07-06T22:00Z")
-    assert len(index) == 168
+    assert len(index) == 96 + 144
+    assert horizon_end(index) == index[0] + pd.Timedelta(hours=168)
+    assert len(horizon_index(datetime(2026, 7, 6, 21, 30, tzinfo=timezone.utc), fine_days=0)) == 168
 
 
 def test_horizon_from_late_evening_local_time():

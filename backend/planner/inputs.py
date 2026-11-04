@@ -5,6 +5,8 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
+from backend.forecast.horizon import step_hours
+
 SERIES = ("price", "solar", "wind", "demand")
 
 
@@ -18,8 +20,10 @@ class PlanInputs:
     solar: pd.Series
     wind: pd.Series
     demand: pd.Series
+    hours: np.ndarray = field(init=False)
 
     def __post_init__(self) -> None:
+        self.hours = step_hours(self.index)
         for name in SERIES:
             series = getattr(self, name).reindex(self.index)
             if series.isna().any():
@@ -45,8 +49,8 @@ class Shortfall:
     """Hours a machine could not get within its window."""
 
     machine_id: str
-    required_hours: int
-    scheduled_hours: int
+    required_hours: float
+    scheduled_hours: float
     reason: str
 
 

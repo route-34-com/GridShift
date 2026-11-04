@@ -14,12 +14,14 @@ export function toRows<T extends Timed>(hours: T[], map: (h: T, i: number) => Re
 
 /** Up to a day gets a tick every 3 hours, two days every 6 hours; longer spans one per day. */
 function tickStep(hours: Timed[]): number {
-  return hours.length <= 30 ? 3 : hours.length <= 50 ? 6 : 24
+  if (hours.length < 2) return 3
+  const spanHours = (new Date(hours[hours.length - 1].ts).getTime() - new Date(hours[0].ts).getTime()) / 3_600_000 + 1
+  return spanHours <= 30 ? 3 : spanHours <= 50 ? 6 : 24
 }
 
 export function dayTicks(hours: Timed[]): number[] {
   const step = tickStep(hours)
-  return hours.filter((h) => localHour(h.ts) % step === 0).map((h) => new Date(h.ts).getTime())
+  return hours.filter((h) => new Date(h.ts).getUTCMinutes() === 0 && localHour(h.ts) % step === 0).map((h) => new Date(h.ts).getTime())
 }
 
 export const tickWeekday = (t: number) => weekday(new Date(t).toISOString())

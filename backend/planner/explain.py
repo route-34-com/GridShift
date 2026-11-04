@@ -17,7 +17,7 @@ class Block:
     machine_name: str
     start: str
     end: str
-    hours: int
+    hours: float
     energy_kwh: float
     avg_price: float
     renewable_share: float
@@ -58,27 +58,30 @@ def explain_blocks(hourly: pd.DataFrame, schedule: pd.DataFrame, machines: list[
     renewable = (hourly["solar"] + hourly["wind"]).to_numpy()
     share = np.divide(np.minimum(renewable, total_load), total_load, out=np.zeros_like(total_load), where=total_load > 0)
     price = hourly["price"].to_numpy()
+    dt = hourly["hours"].to_numpy() if "hours" in hourly else np.ones(len(hourly))
     blocks = []
     for machine in machines:
         if machine.id not in schedule:
             continue
         for a, b in _runs(schedule[machine.id].to_numpy()):
-            avg = float(price[a:b].mean())
-            cover = float(share[a:b].mean())
+            weight = dt[a:b]
+            hours = float(weight.sum())
+            avg = float((price[a:b] * weight).sum() / hours)
+            cover = float((share[a:b] * weight).sum() / hours)
             window = price[max(0, a - 6) : b + 6]
             cheapest = avg <= float(np.sort(window)[: b - a].mean()) + 1
+            end = hourly.index[b - 1] + pd.Timedelta(hours=float(dt[b - 1]))
             blocks.append(
                 Block(
                     machine.id,
                     machine.name,
                     hourly.index[a].isoformat(),
-                    (hourly.index[b - 1] + pd.Timedelta(hours=1)).isoformat(),
-                    int(b - a),
-                    round(machine.power_kw * (b - a), 1),
+                    end.isoformat(),
+                    round(hours, 2),
+                    round(machine.power_kw * hours, 1),
                     round(avg, 2),
                     round(cover, 3),
-                    f"{_clock(hourly.index[a])}–{_clock(hourly.index[b - 1] + pd.Timedelta(hours=1))[4:]}: "
-                    + _reason(avg, float(day_avg[a:b].mean()), cover, cheapest),
+                    f"{_clock(hourly.index[a])}–{_clock(end)[4:]}: " + _reason(avg, float(day_avg[a:b].mean()), cover, cheapest),
                 )
             )
     return sorted(blocks, key=lambda x: (x.start, x.machine_id))

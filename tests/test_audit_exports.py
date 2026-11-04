@@ -66,7 +66,7 @@ def test_run_exports_csv_and_excel(admin):
     report = admin.get("/api/exports/run/report?format=xlsx")
     book = load_workbook(io.BytesIO(report.content))
     assert book.sheetnames == ["Summary", "Daily", "Schedule", "Machines", "Hourly"]
-    assert book["Hourly"].max_row == 169
+    assert book["Hourly"].max_row == 96 + 144 + 1
     headers = [c.value for c in book["Hourly"][1]]
     assert {"Sunlight (W/m²)", "Cloud cover (%)", "Wind speed (m/s)", "Temperature (°C)"} <= set(headers)
     assert book["Summary"]["A1"].value == "Item"

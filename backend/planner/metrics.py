@@ -28,10 +28,15 @@ class Metrics:
         return asdict(self)
 
 
+def step_hours(hourly: pd.DataFrame) -> pd.Series | float:
+    """Return each row's length in hours (plans stored before 15-minute steps are hourly)."""
+    return hourly["hours"] if "hours" in hourly else 1.0
+
+
 def hourly_cost(hourly: pd.DataFrame, site: Site) -> pd.Series:
-    """Return the net grid cost in EUR for each hour."""
+    """Return the net grid cost in EUR for each step."""
     price = hourly["price"] / 1000 + site.grid.fee_eur_per_kwh
-    return hourly["grid_import"] * price - hourly["grid_export"] * site.grid.export_price_eur_per_kwh
+    return (hourly["grid_import"] * price - hourly["grid_export"] * site.grid.export_price_eur_per_kwh) * step_hours(hourly)
 
 
 def peak_charge_eur(hourly: pd.DataFrame, site: Site) -> float:
@@ -42,9 +47,10 @@ def peak_charge_eur(hourly: pd.DataFrame, site: Site) -> float:
 
 def measure(hourly: pd.DataFrame, site: Site) -> Metrics:
     """Return headline metrics for a plan's hourly flows."""
+    dt = step_hours(hourly)
     renewable = hourly["solar"] + hourly["wind"] - hourly["grid_export"] - hourly["curtail"]
-    used = float(renewable.clip(lower=0).sum())
-    imported = float(hourly["grid_import"].sum())
+    used = float((renewable.clip(lower=0) * dt).sum())
+    imported = float((hourly["grid_import"] * dt).sum())
     total = used + imported
     cost = float(hourly_cost(hourly, site).sum())
     peak_charge = peak_charge_eur(hourly, site)
@@ -53,12 +59,12 @@ def measure(hourly: pd.DataFrame, site: Site) -> Metrics:
         peak_charge_eur=round(peak_charge, 2),
         total_cost_eur=round(cost + peak_charge, 2),
         import_kwh=round(imported, 1),
-        export_kwh=round(float(hourly["grid_export"].sum()), 1),
+        export_kwh=round(float((hourly["grid_export"] * dt).sum()), 1),
         renewable_used_kwh=round(used, 1),
         renewable_share=round(used / total, 4) if total else 0.0,
         co2_avoided_kg=round(used * site.co2_kg_per_kwh, 1),
         peak_import_kw=round(float(hourly["grid_import"].max()), 1),
-        unmet_kwh=round(float(hourly["unmet"].sum()), 1),
+        unmet_kwh=round(float((hourly["unmet"] * dt).sum()), 1),
     )
 
 

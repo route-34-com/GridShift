@@ -23,12 +23,13 @@ function percentile(values: number[], p: number): number {
 export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
   if (!hours.length) return null
   const t0 = new Date(hours[0].ts).getTime()
-  const span = hours.length * 3600_000
+  const last = hours[hours.length - 1]
+  const span = new Date(last.ts).getTime() + (last.hours ?? 1) * 3_600_000 - t0
   const position = (iso: string) => ((new Date(iso).getTime() - t0) / span) * 100
   const prices = hours.map((h) => h.price)
   const low = percentile(prices, 0.05)
   const high = percentile(prices, 0.95)
-  const days = hours.map((h, i) => ({ h, i })).filter(({ h }) => localHour(h.ts) === 0)
+  const days = hours.map((h, i) => ({ h, i })).filter(({ h }) => localHour(h.ts) === 0 && new Date(h.ts).getUTCMinutes() === 0)
   const rows = machines.filter((m) => m.type !== 'always_on')
   const renewable = hours.map((h) => h.solar + h.wind)
   const peak = Math.max(1, ...renewable)
@@ -39,8 +40,8 @@ export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
         <div className="grid grid-cols-[168px_1fr] items-end">
           <div />
           <div className="relative h-6">
-            {days.map(({ h, i }) => (
-              <span key={h.ts} className="absolute top-0 text-xs font-medium text-muted" style={{ left: `${(i / hours.length) * 100}%` }}>
+            {days.map(({ h }) => (
+              <span key={h.ts} className="absolute top-0 text-xs font-medium text-muted" style={{ left: `${position(h.ts)}%` }}>
                 <span className="pl-1.5">{dayLabel(h.ts)}</span>
               </span>
             ))}
@@ -54,15 +55,15 @@ export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
               <span
                 key={h.ts}
                 title={`${dayLabel(h.ts)} ${time(h.ts)} · €${num(h.price, 1)}/MWh${h.price_source === 'estimate' ? ' (estimate)' : ''}`}
-                className="h-full flex-1"
-                style={{ background: priceColor(h.price, low, high), opacity: h.price_source === 'estimate' ? 0.6 : 1 }}
+                className="h-full"
+                style={{ flex: h.hours ?? 1, background: priceColor(h.price, low, high), opacity: h.price_source === 'estimate' ? 0.6 : 1 }}
               />
             ))}
           </div>
           <div className="pr-3 text-xs text-muted">Solar + wind</div>
           <div className="flex h-5 items-end overflow-hidden rounded bg-surface-2" role="img" aria-label="Hourly on-site renewable output">
             {renewable.map((value, i) => (
-              <span key={hours[i].ts} className="flex-1 bg-solar" style={{ height: `${(value / peak) * 100}%`, opacity: 0.8 }} />
+              <span key={hours[i].ts} className="bg-solar" style={{ flex: hours[i].hours ?? 1, height: `${(value / peak) * 100}%`, opacity: 0.8 }} />
             ))}
           </div>
         </div>
@@ -79,8 +80,8 @@ export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
                   </span>
                 </div>
                 <div className="relative h-10 rounded-md bg-surface-2">
-                  {days.slice(1).map(({ h, i }) => (
-                    <span key={h.ts} aria-hidden className="absolute top-0 bottom-0 w-px bg-border" style={{ left: `${(i / hours.length) * 100}%` }} />
+                  {days.slice(1).map(({ h }) => (
+                    <span key={h.ts} aria-hidden className="absolute top-0 bottom-0 w-px bg-border" style={{ left: `${position(h.ts)}%` }} />
                   ))}
                   {own.map((block) => (
                     <Tooltip

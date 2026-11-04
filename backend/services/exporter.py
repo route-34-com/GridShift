@@ -28,10 +28,11 @@ def safe_cell(value: object) -> object:
 
 
 def hourly_table(run: dict, key: str = "hourly") -> Table:
-    """Return hourly flows in local time."""
+    """Return each planning step's flows in local time: 15-minute steps for the first day, hourly after."""
     return [
         {
             "time_local": local(h["ts"]),
+            "step_length_h": h.get("hours", 1),
             "price_eur_mwh": h["price"],
             "price_source": h["price_source"],
             "solar_kw": h["solar"],

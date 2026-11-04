@@ -13,6 +13,7 @@ UNITS = {
     "pct": "(%)",
     "ms": "(m/s)",
     "c": "(°C)",
+    "h": "(h)",
     "utc": "(UTC)",
     "local": "(local time)",
 }

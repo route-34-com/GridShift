@@ -26,22 +26,23 @@ def assemble(
             "solar": inputs.solar,
             "wind": inputs.wind,
             "demand": inputs.demand,
+            "hours": inputs.hours,
             "flexible": flexible.astype("float64"),
             **{k: np.clip(np.asarray(v, dtype="float64"), 0, None) for k, v in flows.items()},
         },
         index=inputs.index,
     )
-    return PlanResult(hourly.round(3), schedule, shortfalls(requirements, schedule), status, gap)
+    return PlanResult(hourly.round(3), schedule, shortfalls(requirements, schedule, inputs.hours), status, gap)
 
 
-def shortfalls(requirements: list[Requirement], schedule: pd.DataFrame) -> list[Shortfall]:
+def shortfalls(requirements: list[Requirement], schedule: pd.DataFrame, hours: np.ndarray) -> list[Shortfall]:
     """Return groups whose required hours were not met."""
     found = []
     for req in requirements:
         runs = schedule[req.machine.id].to_numpy() if req.machine.id in schedule else np.zeros(len(schedule))
         for group in req.groups:
-            got = int(runs[group.hours].sum())
-            if got < group.required:
-                reason = "not enough hours in its window" if len(group.hours) < group.required else "grid or site limits"
-                found.append(Shortfall(req.machine.id, group.required, got, f"{group.label}: {reason}"))
+            got = float((runs[group.hours] * hours[group.hours]).sum())
+            if got < group.required - 1e-6:
+                reason = "not enough hours in its window" if hours[group.hours].sum() < group.required else "grid or site limits"
+                found.append(Shortfall(req.machine.id, group.required, round(got, 2), f"{group.label}: {reason}"))
     return found
