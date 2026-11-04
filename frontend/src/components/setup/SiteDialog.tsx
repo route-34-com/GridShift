@@ -1,9 +1,11 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
-import { Field, FormError, Input, Textarea } from '@/components/ui/field'
+import { PowerCurveEditor } from '@/components/setup/PowerCurveEditor'
+import { Field, FormError, Input } from '@/components/ui/field'
 import { EMPTY_SITE } from '@/lib/site'
 import type { SiteConfig } from '@/lib/types'
+import { checkCurve, toCurveRows, type CurveRow } from '@/lib/weather'
 
 type Values = Record<string, string>
 
@@ -54,7 +56,7 @@ function read(site: SiteConfig, path: string): unknown {
 }
 
 function toValues(site: SiteConfig): Values {
-  const values: Values = { curve: site.wind.power_curve.map(([speed, kw]) => `${speed} ${kw}`).join('\n') }
+  const values: Values = {}
   for (const section of SECTIONS) {
     for (const [path] of section.fields) {
       const value = read(site, path)
@@ -64,7 +66,7 @@ function toValues(site: SiteConfig): Values {
   return values
 }
 
-function toSite(values: Values): SiteConfig | string {
+function toSite(values: Values, rows: CurveRow[]): SiteConfig | string {
   const site = structuredClone(EMPTY_SITE)
   for (const section of SECTIONS) {
     for (const [path, label] of section.fields) {
@@ -84,11 +86,10 @@ function toSite(values: Values): SiteConfig | string {
       }
     }
   }
-  const curve = (values.curve ?? '')
-    .split('\n')
-    .map((line) => line.trim().split(/[\s;,]+/).map(Number))
-    .filter((pair) => pair.length === 2 && pair.every(Number.isFinite)) as [number, number][]
-  if (site.wind.rated_kw > 0 && curve.length < 2) return 'A wind turbine needs a power curve with at least two "speed kW" lines.'
+  const { curve, errors } = checkCurve(rows, site.wind.rated_kw)
+  const bad = Object.entries(errors)[0]
+  if (bad) return `Power curve, row ${Number(bad[0]) + 1}: ${bad[1]}`
+  if (site.wind.rated_kw > 0 && curve.length < 2) return 'A wind turbine needs a power curve with at least two points.'
   site.wind.power_curve = curve.length >= 2 ? curve : EMPTY_SITE.wind.power_curve
   return site
 }
@@ -112,12 +113,14 @@ function Section({ title, note, children }: { title: string; note?: string; chil
 
 export function SiteDialog({ open, site, onClose, onSave }: SiteDialogProps) {
   const [values, setValues] = useState<Values>(() => toValues(site ?? EMPTY_SITE))
+  const [curve, setCurve] = useState<CurveRow[]>(() => toCurveRows((site ?? EMPTY_SITE).wind.power_curve))
+  const ratedKw = Number((values['wind.rated_kw'] ?? '').replace(',', '.')) || 0
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
   async function submit(event: FormEvent) {
     event.preventDefault()
-    const built = toSite(values)
+    const built = toSite(values, curve)
     if (typeof built === 'string') return setError(built)
     setBusy(true)
     const problem = await onSave(built)
@@ -144,11 +147,8 @@ export function SiteDialog({ open, site, onClose, onSave }: SiteDialogProps) {
             ))}
             {section.title === 'Wind turbine' && (
               <div className="sm:col-span-2">
-                <Field label="Power curve" hint='One "wind speed in m/s, power in kW" pair per line, from the turbine datasheet.'>
-                  {(id) => (
-                    <Textarea id={id} rows={5} value={values.curve} onChange={(e) => setValues((v) => ({ ...v, curve: e.target.value }))} className="font-mono" />
-                  )}
-                </Field>
+                <p className="mb-2 text-sm font-medium text-fg">Power curve</p>
+                <PowerCurveEditor rows={curve} ratedKw={ratedKw} onChange={setCurve} />
               </div>
             )}
           </Section>

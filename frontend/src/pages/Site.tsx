@@ -1,6 +1,7 @@
-import { BatteryCharging, Cable, Check, CircleAlert, Copy, FlaskConical, Pencil, Plus, Sun, Trash2, Upload, Wind } from 'lucide-react'
+import { BatteryCharging, Cable, Check, CircleAlert, Copy, FlaskConical, LineChart, Pencil, Plus, Sun, Trash2, Upload, Wind } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useRef, useState, type ReactNode } from 'react'
+import { PowerCurveChart } from '@/components/charts/PowerCurveChart'
 import { PageLayout } from '@/components/PageLayout'
 import { PeakPanel } from '@/components/PeakPanel'
 import { MachineDialog } from '@/components/setup/MachineDialog'
@@ -9,6 +10,7 @@ import { ErrorView, LoadingView } from '@/components/StateViews'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
+import { Dialog } from '@/components/ui/dialog'
 import { useAuth } from '@/hooks/AuthContext'
 import { useToast } from '@/hooks/Toasts'
 import { useAsync } from '@/hooks/useAsync'
@@ -17,8 +19,9 @@ import { api } from '@/lib/api'
 import { dateTime, dayLabel, energy, eur, kw, num, pct, power } from '@/lib/format'
 import type { MachineConfig, SiteConfig, SiteSetup } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { turbineMarks } from '@/lib/weather'
 
-function Spec({ icon: Icon, title, rows }: { icon: LucideIcon; title: string; rows: [string, ReactNode][] }) {
+function Spec({ icon: Icon, title, rows, footer }: { icon: LucideIcon; title: string; rows: [string, ReactNode][]; footer?: ReactNode }) {
   return (
     <Card>
       <CardBody>
@@ -34,8 +37,66 @@ function Spec({ icon: Icon, title, rows }: { icon: LucideIcon; title: string; ro
             </div>
           ))}
         </dl>
+        {footer && <div className="mt-4 border-t border-border pt-3">{footer}</div>}
       </CardBody>
     </Card>
+  )
+}
+
+function PowerCurveDialog({ site, open, onClose }: { site: SiteConfig; open: boolean; onClose: () => void }) {
+  const { rated_kw: rated, hub_height_m: hub, power_curve: curve } = site.wind
+  const marks = turbineMarks(curve, rated)
+  const summary = marks
+    ? `Starts at ${num(marks.startsAt, 1)} m/s${marks.fullAt != null ? `, full power from ${num(marks.fullAt, 1)} m/s` : ''}${marks.stopsAt != null ? `, stops above ${num(marks.stopsAt, 1)} m/s` : ''}.`
+    : null
+  return (
+    <Dialog open={open} onOpenChange={(next) => !next && onClose()} title="Wind turbine power curve" description={`${power(rated)} rated, hub at ${hub} m. ${summary ?? ''}`} wide>
+      <div className="space-y-4">
+        <PowerCurveChart curve={curve} ratedKw={rated} height={280} />
+        <div className="max-h-64 overflow-y-auto rounded-lg border border-border">
+          <table className="w-full border-separate border-spacing-0 text-sm">
+            <thead className="sticky top-0 z-10 bg-surface-solid bg-[image:linear-gradient(var(--surface-2),var(--surface-2))] shadow-[0_1px_0_var(--border)]">
+              <tr className="text-left text-xs text-muted">
+                <th className="py-2 pl-3 font-medium">Wind speed</th>
+                <th className="py-2 text-right font-medium">Power</th>
+                <th className="py-2 pr-3 text-right font-medium">Share of rated</th>
+              </tr>
+            </thead>
+            <tbody>
+              {curve.map(([speed, kwValue]) => (
+                <tr key={speed} className="tabular [&>td]:border-t [&>td]:border-border">
+                  <td className="py-1.5 pl-3 text-fg">{num(speed, 1)} m/s</td>
+                  <td className="py-1.5 text-right text-fg">{power(kwValue)}</td>
+                  <td className="py-1.5 pr-3 text-right text-muted">{rated > 0 ? pct(Math.min(kwValue, rated) / rated) : '–'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </Dialog>
+  )
+}
+
+function WindSpec({ site }: { site: SiteConfig }) {
+  const [open, setOpen] = useState(false)
+  const hasTurbine = site.wind.rated_kw > 0
+  return (
+    <>
+      <Spec
+        icon={Wind}
+        title="Wind"
+        rows={[['Rated power', power(site.wind.rated_kw)], ['Hub height', `${site.wind.hub_height_m} m`], ['Curve points', site.wind.power_curve.length]]}
+        footer={
+          hasTurbine && (
+            <Button size="sm" variant="ghost" className="-ml-3" onClick={() => setOpen(true)}>
+              <LineChart className="h-4 w-4" aria-hidden /> View power curve
+            </Button>
+          )
+        }
+      />
+      {hasTurbine && <PowerCurveDialog site={site} open={open} onClose={() => setOpen(false)} />}
+    </>
   )
 }
 
@@ -128,7 +189,7 @@ function SiteSpecs({ site, action }: { site: SiteConfig; action?: ReactNode }) {
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Spec icon={Sun} title="Solar" rows={[['Peak power', `${num(site.solar.kwp)} kWp`], ['Tilt', `${site.solar.tilt}°`], ['Azimuth', `${site.solar.azimuth}° (0 = south)`], ['Performance ratio', pct(site.solar.performance_ratio)]]} />
-        <Spec icon={Wind} title="Wind" rows={[['Rated power', power(site.wind.rated_kw)], ['Hub height', `${site.wind.hub_height_m} m`], ['Curve points', site.wind.power_curve.length]]} />
+        <WindSpec site={site} />
         <Spec icon={BatteryCharging} title="Battery" rows={[['Capacity', energy(site.battery.capacity_kwh)], ['Charge / discharge', `${power(site.battery.max_charge_kw)} / ${power(site.battery.max_discharge_kw)}`], ['Efficiency', pct(site.battery.efficiency)], ['Minimum charge', pct(site.battery.min_soc)]]} />
         <Spec icon={Cable} title="Grid" rows={[['Max import', power(site.grid.max_import_kw)], ['Max export', power(site.grid.max_export_kw)], ['Fees and levies', `€${num(site.grid.fee_eur_per_kwh, 3)}/kWh`], ['Export price', `€${num(site.grid.export_price_eur_per_kwh, 3)}/kWh`], ['Peak charge', `€${num(site.grid.peak_charge_eur_per_kw_year)}/kW·yr`], ['Peak from bill', kw(site.grid.peak_so_far_kw)]]} />
       </div>
