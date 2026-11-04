@@ -88,8 +88,8 @@ function NavItems({ compact = false }: { compact?: boolean }) {
       className={({ isActive }) =>
         cn(
           'group relative flex cursor-pointer items-center gap-3 rounded-md transition-colors duration-150',
-          compact ? 'shrink-0 px-3 py-2 text-sm' : 'h-11 px-3 text-[15px]',
-          isActive ? 'active bg-nav-active font-medium text-nav-fg' : 'text-nav-fg/85 hover:bg-nav-hover hover:text-nav-fg',
+          compact ? 'shrink-0 px-3 py-2 text-sm' : 'h-11 px-3 text-base',
+          isActive ? 'active bg-nav-active font-medium text-nav-fg' : 'text-nav-fg hover:bg-nav-hover',
         )
       }
     >
