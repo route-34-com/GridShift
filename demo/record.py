@@ -33,7 +33,7 @@ NARR = json.loads((WORK / "narration.json").read_text(encoding="utf-8"))
 LINES, FIG = NARR["lines"], NARR["figures"]
 ADMIN = ("Sharan Kumar", "sharan@cementworks.example", "Laegerdorf-2026!")
 ANNA = ("Anna Weber", "anna.weber@cementworks.example", "Schicht-Plan-7")
-MANAGER = "energy.manager@example.com"
+MANAGER = "sharankumarjl723@gmail.com"
 
 frames: list[tuple[float, str]] = []
 marks: list[tuple[str, float]] = []
