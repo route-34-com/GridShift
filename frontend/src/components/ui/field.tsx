@@ -3,7 +3,7 @@ import { Check, ChevronDown, Eye, EyeOff } from 'lucide-react'
 import { useId, useState, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
-const CONTROL =
+export const CONTROL =
   'h-9 w-full min-w-0 rounded-lg border border-input bg-surface-solid px-3 text-sm text-fg shadow-[0_1px_2px_rgb(0_0_0/0.04)] placeholder:text-muted/70 transition-[border-color,box-shadow] duration-150 focus-visible:border-brand/60 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
 
 interface FieldProps {

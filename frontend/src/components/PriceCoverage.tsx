@@ -45,7 +45,7 @@ export function PriceCoverage({ hours, today = [], madeAt }: { hours: Hour[]; to
                   aria-hidden
                 />
                 <p className="mt-2 text-xs font-medium text-fg">{d.day === c.today ? 'Today' : weekday(iso)}</p>
-                <p className="tabular truncate text-[11px] text-muted">{dayLabel(iso).split(' ').slice(1).join(' ')}</p>
+                <p className="tabular hidden truncate text-[11px] text-muted sm:block">{dayLabel(iso).split(' ').slice(1).join(' ')}</p>
                 <p className={cn('mt-0.5 truncate text-[11px]', real ? 'text-price' : 'text-muted')}>
                   {real ? 'Real' : partial ? 'Part' : <><span className="sm:hidden">Est.</span><span className="hidden sm:inline">Estimate</span></>}
                   {partial && <span className="hidden sm:inline"> real</span>}

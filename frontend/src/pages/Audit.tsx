@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Search, X } from 'lucide-react'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { ExportMenu } from '@/components/ExportMenu'
 import { PageLayout } from '@/components/PageLayout'
@@ -152,7 +153,7 @@ export function AuditPage() {
       actions={<ExportMenu label={active ? 'Export filtered' : 'Export'} options={[{ label: active ? 'Matching entries' : 'All entries', formats: ['pdf', 'xlsx', 'csv'], run: (f) => exportsApi.audit(f, exportFilters) }]} />}
     >
       <div className="space-y-4">
-        <Card>
+        <Card className="relative z-10">
           <CardBody className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-7">
             <div className="sm:col-span-2 lg:col-span-1 2xl:col-span-2">
               <Field label="Search">
@@ -194,8 +195,8 @@ export function AuditPage() {
               )}
             </Field>
             <div className="grid grid-cols-2 gap-2 2xl:col-span-2">
-              <Field label="From">{(id) => <Input id={id} type="date" value={filters.from} max={filters.to || undefined} onChange={(e) => set('from', e.target.value)} />}</Field>
-              <Field label="To">{(id) => <Input id={id} type="date" value={filters.to} min={filters.from || undefined} onChange={(e) => set('to', e.target.value)} />}</Field>
+              <Field label="From">{(id) => <DatePicker id={id} value={filters.from} max={filters.to || undefined} onChange={(v) => set('from', v)} />}</Field>
+              <Field label="To">{(id) => <DatePicker id={id} value={filters.to} min={filters.from || undefined} onChange={(v) => set('to', v)} />}</Field>
             </div>
           </CardBody>
         </Card>

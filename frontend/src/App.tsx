@@ -1,5 +1,5 @@
-import { lazy, Suspense, type ReactNode } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { lazy, Suspense, useEffect, type ReactNode } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { PublicOnly, RequireAuth, RequirePermission } from '@/components/Guards'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider } from '@/hooks/AuthContext'
@@ -27,12 +27,22 @@ const open = (element: ReactNode) => <PublicOnly>{element}</PublicOnly>
 const signedIn = (element: ReactNode) => <RequireAuth>{element}</RequireAuth>
 const allowed = (permission: string, element: ReactNode) => signedIn(<RequirePermission permission={permission}>{element}</RequirePermission>)
 
+/** Opens every page at the top, as a full page load would, instead of keeping the last page's scroll. */
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 })
+  }, [pathname])
+  return null
+}
+
 export default function App() {
   return (
     <TooltipProvider>
       <ToastProvider>
         <AuthProvider>
           <BrowserRouter>
+            <ScrollToTop />
             <Suspense fallback={<div className="min-h-screen bg-bg" />}>
               <Routes>
                 <Route path="/login" element={open(<Login />)} />

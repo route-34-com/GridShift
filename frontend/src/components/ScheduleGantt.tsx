@@ -74,7 +74,7 @@ export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
             return (
               <div key={machine.id} className="contents">
                 <div className="flex min-w-0 flex-col justify-center pr-3">
-                  <span className="truncate text-sm font-medium text-fg">{machine.name}</span>
+                  <span className="line-clamp-2 text-sm leading-snug font-medium text-fg" title={machine.name}>{machine.name}</span>
                   <span className="text-xs text-muted">
                     {power(machine.power_kw)} · {machine.type === 'deadline' ? 'deadline job' : 'daily quota'}
                   </span>

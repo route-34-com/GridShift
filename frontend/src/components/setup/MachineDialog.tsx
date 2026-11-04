@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { DateTimePicker } from '@/components/ui/date-picker'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { Field, FormError, Input, Select } from '@/components/ui/field'
@@ -157,7 +158,7 @@ export function MachineDialog({ open, machine, takenIds, onClose, onSave }: Mach
                     ]}
                   />
                   {draft.dueMode === 'date' ? (
-                    <Input type="datetime-local" aria-label="Due date and time" value={draft.due} onChange={(e) => set({ due: e.target.value })} />
+                    <DateTimePicker aria-label="Due" value={draft.due} onChange={(v) => set({ due: v })} />
                   ) : (
                     <Input type="number" min="1" aria-label="Due in hours" value={draft.dueIn} onChange={(e) => set({ dueIn: e.target.value })} />
                   )}
@@ -177,7 +178,7 @@ export function MachineDialog({ open, machine, takenIds, onClose, onSave }: Mach
                       { value: 'hours', label: 'Hours after the plan starts' },
                     ]}
                   />
-                  {draft.startMode === 'date' && <Input type="datetime-local" aria-label="Earliest start" value={draft.start} onChange={(e) => set({ start: e.target.value })} />}
+                  {draft.startMode === 'date' && <DateTimePicker aria-label="Earliest start" value={draft.start} onChange={(v) => set({ start: v })} />}
                   {draft.startMode === 'hours' && <Input type="number" min="0" aria-label="Start after hours" value={draft.startIn} onChange={(e) => set({ startIn: e.target.value })} />}
                 </div>
               )}

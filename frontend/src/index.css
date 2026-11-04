@@ -54,7 +54,7 @@
   --color-baseline: var(--series-baseline);
 }
 
-/* Quiet and precise: warm neutral greys and near-black primary actions. GridShift blue marks data, focus and the current page. */
+/* Quiet and precise, after LoomArc: warm neutral greys, near-black primary actions and a near-black sidebar. GridShift blue marks data and focus. */
 :root {
   --bg: #f7f7f5;
   --surface: #ffffff;
@@ -84,14 +84,14 @@
   --info-soft: rgb(29 95 191 / 0.08);
 
   --topbar: rgb(255 255 255 / 0.92);
-  --nav-bg: #fbfbfa;
-  --nav-bg-end: #fbfbfa;
-  --nav-fg: #1c1b19;
-  --nav-muted: #6b6a65;
-  --nav-hover: rgb(28 25 23 / 0.045);
-  --nav-active: rgb(28 25 23 / 0.065);
-  --nav-line: #e7e6e2;
-  --mark: #0a6fb0;
+  --nav-bg: #161615;
+  --nav-bg-end: #161615;
+  --nav-fg: #ebeae6;
+  --nav-muted: #9a9993;
+  --nav-hover: rgb(255 255 255 / 0.06);
+  --nav-active: #2c2c2a;
+  --nav-line: rgb(255 255 255 / 0.08);
+  --mark: #5fb3e8;
   --mark-ink: #ffffff;
 
   --series-price: #ea6a0c;
