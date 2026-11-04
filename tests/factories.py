@@ -26,8 +26,8 @@ def make_site(
     )
 
 
-def make_inputs(price=None, solar=None, wind=None, demand=None, now: datetime = NOW, sources=None) -> PlanInputs:
-    index = horizon_index(now)
+def make_inputs(price=None, solar=None, wind=None, demand=None, now: datetime = NOW, sources=None, fine_days: int = 0) -> PlanInputs:
+    index = horizon_index(now, fine_days=fine_days)
     hours = index.tz_convert("Europe/Berlin").hour.to_numpy()
     n = len(index)
 

@@ -2,7 +2,7 @@ import { Area, Bar, CartesianGrid, ComposedChart, ResponsiveContainer, Tooltip, 
 import { energy, pct, power } from '@/lib/format'
 import type { Hour } from '@/lib/types'
 import { SERIES } from '@/lib/utils'
-import { activeRow, axisProps, hourTitle, toRows, TooltipBox, xAxisProps, type TooltipArgs } from './common'
+import { activeRow, axisProps, hourTitle, toRows, TooltipBox, xAxisProps, type TooltipArgs, AXIS_LEFT, AXIS_RIGHT } from './common'
 
 export function BatteryChart({ hours, capacity }: { hours: Hour[]; capacity: number }) {
   const rows = toRows(hours, (h) => ({
@@ -23,8 +23,8 @@ export function BatteryChart({ hours, capacity }: { hours: Hour[]; capacity: num
         </defs>
         <CartesianGrid vertical={false} />
         <XAxis {...xAxisProps(hours)} />
-        <YAxis yAxisId="soc" {...axisProps} width={44} domain={[0, 1]} tickFormatter={(v: number) => pct(v)} />
-        <YAxis yAxisId="flow" orientation="right" {...axisProps} width={64} domain={[-maxFlow, maxFlow]} tickFormatter={(v: number) => power(v)} />
+        <YAxis yAxisId="soc" {...axisProps} width={AXIS_LEFT} domain={[0, 1]} tickFormatter={(v: number) => pct(v)} />
+        <YAxis yAxisId="flow" orientation="right" {...axisProps} width={AXIS_RIGHT} domain={[-maxFlow, maxFlow]} tickFormatter={(v: number) => power(v)} />
         <Tooltip
           content={(args: TooltipArgs) => {
             const row = activeRow(args)

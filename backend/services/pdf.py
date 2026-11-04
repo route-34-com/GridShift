@@ -17,12 +17,13 @@ from reportlab.platypus import KeepTogether, Paragraph, SimpleDocTemplate, Space
 from backend.planner.model import LOCAL_TZ
 from backend.services.labels import header, local
 
-BRAND = colors.HexColor("#0F3D2E")
-BRAND_SOFT = colors.HexColor("#E3EFE9")
-MUTED = colors.HexColor("#55645D")
-BORDER = colors.HexColor("#DFE5E2")
+BRAND = colors.HexColor("#1A1A18")
+ACCENT = colors.HexColor("#0F766E")
+BRAND_SOFT = colors.HexColor("#E6F2F1")
+MUTED = colors.HexColor("#6B6A65")
+BORDER = colors.HexColor("#E7E6E2")
 BASELINE = colors.HexColor("#94A3B8")
-ZEBRA = colors.HexColor("#F6F8F7")
+ZEBRA = colors.HexColor("#F7F7F5")
 PAGE = landscape(A4)
 MARGIN = 14 * mm
 WIDTH = PAGE[0] - 2 * MARGIN
@@ -30,12 +31,12 @@ WIDTH = PAGE[0] - 2 * MARGIN
 TITLE = ParagraphStyle("title", fontName="Helvetica-Bold", fontSize=18, leading=22, textColor=BRAND)
 SUBTITLE = ParagraphStyle("subtitle", fontName="Helvetica", fontSize=9.5, leading=13, textColor=MUTED)
 HEADING = ParagraphStyle("heading", fontName="Helvetica-Bold", fontSize=12, leading=16, textColor=BRAND, spaceBefore=10, spaceAfter=6)
-BODY = ParagraphStyle("body", fontName="Helvetica", fontSize=8.5, leading=11, textColor=colors.HexColor("#142019"))
+BODY = ParagraphStyle("body", fontName="Helvetica", fontSize=8.5, leading=11, textColor=colors.HexColor("#1C1B19"))
 CELL = ParagraphStyle("cell", parent=BODY, fontSize=7.5, leading=9.5)
 HEAD_CELL = ParagraphStyle("head", parent=CELL, fontName="Helvetica-Bold", textColor=colors.white)
 NUM_CELL = ParagraphStyle("num", parent=CELL, alignment=TA_RIGHT)
 KPI_LABEL = ParagraphStyle("kpil", fontName="Helvetica", fontSize=8, leading=10, textColor=MUTED)
-KPI_VALUE = ParagraphStyle("kpiv", fontName="Helvetica-Bold", fontSize=15, leading=19, textColor=colors.HexColor("#142019"))
+KPI_VALUE = ParagraphStyle("kpiv", fontName="Helvetica-Bold", fontSize=15, leading=19, textColor=colors.HexColor("#1C1B19"))
 KPI_HINT = ParagraphStyle("kpih", fontName="Helvetica", fontSize=7.5, leading=9.5, textColor=MUTED)
 
 
@@ -184,7 +185,7 @@ def _cost_chart(run: dict) -> Drawing:
     chart.valueAxis.gridStrokeColor = BORDER
     chart.valueAxis.visibleGrid = True
     chart.bars[0].fillColor = BASELINE
-    chart.bars[1].fillColor = BRAND
+    chart.bars[1].fillColor = ACCENT
     chart.bars.strokeColor = None
     chart.barSpacing = 1.5
     chart.groupSpacing = 8
@@ -192,7 +193,7 @@ def _cost_chart(run: dict) -> Drawing:
     legend = Legend()
     legend.x, legend.y = WIDTH - 40 * mm, 50 * mm
     legend.fontName, legend.fontSize = "Helvetica", 8
-    legend.colorNamePairs = [(BASELINE, "Run-as-needed"), (BRAND, "GridShift plan")]
+    legend.colorNamePairs = [(BASELINE, "Run-as-needed"), (ACCENT, "GridShift plan")]
     legend.alignment = "right"
     drawing.add(legend)
     return drawing

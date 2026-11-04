@@ -13,7 +13,8 @@ from tests.conftest import NOW, broken, fake_prices, good_sources, hours
 def test_full_run_produces_complete_payload(settings, store):
     run = execute(settings, store, NOW, good_sources())
     assert run["status"] == "ok"
-    assert len(run["hourly"]) == 168
+    assert len(run["hourly"]) == 96 + 144
+    assert sum(h["hours"] for h in run["hourly"]) == 168
     assert len(run["daily"]) == 7
     assert run["summary"]["savings_eur"] >= 0
     assert run["blocks"]

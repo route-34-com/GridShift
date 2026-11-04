@@ -1,13 +1,13 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/ibm-plex-sans';
+@import '@fontsource-variable/geist';
 @import '@fontsource/ibm-plex-mono/400.css';
 @import '@fontsource/ibm-plex-mono/500.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --font-sans: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   --color-bg: var(--bg);
@@ -15,6 +15,10 @@
   --color-surface-solid: var(--surface-solid);
   --color-surface-2: var(--surface-2);
   --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-brand: var(--brand);
@@ -50,42 +54,44 @@
   --color-baseline: var(--series-baseline);
 }
 
-/* Control room: deep night-blue, an electric cyan-to-indigo accent, amber for energy and prices. Dark is the default. */
+/* Quiet and precise, after LoomArc: warm neutral greys, near-black primary actions, and a sidebar that follows the theme. GridShift teal, the colour of clean, cheap hours, marks the brand, focus and the current page. */
 :root {
-  --bg: #eef2fa;
-  --surface: rgb(255 255 255 / 0.86);
+  --bg: #f7f7f5;
+  --surface: #ffffff;
   --surface-solid: #ffffff;
-  --surface-2: rgb(15 23 42 / 0.045);
-  --border: rgb(15 23 42 / 0.09);
-  --grid-line: rgb(15 23 42 / 0.07);
-  --fg: #0b1220;
-  --muted: #56637d;
-  --brand: #0a6fb0;
-  --brand-2: #5b4ff0;
+  --surface-2: rgb(28 25 23 / 0.04);
+  --border: #e7e6e2;
+  --input: #dcdad5;
+  --ring: rgb(15 118 110 / 0.4);
+  --grid-line: rgb(28 25 23 / 0.06);
+  --fg: #1c1b19;
+  --muted: #6b6a65;
+  --brand: #0f766e;
+  --brand-2: #0f766e;
   --brand-fg: #ffffff;
-  --primary: #0a6fb0;
-  --primary-fg: #ffffff;
-  --brand-soft: rgb(10 111 176 / 0.09);
-  --accent: #0a6fb0;
-  --energy: #ea6a0c;
-  --positive: #0f8a5f;
-  --positive-soft: rgb(16 185 129 / 0.12);
-  --warning: #b45309;
-  --warning-soft: rgb(245 158 11 / 0.14);
-  --danger: #d1243a;
-  --danger-soft: rgb(244 63 94 / 0.11);
-  --info: #2563eb;
-  --info-soft: rgb(59 130 246 / 0.11);
+  --primary: #1c1b19;
+  --primary-fg: #fafaf9;
+  --brand-soft: rgb(15 118 110 / 0.09);
+  --accent: #0f766e;
+  --energy: #c2570c;
+  --positive: #157a52;
+  --positive-soft: rgb(21 122 82 / 0.09);
+  --warning: #a15c07;
+  --warning-soft: rgb(217 119 6 / 0.1);
+  --danger: #c0262d;
+  --danger-soft: rgb(192 38 45 / 0.08);
+  --info: #1d5fbf;
+  --info-soft: rgb(29 95 191 / 0.08);
 
-  --topbar: rgb(255 255 255 / 0.9);
-  --nav-bg: #ffffff;
-  --nav-bg-end: #f7f9fd;
-  --nav-fg: #0b1220;
-  --nav-muted: #56637d;
-  --nav-hover: rgb(15 23 42 / 0.05);
-  --nav-active: rgb(10 111 176 / 0.09);
-  --nav-line: rgb(15 23 42 / 0.09);
-  --mark: #0a6fb0;
+  --topbar: rgb(255 255 255 / 0.92);
+  --nav-bg: #fbfbfa;
+  --nav-bg-end: #fbfbfa;
+  --nav-fg: #1c1b19;
+  --nav-muted: #6b6a65;
+  --nav-hover: rgb(28 25 23 / 0.045);
+  --nav-active: rgb(15 118 110 / 0.1);
+  --nav-line: #e7e6e2;
+  --mark: #0f766e;
   --mark-ink: #ffffff;
 
   --series-price: #ea6a0c;
@@ -98,50 +104,49 @@
   --scrollbar: #c3cbdb;
   --scrollbar-hover: #9aa6bd;
 
-  --aurora-1: rgb(56 189 248 / 0.22);
-  --aurora-2: rgb(99 102 241 / 0.16);
-  --aurora-3: rgb(249 115 22 / 0.1);
-  --shadow: 0 1px 0 rgb(255 255 255 / 0.7) inset, 0 12px 32px -18px rgb(15 23 42 / 0.25);
+  --shadow: 0 1px 2px rgb(28 25 23 / 0.04);
 
   color-scheme: light;
 }
 
 .dark {
-  --bg: #050914;
-  --surface: rgb(14 21 40 / 0.78);
-  --surface-solid: #0e1528;
-  --surface-2: rgb(255 255 255 / 0.045);
-  --border: rgb(148 163 210 / 0.14);
-  --grid-line: rgb(148 163 210 / 0.08);
-  --fg: #ecf2ff;
-  --muted: #8a97b6;
-  --brand: #38bdf8;
-  --brand-2: #818cf8;
-  --brand-fg: #04121f;
-  --primary: #38bdf8;
-  --primary-fg: #04121f;
-  --brand-soft: rgb(56 189 248 / 0.12);
-  --accent: #38bdf8;
-  --energy: #fb923c;
-  --positive: #34d399;
-  --positive-soft: rgb(52 211 153 / 0.12);
-  --warning: #fbbf24;
-  --warning-soft: rgb(251 191 36 / 0.12);
-  --danger: #fb7185;
-  --danger-soft: rgb(251 113 133 / 0.12);
-  --info: #93c5fd;
-  --info-soft: rgb(147 197 253 / 0.12);
+  --bg: #121211;
+  --surface: #1b1b19;
+  --surface-solid: #1b1b19;
+  --surface-2: rgb(255 255 255 / 0.05);
+  --border: rgb(255 255 255 / 0.09);
+  --input: rgb(255 255 255 / 0.14);
+  --ring: rgb(45 212 191 / 0.45);
+  --grid-line: rgb(255 255 255 / 0.06);
+  --fg: #f1f0ec;
+  --muted: #a3a29c;
+  --brand: #2dd4bf;
+  --brand-2: #2dd4bf;
+  --brand-fg: #042f2e;
+  --primary: #f1f0ec;
+  --primary-fg: #1a1a18;
+  --brand-soft: rgb(45 212 191 / 0.12);
+  --accent: #2dd4bf;
+  --energy: #f0954a;
+  --positive: #4cc38a;
+  --positive-soft: rgb(76 195 138 / 0.12);
+  --warning: #f0b44a;
+  --warning-soft: rgb(240 180 74 / 0.12);
+  --danger: #f07a72;
+  --danger-soft: rgb(240 122 114 / 0.12);
+  --info: #8ab8f0;
+  --info-soft: rgb(138 184 240 / 0.12);
 
-  --topbar: rgb(8 13 28 / 0.9);
-  --nav-bg: #060b18;
-  --nav-bg-end: #0a1226;
-  --nav-fg: #eef3ff;
-  --nav-muted: #8592b2;
-  --nav-hover: rgb(255 255 255 / 0.04);
-  --nav-active: rgb(56 189 248 / 0.12);
+  --topbar: rgb(18 18 17 / 0.92);
+  --nav-bg: #141a18;
+  --nav-bg-end: #141a18;
+  --nav-fg: #f1f0ec;
+  --nav-muted: #9c9b95;
+  --nav-hover: rgb(255 255 255 / 0.05);
+  --nav-active: rgb(255 255 255 / 0.09);
   --nav-line: rgb(255 255 255 / 0.07);
-  --mark: #38bdf8;
-  --mark-ink: #04121f;
+  --mark: #2dd4bf;
+  --mark-ink: #042f2e;
 
   --series-price: #fb923c;
   --series-solar: #facc15;
@@ -153,10 +158,7 @@
   --scrollbar: #1f2a45;
   --scrollbar-hover: #2d3b5e;
 
-  --aurora-1: rgb(56 189 248 / 0.16);
-  --aurora-2: rgb(129 140 248 / 0.14);
-  --aurora-3: rgb(251 146 60 / 0.07);
-  --shadow: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 18px 40px -20px rgb(0 0 0 / 0.7);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
 
   color-scheme: dark;
 }
@@ -178,55 +180,33 @@ h1,
 h2,
 .font-display {
   font-family: var(--font-display);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
 }
 
-/* Fixed backdrop: a slow aurora and a faint engineering grid. Never scrolls, never takes clicks. */
+/* The page background is plain; the backdrop element stays for layout but draws nothing. */
 .backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
+  display: none;
 }
 
-.backdrop::before {
-  content: '';
-  position: absolute;
-  inset: -20%;
-  background:
-    radial-gradient(40% 35% at 20% 10%, var(--aurora-1), transparent 70%),
-    radial-gradient(35% 30% at 85% 20%, var(--aurora-2), transparent 70%),
-    radial-gradient(30% 30% at 60% 95%, var(--aurora-3), transparent 70%);
-  will-change: transform;
-  animation: aurora 26s ease-in-out infinite alternate;
+/* Key figures rise slightly under the pointer so they read as the cards worth a closer look. */
+.lift {
+  transition:
+    transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
 }
 
-.backdrop::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 85%);
+.lift:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--fg) 18%, var(--border));
+  box-shadow: 0 10px 28px -14px rgb(28 25 23 / 0.28);
 }
 
-@keyframes aurora {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(3%, 2%, 0) scale(1.06);
-  }
-  100% {
-    transform: translate3d(-3%, 1%, 0) scale(1.02);
-  }
+.dark .lift:hover {
+  box-shadow: 0 10px 28px -12px rgb(0 0 0 / 0.7);
 }
 
-/* Translucent panels over the aurora that light up at the edge on hover. No backdrop blur: it is costly to paint on
-   every card, and the soft background doesn't need it. */
+/* Flat cards with a hairline border that darkens slightly on hover. */
 .glass {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -237,7 +217,14 @@ h2,
 }
 
 .glass:hover {
-  border-color: color-mix(in oklab, var(--brand) 22%, var(--border));
+  border-color: color-mix(in oklab, var(--fg) 14%, var(--border));
+}
+
+.glass.lift {
+  transition:
+    transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
 }
 
 @media (prefers-reduced-transparency: reduce) {
@@ -246,19 +233,15 @@ h2,
   }
 }
 
-/* Primary buttons: one solid brand colour, a hairline shadow and a slightly deeper shade on hover. */
+/* Primary buttons: near-black (near-white in dark mode), lightening slightly on hover. */
 .btn-electric {
   background: var(--primary);
   color: var(--primary-fg);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.16);
-  transition:
-    background-color 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .btn-electric:hover {
-  background: color-mix(in oklab, var(--primary) 88%, var(--fg));
-  box-shadow: 0 2px 6px -1px rgb(15 23 42 / 0.22);
+  background: color-mix(in oklab, var(--primary) 84%, var(--bg));
 }
 
 .live-dot {
@@ -363,8 +346,8 @@ h2,
 }
 
 :focus-visible:not([role='option']) {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: 3px solid var(--ring);
+  outline-offset: 1px;
 }
 
 @media (prefers-reduced-motion: reduce) {

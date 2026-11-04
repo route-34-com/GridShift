@@ -1,19 +1,19 @@
 import {
-  BookOpen,
-  CalendarRange,
+  BookOpenText,
+  CalendarClock,
+  ChartSpline,
   ChevronsUpDown,
   Factory,
-  LayoutDashboard,
-  LineChart,
+  History,
+  LayoutGrid,
   Loader2,
   LogOut,
   Mail,
   Moon,
   RefreshCw,
-  ScrollText,
   Sun,
   UserCog,
-  Users,
+  UsersRound,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -42,9 +42,9 @@ const SECTIONS: { title: string; items: NavEntry[] }[] = [
   {
     title: 'Planning',
     items: [
-      { to: '/', label: 'Overview', icon: LayoutDashboard },
-      { to: '/forecast', label: 'Forecast', icon: LineChart },
-      { to: '/schedule', label: 'Schedule', icon: CalendarRange },
+      { to: '/', label: 'Overview', icon: LayoutGrid },
+      { to: '/forecast', label: 'Forecast', icon: ChartSpline },
+      { to: '/schedule', label: 'Schedule', icon: CalendarClock },
       { to: '/email', label: 'Daily email', icon: Mail },
       { to: '/site', label: 'Site & machines', icon: Factory },
     ],
@@ -52,13 +52,13 @@ const SECTIONS: { title: string; items: NavEntry[] }[] = [
   {
     title: 'Admin',
     items: [
-      { to: '/users', label: 'Users', icon: Users, permission: 'users.manage' },
-      { to: '/audit', label: 'Audit log', icon: ScrollText, permission: 'audit.view' },
+      { to: '/users', label: 'Users', icon: UsersRound, permission: 'users.manage' },
+      { to: '/audit', label: 'Audit log', icon: History, permission: 'audit.view' },
     ],
   },
   {
     title: 'Help',
-    items: [{ to: '/guide', label: 'Units & terms', icon: BookOpen }],
+    items: [{ to: '/guide', label: 'Units & terms', icon: BookOpenText }],
   },
 ]
 
@@ -70,8 +70,8 @@ function Brand() {
     <div className="flex items-center gap-2.5">
       <Logo />
       <div>
-        <p className="font-display text-base leading-tight font-semibold text-nav-fg">GridShift</p>
-        <p className="text-[11px] leading-tight text-nav-muted">{PLAN_TIER} plan</p>
+        <p className="font-display text-[17px] leading-tight font-semibold text-nav-fg">GridShift</p>
+        <p className="mt-1 text-[13px] leading-tight text-nav-muted">{PLAN_TIER} plan</p>
       </div>
     </div>
   )
@@ -87,14 +87,13 @@ function NavItems({ compact = false }: { compact?: boolean }) {
       end={to === '/'}
       className={({ isActive }) =>
         cn(
-          'group relative flex cursor-pointer items-center gap-3 rounded-md text-sm font-medium transition-colors duration-150',
-          compact ? 'shrink-0 px-3 py-2' : 'px-3 py-2',
-          isActive ? 'active bg-nav-active text-nav-fg' : 'text-nav-muted hover:bg-nav-hover hover:text-nav-fg',
+          'group relative flex cursor-pointer items-center gap-3 rounded-md transition-colors duration-150',
+          compact ? 'shrink-0 px-3 py-2 text-sm' : 'h-11 px-3 text-[15px]',
+          isActive ? 'active bg-nav-active font-medium text-nav-fg' : 'text-nav-fg/85 hover:bg-nav-hover hover:text-nav-fg',
         )
       }
     >
-      <span aria-hidden className="absolute top-1.5 bottom-1.5 left-0 hidden w-[3px] rounded-r-full bg-mark group-[.active]:block" />
-      <Icon className="h-4 w-4 shrink-0 group-[.active]:text-mark" aria-hidden />
+      <Icon className={cn('shrink-0', compact ? 'h-4 w-4' : 'h-5 w-5')} aria-hidden />
       {label}
     </NavLink>
   )
@@ -102,8 +101,8 @@ function NavItems({ compact = false }: { compact?: boolean }) {
   return (
     <>
       {sections.map((section) => (
-        <div key={section.title} className="space-y-1">
-          <p className="px-3 pb-1 text-[11px] font-semibold tracking-wider text-nav-muted/70 uppercase">{section.title}</p>
+        <div key={section.title} className="space-y-0.5">
+          <p className="px-3 pb-1.5 text-sm text-nav-muted">{section.title}</p>
           {section.items.map(link)}
         </div>
       ))}
@@ -142,7 +141,7 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
     )
   }
   const avatar = (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-nav-hover text-xs font-semibold text-nav-fg ring-1 ring-nav-line">{initials(me.name, me.email)}</span>
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-nav-active text-sm font-semibold text-nav-fg">{initials(me.name, me.email)}</span>
   )
   return (
     <MenuRoot>
@@ -155,8 +154,8 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
           <button type="button" className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-nav-hover">
             {avatar}
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-medium text-nav-fg">{me.name || me.email}</span>
-              <span className="block truncate text-xs text-nav-muted capitalize">{me.role}</span>
+              <span className="block truncate text-[15px] font-medium text-nav-fg">{me.name || me.email}</span>
+              <span className="block truncate text-[13px] text-nav-muted capitalize">{me.role}</span>
             </span>
             <ChevronsUpDown className="h-4 w-4 text-nav-muted" aria-hidden />
           </button>
@@ -251,18 +250,18 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
   const { data } = useRun()
   const run = data?.run
   return (
-    <div className="min-h-screen lg:pl-60">
+    <div className="min-h-screen lg:pl-64">
       <div className="backdrop" aria-hidden />
-      <aside className="nav-surface fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r px-3 py-4 lg:flex">
-        <div className="px-2">
+      <aside className="nav-surface fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r lg:flex">
+        <div className="border-b border-nav-line px-4 py-4">
           <Brand />
         </div>
-        <nav className="mt-7 flex flex-col gap-6" aria-label="Main">
+        <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-4" aria-label="Main">
           <NavItems />
         </nav>
-        <div className="mt-auto space-y-3">
+        <div className="space-y-3 border-t border-nav-line p-3">
           <DataSwitch />
-          <div className="flex items-center gap-1 border-t border-nav-line pt-3">
+          <div className="flex items-center gap-1">
             <div className="min-w-0 flex-1">
               <UserMenu />
             </div>
@@ -291,7 +290,7 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
         <div className="rise mb-7 flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0 flex-1 basis-[26rem]">
             <div className="flex items-center gap-3">
-              <h1 className="text-[30px] leading-tight font-semibold text-fg">{title}</h1>
+              <h1 className="text-2xl leading-tight font-semibold tracking-tight text-fg">{title}</h1>
               {run && planActions && run.status === 'attention' && <Badge tone="warning">Needs attention</Badge>}
             </div>
             {subtitle && <div className="mt-1 text-sm text-muted">{subtitle}</div>}

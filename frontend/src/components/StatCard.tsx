@@ -23,7 +23,7 @@ const ICON_TONES = {
 
 export function StatCard({ label, value, hint, icon: Icon, tone = 'neutral', highlight = false }: StatCardProps) {
   return (
-    <div className="glass flex min-w-0 items-start gap-4 rounded-xl p-5">
+    <div className="glass lift flex min-w-0 items-start gap-4 rounded-xl p-5">
       <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', ICON_TONES[tone])}>
         <Icon className="h-5 w-5" aria-hidden />
       </div>

@@ -2,7 +2,7 @@ import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Too
 import { num } from '@/lib/format'
 import type { ChartHour } from '@/lib/types'
 import { SERIES } from '@/lib/utils'
-import { activeRow, axisProps, hourTitle, isPast, nowLine, PAST_COLOR, toRows, TooltipBox, xAxisProps, type TooltipArgs } from './common'
+import { activeRow, axisProps, hourTitle, isPast, nowLine, PAST_COLOR, toRows, TooltipBox, xAxisProps, type TooltipArgs, AXIS_LEFT, AXIS_RIGHT } from './common'
 
 interface PriceChartProps {
   hours: ChartHour[]
@@ -35,10 +35,10 @@ export function PriceChart({ hours, now, nowLabel = 'Now', release }: PriceChart
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={rows} margin={{ top: 18, right: 8, bottom: 0, left: 0 }}>
+      <LineChart data={rows} margin={{ top: 18, right: AXIS_RIGHT, bottom: 0, left: 0 }}>
         <CartesianGrid vertical={false} />
         <XAxis {...xAxisProps(hours)} />
-        <YAxis {...axisProps} width={44} tickFormatter={(v: number) => num(v)} unit="" />
+        <YAxis {...axisProps} width={AXIS_LEFT} tickFormatter={(v: number) => num(v)} unit="" />
         {hasNegative && <ReferenceLine y={0} stroke="var(--muted)" strokeDasharray="2 2" />}
         {marker && <ReferenceLine {...marker} />}
         {releaseOnChart && (

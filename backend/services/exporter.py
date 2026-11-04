@@ -28,10 +28,11 @@ def safe_cell(value: object) -> object:
 
 
 def hourly_table(run: dict, key: str = "hourly") -> Table:
-    """Return hourly flows in local time."""
+    """Return each planning step's flows in local time: 15-minute steps for the first day, hourly after."""
     return [
         {
             "time_local": local(h["ts"]),
+            "step_length_h": h.get("hours", 1),
             "price_eur_mwh": h["price"],
             "price_source": h["price_source"],
             "solar_kw": h["solar"],
@@ -165,7 +166,7 @@ def _sheet(book: Workbook, title: str, table: Table) -> None:
     sheet.append([header(c) for c in columns])
     for row in table:
         sheet.append([safe_cell(row.get(c)) for c in columns])
-    header_fill = PatternFill("solid", fgColor="0F3D2E")
+    header_fill = PatternFill("solid", fgColor="1A1A18")
     for cell in sheet[1]:
         cell.font = Font(bold=True, color="FFFFFF")
         cell.fill = header_fill

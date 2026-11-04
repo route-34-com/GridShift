@@ -2,7 +2,7 @@ import { Area, CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveCont
 import { kw, power } from '@/lib/format'
 import type { Hour } from '@/lib/types'
 import { SERIES } from '@/lib/utils'
-import { activeRow, axisProps, hourTitle, toRows, TooltipBox, xAxisProps, type TooltipArgs } from './common'
+import { activeRow, axisProps, hourTitle, toRows, TooltipBox, xAxisProps, type TooltipArgs, AXIS_LEFT, AXIS_RIGHT } from './common'
 
 /** This year's peak record: grid draw above it raises the yearly peak charge. */
 export const PEAK_COLOR = 'var(--danger)'
@@ -18,7 +18,7 @@ export function EnergyChart({ hours, peakKw }: { hours: Hour[]; peakKw?: number 
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+      <ComposedChart data={rows} margin={{ top: 8, right: AXIS_RIGHT, bottom: 0, left: 0 }}>
         <defs>
           <linearGradient id="energy-wind" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={SERIES.wind} stopOpacity={0.55} />
@@ -31,7 +31,7 @@ export function EnergyChart({ hours, peakKw }: { hours: Hour[]; peakKw?: number 
         </defs>
         <CartesianGrid vertical={false} />
         <XAxis {...xAxisProps(hours)} />
-        <YAxis {...axisProps} width={64} tickFormatter={(v: number) => power(v)} />
+        <YAxis {...axisProps} width={AXIS_LEFT} tickFormatter={(v: number) => power(v)} />
         {peakKw ? <ReferenceLine y={peakKw} stroke={PEAK_COLOR} strokeWidth={8} strokeOpacity={0.15} ifOverflow="extendDomain" /> : null}
         {peakKw ? (
           <ReferenceLine

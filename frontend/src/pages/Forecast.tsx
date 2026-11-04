@@ -87,9 +87,11 @@ function panels(
   nowLabel: string,
   release: { t: number; label: string } | null,
 ): Record<View, Panel> {
-  const prices = hours.map((h) => h.price).filter((p): p is number => p != null)
-  const negative = prices.filter((p) => p < 0).length
-  const avgPrice = mean(prices) ?? 0
+  const priced = hours.filter((h): h is typeof h & { price: number } => h.price != null)
+  const prices = priced.map((h) => h.price)
+  const pricedHours = priced.reduce((sum, h) => sum + (h.hours ?? 1), 0)
+  const negative = priced.reduce((sum, h) => (h.price < 0 ? sum + (h.hours ?? 1) : sum), 0)
+  const avgPrice = pricedHours ? priced.reduce((sum, h) => sum + h.price * (h.hours ?? 1), 0) / pricedHours : 0
   const hasWeather = hours.some((h) => h.sunlight_w_m2 != null)
   const wind = config?.site.wind
   const marks = wind ? turbineMarks(wind.power_curve, wind.rated_kw) : null
@@ -97,7 +99,8 @@ function panels(
   const clouds = mean(hours.map((h) => h.cloud_cover_pct))
   const speeds = hours.map((h) => h.wind_ms ?? 0)
   const avgWind = mean(hours.map((h) => h.wind_ms))
-  const turning = marks ? speeds.filter((s) => s > marks.startsAt && (marks.stopsAt == null || s <= marks.stopsAt)).length : 0
+  const turning = marks ? hours.reduce((sum, h, i) => (speeds[i] > marks.startsAt && (marks.stopsAt == null || speeds[i] <= marks.stopsAt) ? sum + (h.hours ?? 1) : sum), 0) : 0
+  const totalHours = hours.reduce((sum, h) => sum + (h.hours ?? 1), 0)
   const noWeather = 'Sunlight and wind forecasts appear here after the next re-plan.'
   const shown = hours.length > 0 && now >= new Date(hours[0].ts).getTime() && now <= new Date(hours[hours.length - 1].ts).getTime() + 3_600_000
   const past: LegendItem[] = shown ? [{ label: 'Already past', color: SERIES.baseline }] : []
@@ -107,7 +110,7 @@ function panels(
       label: 'Price',
       value: `avg €${num(avgPrice)}/MWh`,
       color: SERIES.price,
-      description: `Day-ahead price in €/MWh ${span}. Range €${num(Math.min(...prices))} to €${num(Math.max(...prices))}${negative > 0 ? `, ${negative} h below zero` : ''}.`,
+      description: `Day-ahead price in €/MWh ${span}. Range €${num(Math.min(...prices))} to €${num(Math.max(...prices))}${negative > 0 ? `, ${num(negative)} h below zero` : ''}.`,
       legend: [
         ...past,
         { label: 'Published', color: SERIES.price },
@@ -135,7 +138,7 @@ function panels(
       description: !hasWeather
         ? noWeather
         : marks
-          ? `Wind speed at the ${num(wind!.hub_height_m)} m hub. The turbine turns from ${num(marks.startsAt)} m/s${marks.fullAt != null ? ` and gives full power from ${num(marks.fullAt)} m/s` : ''}; ${turning} of ${hours.length} h are windy enough.`
+          ? `Wind speed at the ${num(wind!.hub_height_m)} m hub. The turbine turns from ${num(marks.startsAt)} m/s${marks.fullAt != null ? ` and gives full power from ${num(marks.fullAt)} m/s` : ''}; ${num(turning)} of ${num(totalHours)} h are windy enough.`
           : `Wind speed at ${num(wind?.hub_height_m ?? 100)} m, up to ${num(Math.max(...speeds), 1)} m/s. No wind turbine is configured, so it doesn't change the plan.`,
       legend: [...past, { label: 'Wind speed (m/s)', color: SERIES.wind }],
       chart: hasWeather ? <WindChart hours={hours} marks={marks} now={now} nowLabel={nowLabel} /> : null,

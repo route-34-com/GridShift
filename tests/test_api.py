@@ -40,7 +40,8 @@ def test_run_then_read_everything(client):
     body = created.json()
     assert "hourly" not in body and body["summary"]["savings_eur"] >= 0
     hourly = client.get("/api/runs/latest/hourly").json()
-    assert len(hourly["plan"]) == 168 and len(hourly["baseline"]) == 168
+    assert len(hourly["plan"]) == 96 + 144 and len(hourly["baseline"]) == 96 + 144
+    assert hourly["plan"][0]["hours"] == 0.25 and hourly["plan"][96]["hours"] == 1
     blocks = client.get("/api/runs/latest/blocks").json()
     assert blocks["plan"] and {"machine_id", "start", "end", "reason"} <= blocks["plan"][0].keys()
     assert client.get(f"/api/runs/{body['id']}").json()["id"] == body["id"]

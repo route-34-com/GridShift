@@ -74,6 +74,8 @@ export interface RunSummary {
 
 export interface Hour {
   ts: string
+  /** Length of this step in hours: 0.25 for 15-minute steps, 1 otherwise. Missing on older plans. */
+  hours?: number
   price: number
   price_source: 'actual' | 'estimate'
   solar: number
@@ -97,6 +99,7 @@ export interface Hour {
 /** One hour on a forecast chart: a planned hour, or an hour of today shown before the plan. */
 export interface ChartHour {
   ts: string
+  hours?: number
   price: number | null
   price_source: 'actual' | 'estimate' | null
   solar?: number | null

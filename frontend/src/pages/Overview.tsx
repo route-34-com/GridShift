@@ -21,7 +21,7 @@ import { SERIES } from '@/lib/utils'
 
 function DayCard({ day, first }: { day: Day; first: boolean }) {
   return (
-    <li className="rounded-lg border border-border p-4">
+    <li className="lift rounded-lg border border-border bg-surface-solid p-4">
       <p className="font-medium whitespace-nowrap text-fg">{day.label}</p>
       <div className="mt-1 h-5">{first ? <Badge tone="brand">Tomorrow</Badge> : day.price_estimated && <Badge>est. price</Badge>}</div>
       <p className="tabular mt-2  text-lg font-semibold text-fg">{eur(day.cost_eur)}</p>
