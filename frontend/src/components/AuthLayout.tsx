@@ -15,11 +15,11 @@ interface AuthLayoutProps {
 function Brand({ className }: { className?: string }) {
   return (
     <div className={className}>
-      <div className="flex items-center gap-4">
-        <Emblem />
+      <div className="flex flex-col items-start gap-4">
+        <Emblem className="h-56 w-56" />
         <div>
-          <p className="font-display text-3xl leading-tight font-semibold text-nav-fg">GridShift</p>
-          <p className="text-sm text-nav-muted">Smart energy scheduling for industry</p>
+          <p className="font-display text-4xl leading-tight font-semibold tracking-tight text-nav-fg">GridShift</p>
+          <p className="mt-1 text-base text-nav-muted">Smart energy scheduling for industry</p>
         </div>
       </div>
     </div>

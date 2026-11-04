@@ -77,7 +77,7 @@ describe('App', () => {
     render(<App />)
     expect(await screen.findByText(/Under this year's 2,000 kW record/)).toBeInTheDocument()
     expect(screen.getByText('Peak charge per month')).toBeInTheDocument()
-    expect(screen.getByText('€20,000')).toBeInTheDocument()
+    expect(await screen.findByText('€20,000')).toBeInTheDocument()
   })
 
   it('offers to create the first plan when none exists', async () => {

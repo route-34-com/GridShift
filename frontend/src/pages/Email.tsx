@@ -65,7 +65,7 @@ function Preview({ run }: { run: RunSummary }) {
       <Card>
         <CardHeader
           title="Daily plan email"
-          description="Sent to the plant team after each daily run at about 13:30, once prices for tomorrow are published."
+          description="Sent to the plant team after each daily run, around 13:00 German time once prices for tomorrow are published."
           action={<Badge tone={status.tone}>{status.text}</Badge>}
         />
         <CardBody className="space-y-2 pt-3 text-sm">

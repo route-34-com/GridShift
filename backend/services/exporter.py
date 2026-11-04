@@ -166,7 +166,7 @@ def _sheet(book: Workbook, title: str, table: Table) -> None:
     sheet.append([header(c) for c in columns])
     for row in table:
         sheet.append([safe_cell(row.get(c)) for c in columns])
-    header_fill = PatternFill("solid", fgColor="0F3D2E")
+    header_fill = PatternFill("solid", fgColor="1A1A18")
     for cell in sheet[1]:
         cell.font = Font(bold=True, color="FFFFFF")
         cell.fill = header_fill

@@ -54,7 +54,7 @@
   --color-baseline: var(--series-baseline);
 }
 
-/* Quiet and precise, after LoomArc: warm neutral greys, near-black primary actions and a near-black sidebar. GridShift blue marks data and focus. */
+/* Quiet and precise, after LoomArc: warm neutral greys, near-black primary actions, and a sidebar that follows the theme. GridShift teal, the colour of clean, cheap hours, marks the brand, focus and the current page. */
 :root {
   --bg: #f7f7f5;
   --surface: #ffffff;
@@ -62,17 +62,17 @@
   --surface-2: rgb(28 25 23 / 0.04);
   --border: #e7e6e2;
   --input: #dcdad5;
-  --ring: rgb(10 111 176 / 0.45);
+  --ring: rgb(15 118 110 / 0.4);
   --grid-line: rgb(28 25 23 / 0.06);
   --fg: #1c1b19;
   --muted: #6b6a65;
-  --brand: #0a6fb0;
-  --brand-2: #0a6fb0;
+  --brand: #0f766e;
+  --brand-2: #0f766e;
   --brand-fg: #ffffff;
   --primary: #1c1b19;
   --primary-fg: #fafaf9;
-  --brand-soft: rgb(10 111 176 / 0.08);
-  --accent: #0a6fb0;
+  --brand-soft: rgb(15 118 110 / 0.09);
+  --accent: #0f766e;
   --energy: #c2570c;
   --positive: #157a52;
   --positive-soft: rgb(21 122 82 / 0.09);
@@ -84,14 +84,14 @@
   --info-soft: rgb(29 95 191 / 0.08);
 
   --topbar: rgb(255 255 255 / 0.92);
-  --nav-bg: #161615;
-  --nav-bg-end: #161615;
-  --nav-fg: #ebeae6;
-  --nav-muted: #9a9993;
-  --nav-hover: rgb(255 255 255 / 0.06);
-  --nav-active: #2c2c2a;
-  --nav-line: rgb(255 255 255 / 0.08);
-  --mark: #5fb3e8;
+  --nav-bg: #fbfbfa;
+  --nav-bg-end: #fbfbfa;
+  --nav-fg: #1c1b19;
+  --nav-muted: #6b6a65;
+  --nav-hover: rgb(28 25 23 / 0.045);
+  --nav-active: rgb(15 118 110 / 0.1);
+  --nav-line: #e7e6e2;
+  --mark: #0f766e;
   --mark-ink: #ffffff;
 
   --series-price: #ea6a0c;
@@ -116,17 +116,17 @@
   --surface-2: rgb(255 255 255 / 0.05);
   --border: rgb(255 255 255 / 0.09);
   --input: rgb(255 255 255 / 0.14);
-  --ring: rgb(95 179 232 / 0.5);
+  --ring: rgb(45 212 191 / 0.45);
   --grid-line: rgb(255 255 255 / 0.06);
   --fg: #f1f0ec;
   --muted: #a3a29c;
-  --brand: #5fb3e8;
-  --brand-2: #5fb3e8;
-  --brand-fg: #0c1a24;
+  --brand: #2dd4bf;
+  --brand-2: #2dd4bf;
+  --brand-fg: #042f2e;
   --primary: #f1f0ec;
   --primary-fg: #1a1a18;
-  --brand-soft: rgb(95 179 232 / 0.12);
-  --accent: #5fb3e8;
+  --brand-soft: rgb(45 212 191 / 0.12);
+  --accent: #2dd4bf;
   --energy: #f0954a;
   --positive: #4cc38a;
   --positive-soft: rgb(76 195 138 / 0.12);
@@ -138,15 +138,15 @@
   --info-soft: rgb(138 184 240 / 0.12);
 
   --topbar: rgb(18 18 17 / 0.92);
-  --nav-bg: #161615;
-  --nav-bg-end: #161615;
+  --nav-bg: #141a18;
+  --nav-bg-end: #141a18;
   --nav-fg: #f1f0ec;
   --nav-muted: #9c9b95;
   --nav-hover: rgb(255 255 255 / 0.05);
   --nav-active: rgb(255 255 255 / 0.09);
   --nav-line: rgb(255 255 255 / 0.07);
-  --mark: #5fb3e8;
-  --mark-ink: #0c1a24;
+  --mark: #2dd4bf;
+  --mark-ink: #042f2e;
 
   --series-price: #fb923c;
   --series-solar: #facc15;

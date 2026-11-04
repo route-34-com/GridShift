@@ -23,7 +23,7 @@ import { turbineMarks } from '@/lib/weather'
 
 function Spec({ icon: Icon, title, rows, footer }: { icon: LucideIcon; title: string; rows: [string, ReactNode][]; footer?: ReactNode }) {
   return (
-    <Card>
+    <Card className="lift">
       <CardBody>
         <div className="mb-4 flex items-center gap-2">
           <Icon className="h-5 w-5 text-brand" aria-hidden />
