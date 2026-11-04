@@ -291,7 +291,7 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
         <div className="rise mb-7 flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0 flex-1 basis-[26rem]">
             <div className="flex items-center gap-3">
-              <h1 className="text-[30px] leading-tight font-semibold text-fg">{title}</h1>
+              <h1 className="text-2xl leading-tight font-semibold tracking-tight text-fg">{title}</h1>
               {run && planActions && run.status === 'attention' && <Badge tone="warning">Needs attention</Badge>}
             </div>
             {subtitle && <div className="mt-1 text-sm text-muted">{subtitle}</div>}

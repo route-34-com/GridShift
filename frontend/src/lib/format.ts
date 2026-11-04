@@ -56,6 +56,15 @@ export const time = (iso: string) => parts(iso, { hour: '2-digit', minute: '2-di
 export const weekday = (iso: string) => parts(iso, { weekday: 'short' })
 export const localDate = (iso: string) => parts(iso, { year: 'numeric', month: '2-digit', day: '2-digit' })
 export const dayLabel = (iso: string) => parts(iso, { weekday: 'short', day: '2-digit', month: 'short' })
+
+/** A run's time range in German time, naming the end day when it runs past midnight: "20:00–Sat 16:00", "22:00–24:00". */
+export function timeSpan(start: string, end: string): string {
+  const last = new Date(new Date(end).getTime() - 1).toISOString()
+  const endsAtMidnight = time(end) === '00:00'
+  const endTime = endsAtMidnight ? '24:00' : time(end)
+  const sameDay = dayLabel(last) === dayLabel(start)
+  return sameDay ? `${time(start)}–${endTime}` : `${time(start)}–${weekday(last)} ${endTime}`
+}
 export const dateTime = (iso: string) =>
   parts(iso, { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false })
 

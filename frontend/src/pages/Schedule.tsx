@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import type { RunData } from '@/hooks/RunContext'
 import { exportsApi } from '@/lib/api'
-import { dayLabel, energy, eur, time } from '@/lib/format'
+import { dayLabel, energy, eur, timeSpan } from '@/lib/format'
 import type { Block } from '@/lib/types'
 import { Segmented } from '@/components/ui/segmented'
 import { machineColor } from '@/lib/utils'
@@ -41,7 +41,7 @@ function BlockList({ blocks, order }: { blocks: Block[]; order: string[] }) {
                   <p className="text-fg">
                     <span className="font-medium">{b.machine_name}</span>{' '}
                     <span className="tabular whitespace-nowrap text-muted">
-                      {time(b.start)}–{time(b.end)}
+                      {timeSpan(b.start, b.end)}
                     </span>
                   </p>
                   <p className="text-xs text-muted">{b.reason.split(': ').slice(1).join(': ')}</p>

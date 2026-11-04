@@ -38,6 +38,15 @@ def _clock(stamp: pd.Timestamp) -> str:
     return stamp.tz_convert(LOCAL_TZ).strftime("%a %H:%M")
 
 
+def _span(start: pd.Timestamp, end: pd.Timestamp) -> str:
+    """Return "Thu 20:00–Fri 16:00", or "Thu 22:00–24:00" when the run ends at midnight the same day."""
+    first, last = start.tz_convert(LOCAL_TZ), (end - pd.Timedelta(seconds=1)).tz_convert(LOCAL_TZ)
+    close = "24:00" if end.tz_convert(LOCAL_TZ).strftime("%H:%M") == "00:00" else end.tz_convert(LOCAL_TZ).strftime("%H:%M")
+    if first.date() == last.date():
+        return f"{_clock(start)}–{close}"
+    return f"{_clock(start)}–{last.strftime('%a')} {close}"
+
+
 def _reason(avg_price: float, day_avg: float, share: float, cheapest: bool) -> str:
     if share >= 0.5:
         return f"{share:.0%} covered by on-site solar and wind"
@@ -81,7 +90,7 @@ def explain_blocks(hourly: pd.DataFrame, schedule: pd.DataFrame, machines: list[
                     round(machine.power_kw * hours, 1),
                     round(avg, 2),
                     round(cover, 3),
-                    f"{_clock(hourly.index[a])}–{_clock(end)[4:]}: " + _reason(avg, float(day_avg[a:b].mean()), cover, cheapest),
+                    f"{_span(hourly.index[a], end)}: " + _reason(avg, float(day_avg[a:b].mean()), cover, cheapest),
                 )
             )
     return sorted(blocks, key=lambda x: (x.start, x.machine_id))

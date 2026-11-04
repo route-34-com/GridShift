@@ -4,7 +4,7 @@ import { useId, useState, type InputHTMLAttributes, type ReactNode, type Textare
 import { cn } from '@/lib/utils'
 
 const CONTROL =
-  'h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-fg placeholder:text-muted/70 transition-colors duration-200 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-60'
+  'h-9 w-full min-w-0 rounded-lg border border-input bg-surface-solid px-3 text-sm text-fg shadow-[0_1px_2px_rgb(0_0_0/0.04)] placeholder:text-muted/70 transition-[border-color,box-shadow] duration-150 focus-visible:border-brand/60 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
 
 interface FieldProps {
   label: string
@@ -17,7 +17,7 @@ export function Field({ label, hint, error, children }: FieldProps) {
   const id = useId()
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="block text-sm font-medium text-fg">
+      <label htmlFor={id} className="block text-[13px] font-medium text-fg">
         {label}
       </label>
       {children(id)}
@@ -86,14 +86,14 @@ export function Select({ value, onValueChange, options, id, disabled, className,
         <RadixSelect.Content
           position="popper"
           sideOffset={6}
-          className="z-50 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden rounded-lg border border-border bg-surface-solid p-1 text-sm text-fg shadow-xl"
+          className="z-50 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden rounded-lg border border-border bg-surface-solid p-1 text-sm text-fg shadow-[0_8px_24px_-6px_rgb(0_0_0/0.18)]"
         >
           <RadixSelect.Viewport>
             {options.map((o) => (
               <RadixSelect.Item
                 key={o.value}
                 value={o.value === '' ? EMPTY : o.value}
-                className="relative flex cursor-pointer items-center rounded-md py-2 pr-8 pl-2.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-surface-2 data-[state=checked]:font-medium"
+                className="relative flex cursor-pointer items-center rounded-md py-1.5 pr-8 pl-2 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-surface-2 data-[state=checked]:font-medium"
               >
                 <RadixSelect.ItemText>{o.label}</RadixSelect.ItemText>
                 <RadixSelect.ItemIndicator className="absolute right-2.5 text-brand">

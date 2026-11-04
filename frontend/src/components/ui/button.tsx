@@ -4,9 +4,9 @@ import { cn } from '@/lib/utils'
 type Variant = 'primary' | 'secondary' | 'ghost'
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'btn-electric font-semibold',
-  secondary: 'border border-border bg-surface text-fg hover:border-brand/40 hover:bg-surface-2',
-  ghost: 'text-muted hover:bg-surface-2 hover:text-fg',
+  primary: 'btn-electric border border-transparent',
+  secondary: 'border border-input bg-surface-solid text-fg shadow-[0_1px_2px_rgb(0_0_0/0.04)] hover:bg-surface-2',
+  ghost: 'border border-transparent text-muted hover:bg-surface-2 hover:text-fg',
 }
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -19,10 +19,10 @@ export function Button({ variant = 'secondary', size = 'md', className, type = '
     <button
       type={type}
       className={cn(
-        'inline-flex cursor-pointer items-center justify-center gap-2 rounded-md font-medium transition-[color,background-color,opacity,transform] duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60',
-        size === 'sm' && 'h-8 px-3 text-sm',
-        size === 'md' && 'h-10 px-4 text-sm',
-        size === 'icon' && 'h-10 w-10',
+        'inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-[color,background-color,border-color,transform] duration-150 select-none active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0',
+        size === 'sm' && 'h-8 px-2.5',
+        size === 'md' && 'h-9 px-3',
+        size === 'icon' && 'h-9 w-9',
         VARIANTS[variant],
         className,
       )}

@@ -1,5 +1,5 @@
 import { Tooltip } from '@/components/ui/tooltip'
-import { dayLabel, energy, localHour, num, pct, power, time } from '@/lib/format'
+import { dayLabel, energy, localHour, num, pct, power, time, timeSpan } from '@/lib/format'
 import type { Block, Hour, MachineSummary } from '@/lib/types'
 import { machineColor } from '@/lib/utils'
 
@@ -37,7 +37,7 @@ export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
   return (
     <div className="overflow-x-auto">
       <div className="min-w-[860px]">
-        <div className="grid grid-cols-[168px_1fr] items-end">
+        <div className="grid grid-cols-[208px_1fr] items-end">
           <div />
           <div className="relative h-6">
             {days.map(({ h }) => (
@@ -48,7 +48,7 @@ export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-[168px_1fr] items-center gap-y-1.5">
+        <div className="grid grid-cols-[208px_1fr] items-center gap-y-1.5">
           <div className="pr-3 text-xs text-muted">Grid price</div>
           <div className="flex h-5 overflow-hidden rounded" role="img" aria-label="Hourly grid price from cheap (green) to expensive (red)">
             {hours.map((h) => (
@@ -68,7 +68,7 @@ export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
           </div>
         </div>
 
-        <div className="relative mt-3 grid grid-cols-[168px_1fr] gap-y-2">
+        <div className="relative mt-3 grid grid-cols-[208px_1fr] gap-y-2">
           {rows.map((machine, index) => {
             const own = blocks.filter((b) => b.machine_id === machine.id)
             return (
@@ -90,7 +90,7 @@ export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
                         <div className="space-y-1">
                           <p className="font-medium">{block.machine_name}</p>
                           <p className="text-muted">
-                            {dayLabel(block.start)} {time(block.start)}–{time(block.end)} · {block.hours} h · {energy(block.energy_kwh)}
+                            {dayLabel(block.start)} {timeSpan(block.start, block.end)} · {num(block.hours, 2)} h · {energy(block.energy_kwh)}
                           </p>
                           <p>{block.reason.split(': ').slice(1).join(': ')}</p>
                           <p className="text-muted">
@@ -101,7 +101,7 @@ export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
                     >
                       <button
                         type="button"
-                        aria-label={`${block.machine_name} ${dayLabel(block.start)} ${time(block.start)} to ${time(block.end)}`}
+                        aria-label={`${block.machine_name} ${dayLabel(block.start)} ${timeSpan(block.start, block.end)}`}
                         className="absolute top-1.5 bottom-1.5 cursor-pointer rounded-[5px] transition-opacity duration-150 hover:opacity-80"
                         style={{
                           left: `${position(block.start)}%`,

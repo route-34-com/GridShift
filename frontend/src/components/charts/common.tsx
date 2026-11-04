@@ -27,6 +27,10 @@ export function dayTicks(hours: Timed[]): number[] {
 export const tickWeekday = (t: number) => weekday(new Date(t).toISOString())
 export const tickTime = (t: number) => time(new Date(t).toISOString())
 
+/** Every time chart reserves the same label columns, so charts stacked on a page line up. */
+export const AXIS_LEFT = 64
+export const AXIS_RIGHT = 64
+
 export const axisProps = {
   tickLine: false,
   axisLine: false,

@@ -3,7 +3,7 @@ import { num, power } from '@/lib/format'
 import type { ChartHour } from '@/lib/types'
 import { SERIES } from '@/lib/utils'
 import { CLOUD_COLOR, type TurbineMarks } from '@/lib/weather'
-import { activeRow, axisProps, hourTitle, isPast, nowLine, PAST_COLOR, splitAtNow, toRows, TooltipBox, xAxisProps, type Row, type TooltipArgs } from './common'
+import { activeRow, axisProps, hourTitle, isPast, nowLine, PAST_COLOR, splitAtNow, toRows, TooltipBox, xAxisProps, type Row, type TooltipArgs, AXIS_LEFT, AXIS_RIGHT } from './common'
 
 const value = (v: number | null | undefined, unit: string, digits = 0) => (v == null ? '–' : `${num(v, digits)} ${unit}`)
 
@@ -27,7 +27,7 @@ export function SunlightChart({ hours, now, nowLabel = 'Now' }: { hours: ChartHo
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={rows} margin={{ top: 18, right: 8, bottom: 0, left: 0 }}>
+      <ComposedChart data={rows} margin={{ top: 18, right: hasClouds ? 0 : AXIS_RIGHT, bottom: 0, left: 0 }}>
         <defs>
           <linearGradient id="sunlight-fill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={SERIES.solar} stopOpacity={0.55} />
@@ -36,8 +36,8 @@ export function SunlightChart({ hours, now, nowLabel = 'Now' }: { hours: ChartHo
         </defs>
         <CartesianGrid vertical={false} />
         <XAxis {...xAxisProps(hours)} />
-        <YAxis yAxisId="sun" {...axisProps} width={44} tickFormatter={(v: number) => num(v)} />
-        <YAxis yAxisId="cloud" orientation="right" {...axisProps} width={40} domain={[0, 100]} ticks={[0, 50, 100]} tickFormatter={(v: number) => `${v}%`} hide={!hasClouds} />
+        <YAxis yAxisId="sun" {...axisProps} width={AXIS_LEFT} tickFormatter={(v: number) => num(v)} />
+        <YAxis yAxisId="cloud" orientation="right" {...axisProps} width={AXIS_RIGHT} domain={[0, 100]} ticks={[0, 50, 100]} tickFormatter={(v: number) => `${v}%`} hide={!hasClouds} />
         {marker && <ReferenceLine yAxisId="sun" {...marker} />}
         <Tooltip
           content={(args: TooltipArgs) => {
@@ -87,10 +87,10 @@ export function WindChart({ hours, marks, now, nowLabel = 'Now' }: { hours: Char
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={rows} margin={{ top: 18, right: 8, bottom: 0, left: 0 }}>
+      <LineChart data={rows} margin={{ top: 18, right: AXIS_RIGHT, bottom: 0, left: 0 }}>
         <CartesianGrid vertical={false} />
         <XAxis {...xAxisProps(hours)} />
-        <YAxis {...axisProps} width={44} domain={[0, top]} tickFormatter={(v: number) => `${v}`} />
+        <YAxis {...axisProps} width={AXIS_LEFT} domain={[0, top]} tickFormatter={(v: number) => `${v}`} />
         {marker && <ReferenceLine {...marker} />}
         {line(marks?.startsAt, 'Turbine starts')}
         {line(marks?.fullAt, 'Full power')}
