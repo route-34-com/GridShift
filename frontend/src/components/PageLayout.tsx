@@ -67,11 +67,11 @@ const PLAN_TIER = 'Remote Advisor'
 
 function Brand() {
   return (
-    <div className="flex items-center gap-2.5">
-      <Logo />
-      <div>
-        <p className="font-display text-[17px] leading-tight font-semibold text-nav-fg">GridShift</p>
-        <p className="mt-1 text-[13px] leading-tight text-nav-muted">{PLAN_TIER} plan</p>
+    <div className="flex items-center gap-3">
+      <Logo className="h-11 w-11" />
+      <div className="min-w-0 leading-tight">
+        <p className="font-display text-[21px] leading-none font-semibold tracking-tight text-nav-fg">GridShift</p>
+        <p className="mt-1.5 text-[13px] leading-tight text-nav-muted">{PLAN_TIER} plan</p>
       </div>
     </div>
   )
