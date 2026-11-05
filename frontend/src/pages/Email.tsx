@@ -56,7 +56,9 @@ function themed(html: string, dark: boolean): string {
 
 function Preview({ run }: { run: RunSummary }) {
   const html = useAsync(api.email, [run.id])
+  const config = useAsync(api.config, [run.id])
   const dark = useIsDark()
+  const recipients = config.loading ? null : (config.data?.site.email_recipients ?? run.email.recipients)
   const status = run.email.status.startsWith('failed')
     ? { tone: 'danger' as Tone, text: 'Delivery failed' }
     : (STATUS[run.email.status] ?? { tone: 'neutral' as Tone, text: run.email.status })
@@ -71,7 +73,7 @@ function Preview({ run }: { run: RunSummary }) {
         <CardBody className="space-y-2 pt-3 text-sm">
           <p className="flex flex-wrap items-center gap-2 text-muted">
             <Mail className="h-4 w-4" aria-hidden />
-            To: <span className="text-fg">{run.email.recipients.join(', ') || 'no recipients configured'}</span>
+            To: <span className="text-fg">{recipients ? recipients.join(', ') || 'no recipients configured' : '…'}</span>
           </p>
           {run.email.status.startsWith('failed') && <p className="text-danger">{run.email.status}</p>}
         </CardBody>

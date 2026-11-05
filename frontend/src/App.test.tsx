@@ -184,6 +184,24 @@ describe('App', () => {
     expect(await screen.findByText(/appear here after the next re-plan/)).toBeInTheDocument()
   })
 
+  it('shows the current plan email recipients, not the ones saved with the last run', async () => {
+    mockApi({
+      '/api/runs/latest': () => json({ ...run, email: { status: 'skipped', recipients: ['old@example.com'] } }),
+      '/api/config': () => json({ site: { email_recipients: ['new@example.com'] }, machines: [] }),
+    })
+    window.history.pushState({}, '', '/email')
+    render(<App />)
+    expect(await screen.findByText('new@example.com')).toBeInTheDocument()
+    expect(screen.queryByText('old@example.com')).not.toBeInTheDocument()
+  })
+
+  it('falls back to the recipients saved with the run when the settings cannot be read', async () => {
+    mockApi({ '/api/runs/latest': () => json({ ...run, email: { status: 'skipped', recipients: ['old@example.com'] } }) })
+    window.history.pushState({}, '', '/email')
+    render(<App />)
+    expect(await screen.findByText('old@example.com')).toBeInTheDocument()
+  })
+
   it('switches the Germany clock between 24 and 12 hours', async () => {
     mockApi()
     render(<App />)
