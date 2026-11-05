@@ -43,10 +43,10 @@ const SECTIONS: { title: string; items: NavEntry[] }[] = [
     title: 'Planning',
     items: [
       { to: '/', label: 'Overview', icon: LayoutGrid },
+      { to: '/site', label: 'Site & machines', icon: Factory },
       { to: '/forecast', label: 'Forecast', icon: ChartSpline },
       { to: '/schedule', label: 'Schedule', icon: CalendarClock },
       { to: '/email', label: 'Daily email', icon: Mail },
-      { to: '/site', label: 'Site & machines', icon: Factory },
     ],
   },
   {
