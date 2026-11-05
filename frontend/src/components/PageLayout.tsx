@@ -226,7 +226,7 @@ function TopBar() {
   const run = data?.run
   const sample = dataset?.active === 'sample'
   return (
-    <header className="sticky top-0 z-10 hidden h-[72px] items-center justify-between gap-6 border-b border-border bg-topbar px-6 lg:flex 2xl:px-8">
+    <header className="sticky top-0 z-30 hidden h-[72px] items-center justify-between gap-6 border-b border-border bg-topbar px-6 lg:flex 2xl:px-8">
       <div className="flex min-w-0 items-center gap-3 text-sm">
         <Factory className="h-4 w-4 shrink-0 text-muted" aria-hidden />
         <span className="truncate font-medium text-fg">{run?.site_name ?? (sample ? 'Holcim sample' : 'Your site')}</span>
@@ -269,7 +269,7 @@ export function PageLayout({ title, subtitle, actions, planActions = true, child
         </div>
       </aside>
 
-      <header className="nav-surface sticky top-0 z-10 border-b lg:hidden">
+      <header className="nav-surface sticky top-0 z-30 border-b lg:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <Brand />
           <div className="flex items-center gap-1">

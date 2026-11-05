@@ -35,8 +35,8 @@ def day_bounds(now: datetime) -> tuple[pd.Timestamp, pd.Timestamp]:
 
 
 def today_index(now: datetime) -> pd.DatetimeIndex:
-    """Return hourly UTC timestamps from today's local midnight up to the planning horizon."""
-    return pd.date_range(_midnight(now, 0), _midnight(now, 1), freq="h", inclusive="left")
+    """Return 15-minute UTC steps across today, from local midnight up to where the plan starts."""
+    return pd.date_range(_midnight(now, 0), _midnight(now, 1), freq=QUARTER, inclusive="left")
 
 
 def step_hours(index: pd.DatetimeIndex) -> np.ndarray:

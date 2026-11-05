@@ -3,7 +3,7 @@
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import numpy as np
 import pandas as pd
@@ -294,7 +294,7 @@ def _today(sources: Sources, site: Site, now: datetime) -> list[dict]:
     Best effort: the plan never depends on it, so a failed fetch just leaves gaps.
     """
     index = today_index(now)
-    start, end = index[0].to_pydatetime(), (index[-1] + pd.Timedelta(hours=1)).to_pydatetime()
+    start, end = index[0].to_pydatetime(), horizon_end(index).to_pydatetime()
     prices = pd.Series(dtype="float64")
     for _, fetch in sources.price_sources():
         try:
@@ -303,10 +303,11 @@ def _today(sources: Sources, site: Site, now: datetime) -> list[dict]:
         except SourceError:
             continue
     try:
-        weather = _weather_table(sources.site_weather(site, start, end), site)
+        hourly = sources.site_weather(site, start, end + timedelta(hours=1))
+        weather = align(_weather_table(hourly, site), index).round(1)
     except SourceError:
         weather = pd.DataFrame(index=index)
-    frame = pd.DataFrame({"price": prices.reindex(index)}, index=index).join(weather.reindex(index))
+    frame = pd.DataFrame({"hours": step_hours(index), "price": prices.reindex(index)}, index=index).join(weather)
     frame["price_source"] = ["actual" if pd.notna(p) else None for p in frame["price"]]
     frame = frame.reset_index(names="ts")
     frame["ts"] = frame["ts"].map(lambda t: t.isoformat())

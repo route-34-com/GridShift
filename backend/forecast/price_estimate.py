@@ -10,6 +10,8 @@ from backend.planner.model import LOCAL_TZ
 from backend.sources.site import ConfigError
 
 FEATURES = ["hour", "weekday", "wind", "solar", "temperature"]
+#: Train on the most recent days only: prices move with fuel costs, so older months mislead (backtested on Oct 2026).
+TRAINING_DAYS = 90
 
 
 def load_price_history(path: Path) -> pd.DataFrame:
@@ -36,6 +38,7 @@ class PriceEstimator:
     """Gradient-boosted price model on hour, weekday and national weather."""
 
     def __init__(self, history: pd.DataFrame):
+        history = history[history.index > history.index.max() - pd.Timedelta(days=TRAINING_DAYS)]
         self.low, self.high = np.percentile(history["price"], [1, 99])
         self.model = HistGradientBoostingRegressor(loss="absolute_error", max_iter=300, random_state=0)
         self.model.fit(_features(history), history["price"].clip(self.low, self.high))

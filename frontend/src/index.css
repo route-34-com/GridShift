@@ -83,7 +83,7 @@
   --info: #1d5fbf;
   --info-soft: rgb(29 95 191 / 0.08);
 
-  --topbar: rgb(255 255 255 / 0.92);
+  --topbar: #ffffff;
   --nav-bg: #fbfbfa;
   --nav-bg-end: #fbfbfa;
   --nav-fg: #1c1b19;
@@ -137,7 +137,7 @@
   --info: #8ab8f0;
   --info-soft: rgb(138 184 240 / 0.12);
 
-  --topbar: rgb(18 18 17 / 0.92);
+  --topbar: #121211;
   --nav-bg: #141a18;
   --nav-bg-end: #141a18;
   --nav-fg: #f1f0ec;
