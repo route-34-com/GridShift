@@ -149,7 +149,7 @@ function MeterPeak() {
           if (file) void upload(file)
         }}
       />
-      <Button size="sm" onClick={() => input.current?.click()} disabled={busy}>
+      <Button loading={busy} size="sm" onClick={() => input.current?.click()} disabled={busy}>
         <Upload className="h-4 w-4" aria-hidden /> {busy ? 'Reading…' : 'Upload meter data'}
       </Button>
     </>
@@ -167,7 +167,7 @@ function MeterPeak() {
         <div role="status" className={`flex flex-wrap items-center gap-3 rounded-lg p-3 text-sm ${message.ok ? 'bg-positive-soft text-positive' : 'bg-danger-soft text-danger'}`}>
           <span>{message.text}</span>
           {message.ok && (
-            <Button size="sm" variant="primary" onClick={() => void runNow()} disabled={running}>
+            <Button loading={running} size="sm" variant="primary" onClick={() => void runNow()} disabled={running}>
               {running ? 'Planning…' : 'Re-plan with this peak'}
             </Button>
           )}
@@ -299,7 +299,7 @@ function LoadHistoryButton({ onUploaded }: { onUploaded: (s: SiteSetup) => void 
   return (
     <>
       <input ref={input} id="load-history-file" type="file" accept=".csv,text/csv" className="sr-only" onChange={(e) => e.target.files?.[0] && void upload(e.target.files[0])} />
-      <Button size="sm" onClick={() => input.current?.click()} disabled={busy}>
+      <Button loading={busy} size="sm" onClick={() => input.current?.click()} disabled={busy}>
         <Upload className="h-4 w-4" aria-hidden /> {busy ? 'Reading…' : 'Upload load history'}
       </Button>
     </>
@@ -369,7 +369,7 @@ function Editor({ setup, onChange }: { setup: SiteSetup; onChange: (s: SiteSetup
           action={
             setup.ready
               ? can('plan.run') && (
-                  <Button variant="primary" size="sm" onClick={() => void runNow()} disabled={running}>
+                  <Button loading={running} variant="primary" size="sm" onClick={() => void runNow()} disabled={running}>
                     {running ? 'Planning…' : 'Re-plan now'}
                   </Button>
                 )
@@ -488,7 +488,7 @@ export function Site() {
   return (
     <PageLayout title="Site & machines" subtitle="Your plant, its machines and the history the planner learns from">
       {setup.loading && !data ? (
-        <LoadingView />
+        <LoadingView label="Loading site and machines…" />
       ) : setup.error && !data ? (
         <ErrorView message={setup.error.message} onRetry={() => void setup.reload()} />
       ) : (

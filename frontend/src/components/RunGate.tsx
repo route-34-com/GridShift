@@ -7,7 +7,7 @@ import { api } from '@/lib/api'
 export function RunGate({ children }: { children: (data: RunData) => ReactNode }) {
   const { data, loading, error, empty, running, runNow, refresh, status, dataset } = useRun()
   const { can } = useAuth()
-  if (loading && !data) return <LoadingView />
+  if (loading && !data) return <LoadingView label="Loading the latest plan…" />
   if (error && !data) return <ErrorView message={error} onRetry={() => void refresh()} />
   if (empty || !data) {
     if (dataset?.active === 'live' && !dataset.live.available && dataset.switchable) {

@@ -1,4 +1,3 @@
-import { Loader2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { AuthLayout } from '@/components/AuthLayout'
@@ -50,8 +49,7 @@ export function Setup() {
         <Field label="Password">{(id) => <PasswordInput id={id} autoComplete="new-password" required value={password} onChange={(e) => setPassword(e.target.value)} />}</Field>
         <Field label="Confirm password">{(id) => <PasswordInput id={id} autoComplete="new-password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} />}</Field>
         <PasswordRules password={password} />
-        <Button type="submit" variant="primary" className="w-full" disabled={busy || !email || Boolean(passwordProblem(password)) || !confirm}>
-          {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+        <Button loading={busy} type="submit" variant="primary" className="w-full" disabled={busy || !email || Boolean(passwordProblem(password)) || !confirm}>
           Create admin account
         </Button>
       </form>

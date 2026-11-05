@@ -1,4 +1,3 @@
-import { Loader2 } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { AuthLayout } from '@/components/AuthLayout'
@@ -6,7 +5,7 @@ import { PasswordRules, passwordProblem } from '@/components/PasswordRules'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Field, FormError, Input, PasswordInput } from '@/components/ui/field'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Loader } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/AuthContext'
 import { useSubmit } from '@/hooks/useSubmit'
 import { auth } from '@/lib/api'
@@ -72,7 +71,7 @@ export function AcceptInvite() {
   if (!invite) {
     return (
       <AuthLayout title="Checking your invitation…">
-        <Skeleton className="h-40" />
+        <Loader label="Checking your invitation…" />
       </AuthLayout>
     )
   }
@@ -89,8 +88,7 @@ export function AcceptInvite() {
         <Field label="Password">{(id) => <PasswordInput id={id} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />}</Field>
         <Field label="Confirm password">{(id) => <PasswordInput id={id} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />}</Field>
         <PasswordRules password={password} />
-        <Button type="submit" variant="primary" className="w-full" disabled={busy || Boolean(passwordProblem(password)) || !confirm}>
-          {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+        <Button loading={busy} type="submit" variant="primary" className="w-full" disabled={busy || Boolean(passwordProblem(password)) || !confirm}>
           Activate account
         </Button>
       </form>

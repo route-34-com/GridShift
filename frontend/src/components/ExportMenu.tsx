@@ -1,4 +1,4 @@
-import { Download, FileSpreadsheet, FileText, FileType2, Loader2 } from 'lucide-react'
+import { Download, FileSpreadsheet, FileText, FileType2 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { MenuContent, MenuItem, MenuLabel, MenuRoot, MenuSeparator, MenuTrigger } from '@/components/ui/menu'
@@ -40,8 +40,8 @@ export function ExportMenu({ options, label = 'Export' }: ExportMenuProps) {
   return (
     <MenuRoot>
       <MenuTrigger asChild>
-        <Button disabled={busy}>
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Download className="h-4 w-4" aria-hidden />}
+        <Button loading={busy}>
+          <Download className="h-4 w-4" aria-hidden />
           {label}
         </Button>
       </MenuTrigger>

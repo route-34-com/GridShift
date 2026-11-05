@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardBody } from '@/components/ui/card'
 import { Field, Input, Select } from '@/components/ui/field'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Loader } from '@/components/ui/spinner'
 import { useAsync } from '@/hooks/useAsync'
 import { admin, exportsApi } from '@/lib/api'
 import { dateTime, num } from '@/lib/format'
@@ -240,13 +240,13 @@ export function AuditPage() {
                 </thead>
                 <tbody>
                   {page.loading && !page.data
-                    ? Array.from({ length: 6 }, (_, i) => (
-                        <tr key={i}>
-                          <td colSpan={7} className="px-4 py-2">
-                            <Skeleton className="h-8" />
+                    ? (
+                        <tr>
+                          <td colSpan={7}>
+                            <Loader label="Loading activity…" />
                           </td>
                         </tr>
-                      ))
+                      )
                     : (page.data?.entries ?? []).map((entry) => (
                         <Fragment key={entry.id}>
                           <tr

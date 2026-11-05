@@ -1,4 +1,4 @@
-import { Check, Loader2 } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { PageLayout } from '@/components/PageLayout'
 import { PasswordRules, passwordProblem } from '@/components/PasswordRules'
@@ -48,8 +48,7 @@ function Profile() {
           <Field label="Email" hint="Ask an admin if your email changes.">
             {(id) => <Input id={id} value={me.email} disabled />}
           </Field>
-          <Button type="submit" variant="primary" disabled={busy || name.trim() === (me.name ?? '')}>
-            {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+          <Button loading={busy} type="submit" variant="primary" disabled={busy || name.trim() === (me.name ?? '')}>
             Save profile
           </Button>
         </form>
@@ -84,8 +83,7 @@ function Password() {
           <Field label="New password">{(id) => <PasswordInput id={id} autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} />}</Field>
           <Field label="Confirm new password">{(id) => <PasswordInput id={id} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />}</Field>
           <PasswordRules password={next} />
-          <Button type="submit" variant="primary" disabled={busy || !current || Boolean(passwordProblem(next)) || !confirm}>
-            {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+          <Button loading={busy} type="submit" variant="primary" disabled={busy || !current || Boolean(passwordProblem(next)) || !confirm}>
             Change password
           </Button>
         </form>

@@ -109,7 +109,7 @@ function PeakSection({ run }: { run: RunSummary }) {
       {stale && planned !== undefined && (
         <div className="flex flex-wrap items-center gap-3 rounded-lg bg-warning-soft p-3 text-sm text-warning">
           <span>This plan was made with a {kw(planned)} record. Re-plan to protect the new {kw(peak.record_kw)} record.</span>
-          <Button size="sm" variant="primary" onClick={() => void runNow()} disabled={running}>
+          <Button loading={running} size="sm" variant="primary" onClick={() => void runNow()} disabled={running}>
             {running ? 'Planning…' : 'Re-plan now'}
           </Button>
         </div>

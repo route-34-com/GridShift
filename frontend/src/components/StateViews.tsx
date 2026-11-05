@@ -1,23 +1,14 @@
-import { AlertTriangle, CalendarClock, Database, FlaskConical, Loader2, RefreshCw } from 'lucide-react'
+import { AlertTriangle, CalendarClock, Database, FlaskConical, RefreshCw } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Loader } from '@/components/ui/spinner'
 
-export function LoadingView() {
+export function LoadingView({ label = 'Loading…' }: { label?: string }) {
   return (
-    <div className="space-y-6" role="status" aria-label="Loading">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }, (_, i) => (
-          <Skeleton key={i} className="h-[104px]" />
-        ))}
-      </div>
-      <Skeleton className="h-[340px]" />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Skeleton className="h-[260px]" />
-        <Skeleton className="h-[260px]" />
-      </div>
-    </div>
+    <Card>
+      <Loader label={label} className="min-h-[60vh]" />
+    </Card>
   )
 }
 
@@ -62,8 +53,8 @@ export function EmptyView({ running, onRun }: { running: boolean; onRun: () => v
       title="No plan yet"
       message="Run the planner to fetch tomorrow's day-ahead prices and the 7-day weather forecast, then build the first schedule. It takes about 10 seconds."
       action={
-        <Button variant="primary" onClick={onRun} disabled={running}>
-          {running ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RefreshCw className="h-4 w-4" aria-hidden />}
+        <Button variant="primary" onClick={onRun} loading={running}>
+          <RefreshCw className="h-4 w-4" aria-hidden />
           {running ? 'Planning…' : 'Create first plan'}
         </Button>
       }

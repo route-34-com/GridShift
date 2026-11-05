@@ -156,7 +156,7 @@ export function SiteDialog({ open, site, onClose, onSave }: SiteDialogProps) {
         <FormError message={error} />
         <div className="flex justify-end gap-2 border-t border-border pt-4">
           <Button onClick={onClose}>Cancel</Button>
-          <Button type="submit" variant="primary" disabled={busy}>
+          <Button loading={busy} type="submit" variant="primary" disabled={busy}>
             {busy ? 'Saving…' : 'Save site'}
           </Button>
         </div>

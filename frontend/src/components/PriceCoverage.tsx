@@ -60,7 +60,7 @@ export function PriceCoverage({ hours, today = [], madeAt }: { hours: Hour[]; to
               Prices for {dayLabel(dayIso(c.publishedThrough))} are already out. Re-plan to use them instead of estimates.
             </span>
             {can('plan.run') && (
-              <Button size="sm" variant="primary" onClick={() => void runNow()} disabled={running}>
+              <Button loading={running} size="sm" variant="primary" onClick={() => void runNow()} disabled={running}>
                 <RefreshCw className="h-4 w-4" aria-hidden /> {running ? 'Planning…' : 'Re-plan now'}
               </Button>
             )}

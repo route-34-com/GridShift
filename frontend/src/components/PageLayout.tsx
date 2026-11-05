@@ -6,7 +6,6 @@ import {
   Factory,
   History,
   LayoutGrid,
-  Loader2,
   LogOut,
   Mail,
   Moon,
@@ -190,8 +189,8 @@ function RunButton() {
   // Nothing to plan until the company's own site data exists.
   if (dataset?.active === 'live' && !dataset.live.available && dataset.switchable) return null
   return (
-    <Button variant="primary" onClick={() => void runNow()} disabled={running} aria-live="polite">
-      {running ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RefreshCw className="h-4 w-4" aria-hidden />}
+    <Button loading={running} variant="primary" onClick={() => void runNow()} disabled={running} aria-live="polite">
+      <RefreshCw className="h-4 w-4" aria-hidden />
       <span>{running ? 'Planning…' : 'Re-plan now'}</span>
     </Button>
   )

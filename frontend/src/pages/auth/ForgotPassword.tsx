@@ -1,4 +1,4 @@
-import { Loader2, MailCheck } from 'lucide-react'
+import { MailCheck } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { AuthLayout } from '@/components/AuthLayout'
@@ -37,8 +37,7 @@ export function ForgotPassword() {
         <form onSubmit={(e) => void onSubmit(e)} className="space-y-4" noValidate>
           <FormError message={error} />
           <Field label="Email">{(id) => <Input id={id} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />}</Field>
-          <Button type="submit" variant="primary" className="w-full" disabled={busy || !email}>
-            {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+          <Button loading={busy} type="submit" variant="primary" className="w-full" disabled={busy || !email}>
             Send reset link
           </Button>
         </form>

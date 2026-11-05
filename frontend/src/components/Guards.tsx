@@ -1,14 +1,14 @@
-import { Loader2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { ErrorView } from '@/components/StateViews'
+import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/AuthContext'
 import { RunProvider } from '@/hooks/RunContext'
 
 function Splash() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg" role="status" aria-label="Loading">
-      <Loader2 className="h-6 w-6 animate-spin text-muted" aria-hidden />
+    <div className="flex min-h-screen items-center justify-center bg-bg">
+      <Spinner className="size-7 text-brand" />
     </div>
   )
 }

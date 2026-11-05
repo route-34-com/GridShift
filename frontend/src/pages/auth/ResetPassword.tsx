@@ -1,4 +1,4 @@
-import { CheckCircle2, Loader2 } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { AuthLayout } from '@/components/AuthLayout'
@@ -61,8 +61,7 @@ export function ResetPassword() {
         <Field label="New password">{(id) => <PasswordInput id={id} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />}</Field>
         <Field label="Confirm new password">{(id) => <PasswordInput id={id} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />}</Field>
         <PasswordRules password={password} />
-        <Button type="submit" variant="primary" className="w-full" disabled={busy || Boolean(passwordProblem(password)) || !confirm}>
-          {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+        <Button loading={busy} type="submit" variant="primary" className="w-full" disabled={busy || Boolean(passwordProblem(password)) || !confirm}>
           Set new password
         </Button>
         {error?.includes('expired') && (

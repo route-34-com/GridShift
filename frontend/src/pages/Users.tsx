@@ -1,4 +1,4 @@
-import { KeyRound, Loader2, Mail, MoreHorizontal, Power, Send, Trash2, UserPlus } from 'lucide-react'
+import { KeyRound, Mail, MoreHorizontal, Power, Send, Trash2, UserPlus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { ExportMenu } from '@/components/ExportMenu'
 import { LinkBox } from '@/components/LinkBox'
@@ -64,8 +64,8 @@ function InviteDialog({ open, onClose, onDone }: { open: boolean; onClose: () =>
         ) : (
           <>
             <Button onClick={close}>Cancel</Button>
-            <Button type="submit" form="invite-form" variant="primary" disabled={busy || !email}>
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Send className="h-4 w-4" aria-hidden />}
+            <Button loading={busy} type="submit" form="invite-form" variant="primary" disabled={busy || !email}>
+              <Send className="h-4 w-4" aria-hidden />
               Send invitation
             </Button>
           </>
@@ -119,10 +119,9 @@ function ConfirmDialog({ pending, onClose }: { pending: Pending | null; onClose:
           <Button
             variant="primary"
             className={pending?.danger ? 'bg-danger text-white' : ''}
-            disabled={busy}
+            loading={busy}
             onClick={() => void submit().then((done) => done !== undefined && onClose())}
           >
-            {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
             {pending?.confirm}
           </Button>
         </>
@@ -279,7 +278,7 @@ export function UsersPage() {
       <div className="space-y-6">
         <MailWarning />
         {users.loading && !users.data ? (
-          <LoadingView />
+          <LoadingView label="Loading users…" />
         ) : users.error ? (
           <ErrorView message={users.error.message} onRetry={() => void users.reload()} />
         ) : (

@@ -1,4 +1,3 @@
-import { Loader2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { AuthLayout } from '@/components/AuthLayout'
@@ -42,8 +41,7 @@ export function Login() {
             Forgot password?
           </Link>
         </div>
-        <Button type="submit" variant="primary" className="w-full" disabled={busy || !email || !password}>
-          {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+        <Button loading={busy} type="submit" variant="primary" className="w-full" disabled={busy || !email || !password}>
           Sign in
         </Button>
       </form>

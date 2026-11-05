@@ -5,6 +5,7 @@ import { RunGate } from '@/components/RunGate'
 import { ScheduleGantt } from '@/components/ScheduleGantt'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
+import { Loader } from '@/components/ui/spinner'
 import type { RunData } from '@/hooks/RunContext'
 import { useAsync } from '@/hooks/useAsync'
 import { useNow } from '@/hooks/useNow'
@@ -110,13 +111,13 @@ function TodayCard({ runId }: { runId: number }) {
       <CardBody>
         {plan ? (
           <TodayContent plan={plan} />
+        ) : loading ? (
+          <Loader label="Loading today's plan…" className="min-h-28" />
         ) : (
           <p className="text-sm text-muted">
-            {loading
-              ? "Loading today's plan…"
-              : error
-                ? "Today's plan couldn't be loaded. Refresh the page to try again."
-                : 'No saved plan covers today. Each plan starts at the next midnight, so the first one shows here the day after it runs.'}
+            {error
+              ? "Today's plan couldn't be loaded. Refresh the page to try again."
+              : 'No saved plan covers today. Each plan starts at the next midnight, so the first one shows here the day after it runs.'}
           </p>
         )}
       </CardBody>

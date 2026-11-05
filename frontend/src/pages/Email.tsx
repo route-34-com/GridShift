@@ -4,7 +4,7 @@ import { RunGate } from '@/components/RunGate'
 import { ErrorView } from '@/components/StateViews'
 import { Badge, type Tone } from '@/components/ui/badge'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Loader } from '@/components/ui/spinner'
 import { useAsync } from '@/hooks/useAsync'
 import { useIsDark } from '@/hooks/useTheme'
 import { api } from '@/lib/api'
@@ -81,7 +81,9 @@ function Preview({ run }: { run: RunSummary }) {
       {html.error ? (
         <ErrorView message={html.error.message} onRetry={() => void html.reload()} />
       ) : html.loading || !html.data ? (
-        <Skeleton className="h-[900px]" />
+        <Card>
+          <Loader label="Loading the email…" className="min-h-[60vh]" />
+        </Card>
       ) : (
         <div className="overflow-hidden rounded-lg border border-border bg-bg">
           <iframe title="Daily plan email preview" srcDoc={themed(html.data, dark)} sandbox="" className="h-[1100px] w-full" />
