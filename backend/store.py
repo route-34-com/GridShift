@@ -62,6 +62,13 @@ class Store:
             row = db.execute(query, (self.dataset,)).fetchone()
         return json.loads(row[0]) if row else None
 
+    def plan_for_day(self, day_start: str) -> dict | None:
+        """Return the newest successful run with the latest horizon that has started by day_start."""
+        query = "SELECT payload FROM runs WHERE dataset = ? AND status != 'failed' AND horizon_start <= ? ORDER BY horizon_start DESC, id DESC LIMIT 1"
+        with connect(self.path) as db:
+            row = db.execute(query, (self.dataset, day_start)).fetchone()
+        return json.loads(row[0]) if row else None
+
     def list_runs(self, limit: int = 20) -> list[dict]:
         """Return recent run headers, newest first."""
         with connect(self.path) as db:

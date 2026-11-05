@@ -6,9 +6,11 @@ import { ScheduleGantt } from '@/components/ScheduleGantt'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import type { RunData } from '@/hooks/RunContext'
-import { exportsApi } from '@/lib/api'
-import { dayLabel, energy, eur, timeSpan } from '@/lib/format'
-import type { Block } from '@/lib/types'
+import { useAsync } from '@/hooks/useAsync'
+import { useNow } from '@/hooks/useNow'
+import { api, exportsApi } from '@/lib/api'
+import { dayLabel, energy, eur, time, timeSpan } from '@/lib/format'
+import type { Block, Hour, TodayPlan } from '@/lib/types'
 import { Segmented } from '@/components/ui/segmented'
 import { machineColor } from '@/lib/utils'
 
@@ -20,6 +22,22 @@ function Toggle({ view, onChange }: { view: View; onChange: (v: View) => void })
     { value: 'baseline', label: 'Run-as-needed' },
   ]
   return <Segmented label="Schedule view" value={view} options={options} onChange={onChange} />
+}
+
+function BlockRow({ block, color, running = false }: { block: Block; color: string; running?: boolean }) {
+  return (
+    <li className="flex gap-3 text-sm">
+      <span aria-hidden className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color }} />
+      <div className="min-w-0">
+        <p className="text-fg">
+          <span className="font-medium">{block.machine_name}</span>{' '}
+          <span className="tabular whitespace-nowrap text-muted">{timeSpan(block.start, block.end)}</span>
+          {running && <Badge tone="brand" className="ml-1.5">Running now</Badge>}
+        </p>
+        <p className="text-xs text-muted">{block.reason.split(': ').slice(1).join(': ')}</p>
+      </div>
+    </li>
+  )
 }
 
 function BlockList({ blocks, order }: { blocks: Block[]; order: string[] }) {
@@ -35,23 +53,74 @@ function BlockList({ blocks, order }: { blocks: Block[]; order: string[] }) {
           <p className="mb-3 font-medium text-fg">{day}</p>
           <ul className="space-y-3">
             {items.map((b) => (
-              <li key={`${b.machine_id}-${b.start}`} className="flex gap-3 text-sm">
-                <span aria-hidden className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: machineColor(order.indexOf(b.machine_id)) }} />
-                <div className="min-w-0">
-                  <p className="text-fg">
-                    <span className="font-medium">{b.machine_name}</span>{' '}
-                    <span className="tabular whitespace-nowrap text-muted">
-                      {timeSpan(b.start, b.end)}
-                    </span>
-                  </p>
-                  <p className="text-xs text-muted">{b.reason.split(': ').slice(1).join(': ')}</p>
-                </div>
-              </li>
+              <BlockRow key={`${b.machine_id}-${b.start}`} block={b} color={machineColor(order.indexOf(b.machine_id))} />
             ))}
           </ul>
         </div>
       ))}
     </div>
+  )
+}
+
+function priceNote(hours: Hour[]): { tone: 'brand' | 'warning'; text: string } {
+  const estimated = hours.filter((h) => h.price_source === 'estimate').length
+  if (estimated === 0) return { tone: 'brand', text: 'Published prices' }
+  return { tone: 'warning', text: estimated === hours.length ? 'Estimated prices' : 'Partly estimated prices' }
+}
+
+function TodayContent({ plan }: { plan: TodayPlan }) {
+  const now = useNow(60_000)
+  const order = plan.run.machines.filter((m) => m.type !== 'always_on').map((m) => m.id)
+  const note = priceNote(plan.hourly)
+  const moment = now.getTime()
+  const runningNow = (b: Block) => new Date(b.start).getTime() <= moment && moment < new Date(b.end).getTime()
+  const energyToday = plan.blocks.reduce((acc, b) => acc + b.energy_kwh, 0)
+  return (
+    <>
+      <div className="mb-4 flex flex-wrap gap-2 text-xs">
+        <Badge tone={note.tone}>{note.text}</Badge>
+        <Badge>{plan.blocks.length} run blocks</Badge>
+        <Badge>{energy(energyToday)} flexible energy</Badge>
+      </div>
+      {plan.blocks.length ? (
+        <>
+          <ScheduleGantt hours={plan.hourly} blocks={plan.blocks} machines={plan.run.machines} clockAxis now={now} />
+          <ul className="mt-6 grid gap-x-8 gap-y-3 md:grid-cols-2 xl:grid-cols-3">
+            {plan.blocks.map((b) => (
+              <BlockRow key={`${b.machine_id}-${b.start}`} block={b} color={machineColor(order.indexOf(b.machine_id))} running={runningNow(b)} />
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p className="text-sm text-muted">No flexible machines are scheduled today.</p>
+      )}
+    </>
+  )
+}
+
+function TodayCard({ runId }: { runId: number }) {
+  const { data: plan, error, loading } = useAsync(api.todayPlan, [runId])
+  const made = plan ? `Plan #${plan.run.id}, made ${dayLabel(plan.run.created_at)} at ${time(plan.run.created_at)}.` : ''
+  return (
+    <Card>
+      <CardHeader
+        title={plan ? `Today's plan · ${dayLabel(plan.hourly[0].ts)}` : "Today's plan"}
+        description={plan ? `${made} The line marks the current time. Re-planning doesn't change today.` : 'What each machine runs today, in Europe/Berlin time.'}
+      />
+      <CardBody>
+        {plan ? (
+          <TodayContent plan={plan} />
+        ) : (
+          <p className="text-sm text-muted">
+            {loading
+              ? "Loading today's plan…"
+              : error
+                ? "Today's plan couldn't be loaded. Refresh the page to try again."
+                : 'No saved plan covers today. Each plan starts at the next midnight, so the first one shows here the day after it runs.'}
+          </p>
+        )}
+      </CardBody>
+    </Card>
   )
 }
 
@@ -64,6 +133,7 @@ function Content({ data }: { data: RunData }) {
   const flexibleEnergy = blocks.reduce((acc, b) => acc + b.energy_kwh, 0)
   return (
     <div className="space-y-6">
+      <TodayCard runId={data.run.id} />
       <Card>
         <CardHeader
           title="Machine schedule"
@@ -93,7 +163,7 @@ export function Schedule() {
   return (
     <PageLayout
       title="Schedule"
-      subtitle="When each flexible machine runs over the next 7 days"
+      subtitle="When each flexible machine runs today and over the next 7 days"
       actions={
         <PlanExportMenu
           options={[

@@ -76,6 +76,16 @@ def latest_email(app: AppDep) -> str:
     return render_plan_email(latest_or_404(app))[1]
 
 
+@router.get("/today")
+def today(app: AppDep) -> dict | None:
+    """Return today's machine plan from the run made for it, or null if no run covers today."""
+    from datetime import datetime, timezone
+
+    from backend.services.today import today_plan
+
+    return today_plan(app.data.store, datetime.now(timezone.utc))
+
+
 @router.get("/{run_id}")
 def get_run(run_id: int, app: AppDep) -> dict:
     """Return one run summary by id."""

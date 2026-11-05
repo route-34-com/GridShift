@@ -16,6 +16,7 @@ import type {
   SetupStatus,
   SiteConfig,
   SiteSetup,
+  TodayPlan,
   Status,
   TodayHour,
   UserStatus,
@@ -109,6 +110,7 @@ export const api = {
   blocks: () => request<{ plan: Block[]; baseline: Block[] }>('/api/runs/latest/blocks'),
   full: () =>
     request<{ run: RunSummary; hourly: { plan: Hour[]; baseline: Hour[]; today?: TodayHour[] }; blocks: { plan: Block[]; baseline: Block[] } }>('/api/runs/latest/full'),
+  todayPlan: () => request<TodayPlan | null>('/api/runs/today'),
   email: () => request<string>('/api/runs/latest/email'),
   runs: () => request<RunHeader[]>('/api/runs'),
   config: () => request<Config>('/api/config'),

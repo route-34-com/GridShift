@@ -34,6 +34,7 @@ export function mockApi(overrides: Record<string, Handler> = {}, role: TestRole 
       const [summary, hourly, blocks] = await Promise.all(parts.map((response) => response.json()))
       return json({ run: summary, hourly, blocks })
     },
+    '/api/runs/today': () => json(null),
     '/api/runs/latest/email': () => new Response('<p>email</p>', { headers: { 'content-type': 'text/html' } }),
     ...overrides,
   }

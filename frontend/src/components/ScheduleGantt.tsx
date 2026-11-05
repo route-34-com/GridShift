@@ -7,6 +7,10 @@ interface ScheduleGanttProps {
   hours: Hour[]
   blocks: Block[]
   machines: MachineSummary[]
+  /** Label the top axis with clock times, for a single day. */
+  clockAxis?: boolean
+  /** Draw a line at this moment when it falls inside the chart. */
+  now?: Date
 }
 
 function priceColor(price: number, low: number, high: number): string {
@@ -20,7 +24,7 @@ function percentile(values: number[], p: number): number {
   return sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))] ?? 0
 }
 
-export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
+export function ScheduleGantt({ hours, blocks, machines, clockAxis = false, now }: ScheduleGanttProps) {
   if (!hours.length) return null
   const t0 = new Date(hours[0].ts).getTime()
   const last = hours[hours.length - 1]
@@ -30,6 +34,9 @@ export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
   const low = percentile(prices, 0.05)
   const high = percentile(prices, 0.95)
   const days = hours.map((h, i) => ({ h, i })).filter(({ h }) => localHour(h.ts) === 0 && new Date(h.ts).getUTCMinutes() === 0)
+  const clocks = hours.map((h, i) => ({ h, i })).filter(({ h }) => localHour(h.ts) % 3 === 0 && new Date(h.ts).getUTCMinutes() === 0)
+  const marks = clockAxis ? clocks : days
+  const nowAt = now ? position(now.toISOString()) : null
   const rows = machines.filter((m) => m.type !== 'always_on')
   const renewable = hours.map((h) => h.solar + h.wind)
   const peak = Math.max(1, ...renewable)
@@ -40,9 +47,9 @@ export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
         <div className="grid grid-cols-[208px_1fr] items-end">
           <div />
           <div className="relative h-6">
-            {days.map(({ h }) => (
-              <span key={h.ts} className="absolute top-0 text-xs font-medium text-muted" style={{ left: `${position(h.ts)}%` }}>
-                <span className="pl-1.5">{dayLabel(h.ts)}</span>
+            {marks.map(({ h }) => (
+              <span key={h.ts} className="tabular absolute top-0 text-xs font-medium text-muted" style={{ left: `${position(h.ts)}%` }}>
+                <span className="pl-1.5">{clockAxis ? time(h.ts) : dayLabel(h.ts)}</span>
               </span>
             ))}
           </div>
@@ -80,9 +87,12 @@ export function ScheduleGantt({ hours, blocks, machines }: ScheduleGanttProps) {
                   </span>
                 </div>
                 <div className="relative h-10 rounded-md bg-surface-2">
-                  {days.slice(1).map(({ h }) => (
+                  {marks.slice(1).map(({ h }) => (
                     <span key={h.ts} aria-hidden className="absolute top-0 bottom-0 w-px bg-border" style={{ left: `${position(h.ts)}%` }} />
                   ))}
+                  {nowAt !== null && nowAt >= 0 && nowAt <= 100 && (
+                    <span aria-hidden className="pointer-events-none absolute -top-1 -bottom-1 z-[1] w-0.5 bg-fg" style={{ left: `${nowAt}%` }} />
+                  )}
                   {own.map((block) => (
                     <Tooltip
                       key={block.start}

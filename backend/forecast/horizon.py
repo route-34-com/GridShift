@@ -29,6 +29,11 @@ def horizon_index(now: datetime, hours: int = HORIZON_HOURS, fine_days: int = FI
     return fine.append(coarse)
 
 
+def day_bounds(now: datetime) -> tuple[pd.Timestamp, pd.Timestamp]:
+    """Return UTC starts of the current local day and the next one."""
+    return _midnight(now, 0), _midnight(now, 1)
+
+
 def today_index(now: datetime) -> pd.DatetimeIndex:
     """Return hourly UTC timestamps from today's local midnight up to the planning horizon."""
     return pd.date_range(_midnight(now, 0), _midnight(now, 1), freq="h", inclusive="left")

@@ -302,6 +302,26 @@ describe('App', () => {
     expect(screen.queryByRole('button', { name: /Lena|Test admin/ })).not.toBeInTheDocument()
   })
 
+  it("shows today's plan from the run made for it", async () => {
+    const start = '2026-11-04T23:00:00+00:00'
+    const block = { ...run.blocks[0], start, end: '2026-11-05T01:00:00+00:00', machine_name: 'Morning mill' }
+    const hourly = [{ ...run.hourly[0], ts: start, hours: 24, price_source: 'estimate' }]
+    mockApi({ '/api/runs/today': () => json({ run: { id: 36, created_at: '2026-11-04T12:00:00+00:00', machines: run.machines }, hourly, blocks: [block] }) })
+    window.history.pushState({}, '', '/schedule')
+    render(<App />)
+    expect(await screen.findByText(/Today's plan · Thu 05 Nov/)).toBeInTheDocument()
+    expect(screen.getByText(/Plan #36, made Wed 04 Nov at 13:00/)).toBeInTheDocument()
+    expect(screen.getByText('Estimated prices')).toBeInTheDocument()
+    expect(screen.getAllByText('Morning mill').length).toBeGreaterThan(0)
+  })
+
+  it('explains when no plan covers today', async () => {
+    mockApi()
+    window.history.pushState({}, '', '/schedule')
+    render(<App />)
+    expect(await screen.findByText(/No saved plan covers today/)).toBeInTheDocument()
+  })
+
   it('switches the schedule between plan and baseline', async () => {
     mockApi()
     window.history.pushState({}, '', '/schedule')

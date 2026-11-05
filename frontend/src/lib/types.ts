@@ -156,6 +156,12 @@ export interface Block {
   reason: string
 }
 
+export interface TodayPlan {
+  run: { id: number; created_at: string; machines: MachineSummary[] }
+  hourly: Hour[]
+  blocks: Block[]
+}
+
 export interface RunHeader {
   id: number
   created_at: string
