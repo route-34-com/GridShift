@@ -80,7 +80,7 @@ def store(settings) -> Store:
 
 
 def good_sources() -> Sources:
-    return Sources(day_ahead=fake_prices, backup_day_ahead=broken, site_weather=fake_site_weather, national_weather=fake_national)
+    return Sources(entsoe_day_ahead=None, day_ahead=fake_prices, backup_day_ahead=broken, site_weather=fake_site_weather, national_weather=fake_national)
 
 
 class Mailbox:

@@ -106,6 +106,46 @@ def test_backup_source_supplies_real_prices(settings, store):
     assert run["hourly"][0]["price_source"] == "actual"
 
 
+def test_entsoe_is_tried_first(settings, store):
+    calls = []
+
+    def entsoe(start, end):
+        calls.append("entsoe")
+        return fake_prices(start, end)
+
+    def energy_charts(start, end):
+        calls.append("energy-charts")
+        return fake_prices(start, end)
+
+    sources = replace(good_sources(), entsoe_day_ahead=entsoe, day_ahead=energy_charts)
+    run = execute(settings, store, NOW, sources)
+    assert calls[0] == "entsoe" and "energy-charts" not in calls[:1]
+    assert run["sources"]["price"] == "published"
+    assert not any(a["kind"] in ("price_backup", "price_fallback") for a in run["alerts"])
+
+
+def test_entsoe_outage_falls_back_to_energy_charts(settings, store):
+    sources = replace(good_sources(), entsoe_day_ahead=broken)
+    run = execute(settings, store, NOW, sources)
+    assert run["sources"]["price"] == "published"
+    assert any(a["kind"] == "price_backup" and "Energy-Charts" in a["message"] and "ENTSO-E" in a["message"] for a in run["alerts"])
+
+
+def test_late_source_is_skipped_for_one_with_tomorrows_prices(settings, store):
+    sources = replace(good_sources(), entsoe_day_ahead=lambda s, e: fake_prices(s, e)[:0])
+    run = execute(settings, store, NOW, sources)
+    assert run["sources"]["price"] == "published"
+    assert any(a["kind"] == "price_backup" and "not fully published" in a["message"] for a in run["alerts"])
+
+
+def test_all_price_sources_down(settings, store):
+    sources = replace(good_sources(), entsoe_day_ahead=broken, day_ahead=broken)
+    run = execute(settings, store, NOW, sources)
+    assert run["sources"]["price"] == "estimated"
+    message = next(a["message"] for a in run["alerts"] if a["kind"] == "price_fallback")
+    assert "ENTSO-E" in message and "Energy-Charts" in message and "aWATTar" in message
+
+
 def test_partial_prices_are_flagged(settings, store):
     sources = replace(good_sources(), day_ahead=lambda s, e: fake_prices(s, e)[:10])
     run = execute(settings, store, NOW, sources)

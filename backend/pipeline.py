@@ -20,7 +20,7 @@ from backend.planner.model import LOCAL_TZ, AlwaysOn, Machine, Site
 from backend.planner.optimizer import PlannerError, optimize
 from backend.planner.requirements import build_requirements
 from backend.settings import Settings
-from backend.sources import price, weather
+from backend.sources import entsoe, price, weather
 from backend.sources.demand_history import load_demand_history
 from backend.sources.http import SourceError
 from backend.sources.price import to_steps
@@ -43,6 +43,13 @@ class Sources:
     backup_day_ahead: Callable | None = price.fetch_day_ahead_awattar
     site_weather: Callable = weather.fetch_site_weather
     national_weather: Callable = weather.fetch_national_weather
+    #: Tried before Energy-Charts; None (no API token configured) skips it.
+    entsoe_day_ahead: Callable | None = field(default_factory=entsoe.from_env)
+
+    def price_sources(self) -> list[tuple[str, Callable]]:
+        """Return the configured price sources in the order they are tried."""
+        named = [("ENTSO-E", self.entsoe_day_ahead), ("Energy-Charts", self.day_ahead), ("aWATTar", self.backup_day_ahead)]
+        return [(name, fetch) for name, fetch in named if fetch is not None]
 
 
 @dataclass
@@ -76,26 +83,35 @@ def _cached_weather(store: Store, kind: str, index: pd.DatetimeIndex) -> pd.Data
 
 def _fetch_prices(sources: Sources, index: pd.DatetimeIndex, notes: Notes) -> pd.Series | None:
     start, end = index[0].to_pydatetime(), horizon_end(index).to_pydatetime()
-    try:
-        raw = sources.day_ahead(start, end)
-    except SourceError as exc:
-        primary_error = exc
-        try:
-            if sources.backup_day_ahead is None:
-                raise SourceError("no backup price source configured")
-            raw = sources.backup_day_ahead(start, end)
-        except SourceError as backup_error:
-            notes.sources["price"] = "estimated"
-            notes.alert(
-                "price_fallback",
-                "warning",
-                f"Real market prices couldn't be downloaded, so every hour uses GridShift's weather-based estimate. "
-                f"Energy-Charts: {primary_error}. aWATTar: {backup_error}.",
-            )
-            return None
-        notes.alert("price_backup", "info", f"Energy-Charts didn't respond, so the real market prices came from aWATTar instead ({primary_error}).")
-    actual = to_steps(raw, index)
     first_day = local_dates(index) == local_dates(index)[0]
+    chain = sources.price_sources()
+    problems: list[str] = []
+    best: tuple[str, pd.Series, int] | None = None
+    for name, fetch in chain:
+        try:
+            steps = to_steps(fetch(start, end), index)
+        except SourceError as exc:
+            problems.append(f"{name}: {exc}")
+            continue
+        count = int(steps.notna().to_numpy()[first_day].sum())
+        if best is None or count > best[2]:
+            best = (name, steps, count)
+        if count == first_day.sum():
+            break
+        problems.append(f"{name}: tomorrow's prices not fully published")
+    if best is None:
+        notes.sources["price"] = "estimated"
+        detail = " ".join(f"{p}." for p in problems) or "No price source is configured."
+        notes.alert(
+            "price_fallback",
+            "warning",
+            f"Real market prices couldn't be downloaded, so every hour uses GridShift's weather-based estimate. {detail}",
+        )
+        return None
+    used, actual, _ = best
+    skipped = [p for p in problems if not p.startswith(f"{used}:")]
+    if used != chain[0][0] and skipped:
+        notes.alert("price_backup", "info", f"Real market prices came from {used} instead ({'; '.join(skipped)}).")
     known = actual.notna().to_numpy()
     if known[first_day].all():
         notes.sources["price"] = "published"
@@ -280,9 +296,7 @@ def _today(sources: Sources, site: Site, now: datetime) -> list[dict]:
     index = today_index(now)
     start, end = index[0].to_pydatetime(), (index[-1] + pd.Timedelta(hours=1)).to_pydatetime()
     prices = pd.Series(dtype="float64")
-    for fetch in (sources.day_ahead, sources.backup_day_ahead):
-        if fetch is None:
-            continue
+    for _, fetch in sources.price_sources():
         try:
             prices = to_steps(fetch(start, end), index)
             break
