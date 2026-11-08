@@ -18,7 +18,7 @@ def test_full_run_produces_complete_payload(settings, store):
     assert len(run["daily"]) == 7
     assert run["summary"]["savings_eur"] >= 0
     assert run["blocks"]
-    assert run["sources"] == {"price": "published", "site_weather": "live", "national_weather": "live"}
+    assert run["sources"] == {"price": "published", "price_from": "Energy-Charts", "site_weather": "live", "national_weather": "live"}
     assert run["email"]["status"] == "disabled"
     assert store.latest_run()["id"] == run["id"]
 
@@ -122,6 +122,7 @@ def test_entsoe_is_tried_first(settings, store):
     run = execute(settings, store, NOW, sources)
     assert calls[0] == "entsoe" and "energy-charts" not in calls[:1]
     assert run["sources"]["price"] == "published"
+    assert run["sources"]["price_from"] == "ENTSO-E"
     assert not any(a["kind"] in ("price_backup", "price_fallback") for a in run["alerts"])
 
 
@@ -129,6 +130,7 @@ def test_entsoe_outage_falls_back_to_energy_charts(settings, store):
     sources = replace(good_sources(), entsoe_day_ahead=broken)
     run = execute(settings, store, NOW, sources)
     assert run["sources"]["price"] == "published"
+    assert run["sources"]["price_from"] == "Energy-Charts"
     assert any(a["kind"] == "price_backup" and "Energy-Charts" in a["message"] and "ENTSO-E" in a["message"] for a in run["alerts"])
 
 

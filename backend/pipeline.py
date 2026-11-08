@@ -109,6 +109,7 @@ def _fetch_prices(sources: Sources, index: pd.DatetimeIndex, notes: Notes) -> pd
         )
         return None
     used, actual, _ = best
+    notes.sources["price_from"] = used
     skipped = [p for p in problems if not p.startswith(f"{used}:")]
     if used != chain[0][0] and skipped:
         notes.alert("price_backup", "info", f"Real market prices came from {used} instead ({'; '.join(skipped)}).")

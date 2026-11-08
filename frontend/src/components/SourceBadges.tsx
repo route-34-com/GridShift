@@ -5,6 +5,7 @@ const LABELS: Record<string, string> = {
   price: 'Day-ahead price',
   site_weather: 'Site weather',
   national_weather: 'National weather',
+  price_from: 'Prices from',
 }
 
 const STATES: Record<string, { tone: Tone; text: string; help: string }> = {
